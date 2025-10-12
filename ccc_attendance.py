@@ -18,7 +18,7 @@ def erweima(url):
     )
     qr.add_data(url)
     qr.make(fit=True)
-    img = qr.make_image(fill_color="#FFFFFF", back_color="#10263B")
+    img = qr.make_image(fill_color="#FFFFFF", back_color="#10263B") #诺丁蓝色
     plt.imshow(img)
     plt.axis('off')  # 不显示坐标轴
     plt.show()
@@ -30,34 +30,40 @@ def erweima(url):
 print("使用教学：")
 print("把中国文化课主界面在手机浏览器中打开，长按“查看详情”按钮复制链接，在下方粘贴。")
 url=input("请输入链接：")
-print("精确签到<测试功能>已自动启用！\n请输入签到时间（24小时制）:")
-year = int(input("年: "))
-month = int(input("月: "))
-day = int(input("日: "))
-hour = int(input("时: "))
-minute = int(input("分: "))
-timestamp = datetime_to_timestamp(year, month, day, hour, minute)
-if "https://ccc.nottingham.edu.cn/study/home/details?" in url:
-    id = url[52:]
-    attendance = f"https://ccc.nottingham.edu.cn/study/attendance?scheduleId={id}&time={timestamp}"
-    print(f"生成的签到链接: {attendance}")
-    erweima(attendance)
-else:
-    print("弄错了！不是合法的ccc链接！！！")
-   
-    
-   
 
-#固定2026时间戳
-'''
-if "https://ccc.nottingham.edu.cn/study/home/details?" in url:
-    id=url[52:]
-    attendance="https://ccc.nottingham.edu.cn/study/attendance?scheduleId="+id+"&time=1799511064000"
-    print(attendance)
-    erweima(attendance)
-else:
-    print("弄错了！不是合法的ccc链接！！！")
-'''
+funct=int(input("自动模式（1）/手动模式（2）\n请输入数字（默认自动模式）："))
+if funct==2:
+    print("手动签到已启用！\n请输入签到时间（24小时制）:")
+    year = int(input("年: "))
+    month = int(input("月: "))
+    day = int(input("日: "))
+    hour = int(input("时: "))
+    minute = int(input("分: "))
+    timestamp = datetime_to_timestamp(year, month, day, hour, minute)
+    if "https://ccc.nottingham.edu.cn/study/home/details?" in url:
+        id = url[52:]
+        attendance = f"https://ccc.nottingham.edu.cn/study/attendance?scheduleId={id}&time={timestamp}"
+        print(f"生成的签到链接: {attendance}")
+        erweima(attendance)
+    else:
+        print("弄错了！不是合法的ccc链接！！！")
+else:#固定2030时间戳
+    if "https://ccc.nottingham.edu.cn/study/home/details?" in url:
+        id=url[52:]
+        attendance="https://ccc.nottingham.edu.cn/study/attendance?scheduleId="+id+"&time=1893456000"
+        print(attendance)
+        erweima(attendance)
+    else:
+        print("弄错了！不是合法的ccc链接！！！")
+
+
+
+
+
+
+
+
+
     
 #spdpo已经被ban
 '''
