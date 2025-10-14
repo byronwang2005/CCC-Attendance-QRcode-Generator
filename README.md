@@ -18,7 +18,7 @@ pip install qrcode[pil] matplotlib
 
 ## 使用指南
 1. 运行程序
-2. 把中国文化课主界面（https://ccc.nottingham.edu.cn/study/）在手机浏览器（如safari）中打开，长按欲签到课程的“查看详情”按钮复制链接，在本程序中粘贴（格式示例：`https://ccc.nottingham.edu.cn/study/home/details?scheduleId=xxxx`）
+2. 把中国文化课主界面（`https://ccc.nottingham.edu.cn/study/`）在手机浏览器（如safari）中打开，长按欲签到课程的“查看详情”按钮复制链接，在本程序中粘贴（格式示例：`https://ccc.nottingham.edu.cn/study/home/details?scheduleId=xxxx`）
 3. 选择自动/手动模式（99%情况都请选择自动模式）
 4. 程序自动生成签到链接并显示二维码
 5. 二维码将默认保存为 `qrcode.png`
@@ -44,7 +44,7 @@ pip install qrcode[pil] matplotlib
 A: 确保课程链接格式正确，确保手机网络环境正常（处在eduroam下），确保在课程开始后、结束前签到，再尝试重新生成二维码。必要时使用手动模式。
 
 **Q: 时间戳的作用是什么？**  
-A: 用于验证签到请求的时效性，防止重复提交或过期请求，本程序自动模式~指定2030年的某一事件戳~新版本根据本地系统时间生成时间戳。
+A: 用于验证签到请求的时效性，防止重复提交或过期请求，本程序~自动模式指定2030年的某一事件戳~新版本的自动模式根据本地系统时间生成时间戳。
 
 **Q: 如何调整二维码样式？**  
 A: 可修改代码中`erweima()`函数的参数（如颜色、容错率、尺寸等），~程序中提供了详尽的注释~。
@@ -54,5 +54,5 @@ A: 可修改代码中`erweima()`函数的参数（如颜色、容错率、尺寸
 
 ## 友链
 注意⚠️目前该repo疑似已经无法访问！
-~推荐访问宁波诺丁汉大学二年级学习笔记仓库，获取更多课程学习资源与实用工具。
-- **UNNC-Y2-Notes**：https://github.com/ZhangJiayi24/UNNC-Y2-Notes~
+- ~推荐访问宁波诺丁汉大学二年级学习笔记仓库，获取更多课程学习资源与实用工具。~
+- ~**UNNC-Y2-Notes**：https://github.com/ZhangJiayi24/UNNC-Y2-Notes~
