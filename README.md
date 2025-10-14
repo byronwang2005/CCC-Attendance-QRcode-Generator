@@ -51,8 +51,3 @@ A: 可修改代码中`erweima()`函数的参数（如颜色、容错率、尺寸
 
 ## 许可证
 本项目采用MIT许可证开源，详情请参见LICENSE文件。
-
-## 友链
-注意⚠️目前该repo疑似已经无法访问！
-- ~推荐访问宁波诺丁汉大学二年级学习笔记仓库，获取更多课程学习资源与实用工具。~
-- ~**UNNC-Y2-Notes**：https://github.com/ZhangJiayi24/UNNC-Y2-Notes~
