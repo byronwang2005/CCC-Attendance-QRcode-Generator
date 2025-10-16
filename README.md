@@ -4,6 +4,12 @@
 
 ---
 
+## ⚠️ 特别声明
+
+- 本程序作为开源娱乐项目，严禁用于中国文化课代签！
+
+---
+
 ## 🚀 如何使用？
 
 1. **前往 [Releases 页面](https://github.com/byronwang2005/ccc_attendence/releases)**  
@@ -45,9 +51,9 @@ A：这是 macOS 的安全限制。请**右键点击应用 → 选择“打开�
 
 **Q：签到失败？**  
 A：请确认：
-- 你处于 **eduroam/UNNC-Living等校园网** 或 **IT-Service提供的VPN**
-- 课程正在进行中（非提前/过期签到）
-- 链接复制完整
+   - 你处于 **eduroam/UNNC-Living等校园网** 或 **IT-Service提供的VPN**
+   - 课程正在进行中（非提前/过期签到）
+   - 链接复制完整
 
 **Q：未来能用于SPDPO课程吗？**  
 A：不能。SPDPO签到已经被BAN，本工具**仅支持 CCC 课程**。
