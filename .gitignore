@@ -1,0 +1,9 @@
+.DS_Store
+.DS_Store? # 覆盖可能的变体
+._* # 顺手屏蔽 macOS 其他垃圾文件
+.DS_Store
+.DS_Store? # 覆盖可能的变体
+._* # 顺手
+.DS_Store
+.DS_Store?
+._*
