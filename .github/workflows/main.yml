@@ -26,13 +26,7 @@ jobs:
           pip install pyinstaller qrcode[pil] matplotlib
 
       - name: 打包为 Windows 可执行文件
-        run: |
-          pyinstaller \
-            --onefile \
-            --windowed \
-            --name "CCC Attendance" \
-            --icon=NONE \              # 无图标（你可替换为 --icon=icon.ico）
-            ccc_attendance_with_UI.py
+        run: pyinstaller --onefile --windowed --name "CCC Attendance" ccc_attendance_with_UI.py
 
       - name: 上传 Windows 构建结果
         uses: actions/upload-artifact@v4
@@ -58,7 +52,7 @@ jobs:
           pip install pyinstaller qrcode[pil] matplotlib
 
       - name: 打包为 macOS 应用
-        run: pyinstaller --windowed --name "CCC Attendance" --icon=NONE ccc_attendance_with_UI.py
+        run: pyinstaller --windowed --name "CCC Attendance" ccc_attendance_with_UI.py
 
       - name: 上传 macOS 构建结果
         uses: actions/upload-artifact@v4
