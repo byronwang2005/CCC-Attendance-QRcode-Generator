@@ -40,7 +40,7 @@ if "https://ccc.nottingham.edu.cn/study/home/details?" in url:
         attendance = f"https://ccc.nottingham.edu.cn/study/attendance?scheduleId={id}&time={timestamp}"
     else:
         print("自动签到已启用！\n正在读取系统本地时间......")
-        local_ms_timestamp = int(datetime.datetime.now().timestamp() * 1000)
+        local_ms_timestamp = int(datetime.datetime.now().timestamp() * 1000+60000)
         attendance = f"https://ccc.nottingham.edu.cn/study/attendance?scheduleId={id}&time={local_ms_timestamp}"
     print(f"生成的签到链接: {attendance}")
     erweima(attendance)
