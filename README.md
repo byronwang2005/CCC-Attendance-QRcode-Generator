@@ -65,4 +65,4 @@ A：不能。SPDPO签到已经被BAN，本工具**仅支持 CCC 课程**。
 ---
 
 **Made with ❤️ for UNNC students**  
-By Byron | [GitHub](https://github.com/byronwang2005/ccc_attendence)
+By Byron 狼一样的直觉 呜呜呜 狗一样的鼻子 汪汪汪 猫一样的敏捷 喵喵喵 | [GitHub](https://github.com/byronwang2005/ccc_attendence)
