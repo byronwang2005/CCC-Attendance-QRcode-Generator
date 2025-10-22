@@ -46,11 +46,11 @@ class QRGeneratorApp:
             "！！！在课程进行时间段内扫描！！！\n\n"
             "📌 使用教学：\n\n"
             "1. 在手机浏览器（不是微信）中打开中国文化课主界面：\n"
-            "   https://ccc.nottingham.edu.cn/study/\n\n"
+            "     https://ccc.nottingham.edu.cn/study/  \n\n"
             "2. 找到你要签到的课程，长按「查看详情」按钮，\n"
             "   选择「复制链接地址」。\n\n"
             "3. 复制的链接格式应为：\n"
-            "   https://ccc.nottingham.edu.cn/study/home/details?scheduleId=xxxx\n\n"
+            "   https://ccc.nottingham.edu.cn/study/home/details?id=xxxx (或旧版 scheduleId)\n\n"
             "4. 将链接粘贴到下方输入框，选择签到模式，点击「生成」即可！\n"
             "💡 自动模式：适用于95%的情况，请在生成后1分钟内扫描二维码\n"
             "📅 手动模式：自定义签到时间（24小时制）\n\n"
@@ -125,18 +125,29 @@ class QRGeneratorApp:
 
     def generate_qr(self):
         url = self.url_entry.get().strip()
-        if "https://ccc.nottingham.edu.cn/study/home/details?scheduleId=" not in url:
+        # 检查是否包含 id 或 scheduleId 参数
+        if "ccc.nottingham.edu.cn/study/home/details" not in url or ("id=" not in url and "scheduleId=" not in url):
             messagebox.showerror("❌ 链接错误", 
                 "链接格式不正确！\n\n"
                 "请确保是从「查看详情」复制的完整链接，\n"
                 "格式应为：\n"
-                "https://ccc.nottingham.edu.cn/study/home/details?scheduleId=xxxx")
+                "  https://ccc.nottingham.edu.cn/study/home/details?id=xxxx\n"
+                "或\n"
+                "  https://ccc.nottingham.edu.cn/study/home/details?scheduleId=xxxx")
             return
 
         try:
-            # 提取 scheduleId（兼容带额外参数的情况）
-            base = url.split("scheduleId=")[1]
-            schedule_id = base.split("&")[0]  # 只取第一个参数值
+            # 优先尝试提取 id，如果失败再尝试 scheduleId
+            schedule_id = None
+            if "id=" in url:
+                base = url.split("id=")[1]
+                schedule_id = base.split("&")[0]  # 只取第一个参数值
+            elif "scheduleId=" in url:
+                base = url.split("scheduleId=")[1]
+                schedule_id = base.split("&")[0]
+
+            if schedule_id is None:
+                 raise ValueError("无法从链接中提取到有效的 id 或 scheduleId")
 
             if self.mode.get() == "manual":
                 manual_time = (
@@ -164,7 +175,7 @@ class QRGeneratorApp:
                 f"签到链接：\n{attendance_url}")
 
         except ValueError as e:
-            messagebox.showerror("⚠️ 输入错误", "请检查时间是否填写完整且为有效数字。")
+            messagebox.showerror("⚠️ 输入错误", f"请检查时间是否填写完整且为有效数字，或链接格式是否正确。错误详情: {str(e)}")
         except Exception as e:
             messagebox.showerror("💥 未知错误", f"生成失败：{str(e)}")
 
