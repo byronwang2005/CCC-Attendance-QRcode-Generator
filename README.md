@@ -20,7 +20,7 @@
 1. **前往 [本程序官方网页](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)**  
 
 2. 按照网页指引操作：
-   - 粘贴课程链接（从手机浏览器“查看详情”复制）
+   - 粘贴课程链接（[获取方法](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5)）
    - 选择 **自动模式**（推荐）
    - 扫描生成的二维码即可签到！
 
@@ -39,7 +39,7 @@
    - Mac：双击 `CCC Attendance.app`（首次打开若提示“无法验证开发者”，请右键 → “打开”）
 
 4. 按照程序内指引操作：
-   - 粘贴课程链接（从手机浏览器“查看详情”复制）
+   - 粘贴课程链接（[获取方法](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5)）
    - 选择 **自动模式**（推荐）
    - 扫描生成的二维码即可签到！
 
