@@ -22,7 +22,7 @@
 2. 按照网页指引操作：
    - 粘贴课程链接（[获取方法](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5)）
    - 选择 **自动模式**（推荐）
-   - 扫描生成的二维码即可签到！
+   - 用手机微信扫描生成的二维码即可签到！
 
 二维码会自动下载！
 
@@ -41,9 +41,9 @@
 4. 按照程序内指引操作：
    - 粘贴课程链接（[获取方法](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5)）
    - 选择 **自动模式**（推荐）
-   - 扫描生成的二维码即可签到！
+   - 用手机微信扫描生成的二维码即可签到！
 
-二维码会自动保存为 `qrcode.png`（在程序同目录下）
+二维码会自动保存为 `qrcode.png`（在程序同目录下）！
 
 ---
 
