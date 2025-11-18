@@ -16,7 +16,7 @@ def generate_attendance_url(schedule_id, mode='auto', manual_time=None):
     if mode == 'manual' and manual_time:
         ts = datetime_to_timestamp(*manual_time)
     else:
-        ts = int(datetime.datetime.now().timestamp() * 1000 + 60000)  # +1分钟防迟到
+        ts = int(datetime.datetime.now().timestamp() * 1000 + 60000)
     return f"https://ccc.nottingham.edu.cn/study/attendance?scheduleId={schedule_id}&time={ts}"
 
 
@@ -29,7 +29,7 @@ def make_qr_image(url):
     )
     qr.add_data(url)
     qr.make(fit=True)
-    return qr.make_image(fill_color="white", back_color="#10263B")  # UNNC 蓝
+    return qr.make_image(fill_color="white", back_color="#10263B")  # 诺丁蓝
 
 
 # ------------------ GUI 主程序 ------------------
@@ -43,15 +43,15 @@ class QRGeneratorApp:
 
         # ===== 使用说明（固定顶部）=====
         instruction = (
-            "❗❗ 重要提示：\n"
-            "• 仅限 eduroam / unnc-living / 官方 UNNC_IPSec VPN 环境使用\n"
+            "重要提示：\n"
+            "• 仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用\n"
             "• 请在课程进行时间段内扫描\n\n"
-            "📌 使用步骤：\n"
+            "使用步骤：\n"
             "1. 在手机浏览器（非微信）打开：https://ccc.nottingham.edu.cn/study/\n"
             "2. 长按「查看详情」→「复制链接」\n"
             "3. 粘贴下方（格式：.../details?id=xxxx 或 ...scheduleId=xxxx）\n"
             "4. 选择模式 → 点击「生成」→ 立即扫描！\n\n"
-            "💡 自动模式：+1分钟防迟到（推荐）｜📅 手动模式：自定义时间（24小时制）"
+            "自动模式：当前时间+1分钟（推荐）｜ 手动模式：自定义时间（24小时制）"
         )
         instr_label = tk.Label(
             root, text=instruction, justify="left", anchor="w",
@@ -65,7 +65,7 @@ class QRGeneratorApp:
         main_frame.pack(fill="both", expand=True, padx=20)
 
         # --- 链接输入 ---
-        tk.Label(main_frame, text="📎 课程详情链接：", bg="#f5f7fa", fg="#2c3e50").pack(anchor='w')
+        tk.Label(main_frame, text="课程详情链接：", bg="#f5f7fa", fg="#2c3e50").pack(anchor='w')
         self.url_entry = tk.Entry(main_frame, width=80, relief="solid", bd=1)
         self.url_entry.pack(pady=(5, 10))
         self.url_entry.bind("<FocusIn>", lambda e: self.url_entry.selection_range(0, 'end'))
@@ -76,11 +76,11 @@ class QRGeneratorApp:
         mode_frame = tk.Frame(main_frame, bg="#f5f7fa")
         mode_frame.pack()
         tk.Radiobutton(
-            mode_frame, text="🤖 自动模式（推荐）", variable=self.mode, value="auto",
+            mode_frame, text="自动模式（推荐）", variable=self.mode, value="auto",
             command=self.toggle_time_input, bg="#f5f7fa", fg="#2c3e50", selectcolor="#d6eaf8"
         ).pack(side=tk.LEFT, padx=15)
         tk.Radiobutton(
-            mode_frame, text="🕒 手动模式", variable=self.mode, value="manual",
+            mode_frame, text="手动模式", variable=self.mode, value="manual",
             command=self.toggle_time_input, bg="#f5f7fa", fg="#2c3e50", selectcolor="#d6eaf8"
         ).pack(side=tk.LEFT, padx=15)
 
@@ -102,7 +102,7 @@ class QRGeneratorApp:
 
         # --- 生成按钮 ---
         self.generate_btn = tk.Button(
-            main_frame, text="🚀 生成签到二维码", command=self.generate_qr,
+            main_frame, text="生成签到二维码", command=self.generate_qr,
             bg="#10263B", fg="white", height=2,
             activebackground="#0d1f2f", relief="flat", cursor="hand2"
         )
@@ -129,12 +129,12 @@ class QRGeneratorApp:
     def generate_qr(self):
         url = self.url_entry.get().strip()
         if not url:
-            messagebox.showwarning("⚠️ 输入为空", "请先粘贴课程链接！")
+            messagebox.showwarning("输入为空", "请先粘贴课程链接！")
             self.url_entry.focus_set()
             return
 
         if "ccc.nottingham.edu.cn/study/home/details" not in url:
-            messagebox.showerror("❌ 链接错误", "链接必须来自 UNNC 中国文化课详情页！")
+            messagebox.showerror("链接错误", "链接必须来自 UNNC 中国文化课详情页！")
             self.url_entry.config(bg="#ffebee")
             self.root.after(1500, lambda: self.url_entry.config(bg="white"))
             return
@@ -154,7 +154,7 @@ class QRGeneratorApp:
                     manual_time = tuple(int(entry.get()) for entry in self.entries)
                     datetime.datetime(*manual_time)
                 except (ValueError, TypeError, OverflowError):
-                    messagebox.showerror("⚠️ 时间格式错误", "请检查年月日时分是否填写正确（如：月≤12，日≤31，时<24）")
+                    messagebox.showerror("时间格式错误", "请检查年月日时分是否填写正确（如：月≤12，日≤31，时<24）")
                     return
                 attendance_url = generate_attendance_url(schedule_id, mode='manual', manual_time=manual_time)
             else:
@@ -167,10 +167,10 @@ class QRGeneratorApp:
             self.ax.set_facecolor('#f5f7fa')
             self.canvas.draw()
             img.save("qrcode.png")
-            messagebox.showinfo("✅ 成功！", f"二维码已保存为当前目录下的 qrcode.png\n\n签到链接：\n{attendance_url}")
+            messagebox.showinfo("成功！", f"二维码已保存为当前目录下的 qrcode.png\n\n签到链接：\n{attendance_url}")
 
         except Exception as e:
-            messagebox.showerror("💥 错误", f"生成失败：{str(e)}")
+            messagebox.showerror("错误", f"生成失败：{str(e)}")
 
 
 # ------------------ 启动 ------------------
