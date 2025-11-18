@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UNNC中国文化课签到二维码生成器</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2310263B'/><text x='50' y='65' font-family='monospace' font-size='60' fill='white' text-anchor='middle'>H</text></svg>">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+           background: #f5f7fa; color: #2c3e50; padding: 15px; max-width: 640px; margin: 0 auto; }
+    .card { background: white; border-radius: 8px; padding: 16px; margin: 12px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    textarea, input { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; }
+    button { background: #10263B; color: white; border: none; padding: 12px 20px; 
+             border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; 
+             margin-top: 8px; }
+    button:hover { background: #0d1f2f; }
+    .time-input { display: none; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+    .time-input.show { display: grid; }
+    .time-input input { text-align: center; }
+    #qrcode { text-align: center; margin: 20px 0; }
+    #qrcode canvas { background: #10263B; border-radius: 8px; padding: 8px; }
+    .note { background: #eef2f7; padding: 12px; border-left: 4px solid #3498db; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>UNNC中国文化课签到二维码生成器</h2>
+  
+  <div class="note">
+    重要提示：仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用<br>
+    使用步骤详见https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator<br>
+  </div>
+
+  <div class="card">
+    <label><strong>课程详情链接</strong></label>
+    <textarea id="urlInput" rows="2" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=12345 或含 scheduleId=..."></textarea>
+  </div>
+
+  <div class="card">
+    <label><strong>模式</strong></label>
+    <label><input type="radio" name="mode" value="auto" checked> 自动（当前时间+1分钟）</label>
+    <label><input type="radio" name="mode" value="manual"> 手动输入时间</label>
+
+    <div id="manualTime" class="time-input">
+      <input type="number" id="year" placeholder="年" value="" />
+      <input type="number" id="month" placeholder="月" value="" />
+      <input type="number" id="day" placeholder="日" value="" />
+      <input type="number" id="hour" placeholder="时" value="" />
+      <input type="number" id="minute" placeholder="分" value="" />
+    </div>
+  </div>
+
+  <button id="genBtn">生成签到二维码</button>
+
+  <div id="qrcode"></div>
+  <a id="dlLink" style="display:none;">下载 qrcode.png</a>
+
+  <script>
+    const now = new Date();
+    document.getElementById('year').value = now.getFullYear();
+    document.getElementById('month').value = now.getMonth() + 1;
+    document.getElementById('day').value = now.getDate();
+    document.getElementById('hour').value = now.getHours();
+    document.getElementById('minute').value = now.getMinutes();
+
+    document.querySelectorAll('input[name="mode"]').forEach(r => 
+      r.addEventListener('change', e => {
+        document.getElementById('manualTime').classList.toggle('show', e.target.value === 'manual');
+      })
+    );
+
+    function extractScheduleId(url) {
+      const m1 = url.match(/[?&]id=([^&#]+)/);
+      const m2 = url.match(/[?&]scheduleId=([^&#]+)/);
+      return m1 ? m1[1] : (m2 ? m2[1] : null);
+    }
+
+    function getTimestamp(mode) {
+      if (mode === 'auto') {
+        return Date.now() + 60 * 1000;
+      } else {
+        const y = parseInt(document.getElementById('year').value);
+        const m = parseInt(document.getElementById('month').value) - 1;
+        const d = parseInt(document.getElementById('day').value);
+        const h = parseInt(document.getElementById('hour').value);
+        const mi = parseInt(document.getElementById('minute').value);
+        const dt = new Date(y, m, d, h, mi);
+        if (isNaN(dt.getTime())) throw new Error('时间无效');
+        return dt.getTime();
+      }
+    }
+
+    function downloadCanvas(canvas, filename) {
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.getElementById('dlLink');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'inline-block';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, 'image/png');
+    }
+
+    document.getElementById('genBtn').addEventListener('click', () => {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) return alert('请先粘贴链接');
+
+      const sid = extractScheduleId(url);
+      if (!sid) return alert('无法提取 scheduleId，请检查链接是否包含 id= 或 scheduleId=');
+
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      let ts;
+      try {
+        ts = getTimestamp(mode);
+      } catch (e) {
+        return alert('手动时间格式错误（月1-12，日1-31，时0-23）');
+      }
+
+      const attendanceUrl = `https://ccc.nottingham.edu.cn/study/attendance?scheduleId=${sid}&time=${ts}`;
+
+      document.getElementById('qrcode').innerHTML = '';
+      new QRCode(document.getElementById('qrcode'), {
+        text: attendanceUrl,
+        width: 300,
+        height: 300,
+        colorDark: "#ffffff",
+        colorLight: "#10263B",
+        correctLevel: QRCode.CorrectLevel.L
+      });
+
+      setTimeout(() => {
+        const canvas = document.querySelector('#qrcode canvas');
+        if (canvas) downloadCanvas(canvas, 'qrcode.png');
+      }, 100);
+    });
+  </script>
+</body>
+</html>
