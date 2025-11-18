@@ -54,7 +54,7 @@
 2. 找到你要签到的课程，**长按“查看详情”按钮**
 3. 选择 **“复制链接地址”**
 4. 链接格式应为：  
-   `https://ccc.nottingham.edu.cn/study/home/details?scheduleId=xxxx`
+   `https://ccc.nottingham.edu.cn/study/home/details?id=xxxx`
 
 > 请勿修改链接，直接粘贴到程序中即可。
 
