@@ -5,22 +5,140 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UNNC中国文化课签到二维码生成器</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2310263B'/><text x='50' y='65' font-family='monospace' font-size='60' fill='white' text-anchor='middle'>H</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23faf6ef'/%3E%3Cpath d='M30 30 L70 30 L70 70 L30 70 Z' fill='none' stroke='%2310263B' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M35 40 L65 40' stroke='%2337B4B0' stroke-width='3' fill='none'/%3E%3Cpath d='M35 50 L60 50' stroke='%2337B4B0' stroke-width='3' fill='none'/%3E%3Cpath d='M35 60 L55 60' stroke='%2337B4B0' stroke-width='3' fill='none'/%3E%3C/svg%3E">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-           background: #f5f7fa; color: #2c3e50; padding: 15px; max-width: 640px; margin: 0 auto; }
-    .card { background: white; border-radius: 8px; padding: 16px; margin: 12px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    textarea, input { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px; }
-    button { background: #10263B; color: white; border: none; padding: 12px 20px; 
-             border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; 
-             margin-top: 8px; }
-    button:hover { background: #0d1f2f; }
-    .time-input { display: none; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
-    .time-input.show { display: grid; }
-    .time-input input { text-align: center; }
-    #qrcode { text-align: center; margin: 20px 0; }
-    #qrcode canvas { background: #10263B; border-radius: 8px; padding: 8px; }
-    .note { background: #eef2f7; padding: 12px; border-left: 4px solid #3498db; font-size: 14px; }
+    :root {
+      --theme: #10263B;
+      --accent: #37B4B0;
+      --bg-offwhite: #faf6ef;
+      --theme-20: #cfd4d8;
+      --accent-20: #d7f0ef;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background-color: var(--bg-offwhite); 
+      color: var(--theme); 
+      padding: 16px; 
+      max-width: 640px; 
+      margin: 0 auto; 
+    }
+    h2 { 
+      font-weight: 700; 
+      font-size: 24px; 
+      text-align: center; 
+      margin: 24px 0 16px; 
+      color: var(--theme); 
+    }
+    .card { 
+      background: white; 
+      border-radius: 12px; 
+      padding: 20px; 
+      margin: 16px 0; 
+      box-shadow: 0 4px 12px rgba(16, 38, 59, 0.06); 
+      border: 1px solid var(--theme-20); 
+    }
+    .card h3 { 
+      font-size: 16px; 
+      font-weight: 600; 
+      margin-bottom: 12px; 
+      color: var(--theme); 
+    }
+    textarea, input[type="number"] { 
+      width: 100%; 
+      padding: 12px 16px; 
+      border: 1px solid var(--theme-20); 
+      border-radius: 8px; 
+      font-size: 15px; 
+      background: white; 
+      resize: none; 
+      outline: none; 
+      transition: border-color 0.2s;
+    }
+    textarea:focus, input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-20);
+    }
+    textarea { min-height: 60px; }
+    .radio-group { 
+      display: flex; 
+      gap: 20px; 
+      margin-top: 8px; 
+    }
+    .radio-option { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      cursor: pointer;
+    }
+    .radio-option input { 
+      width: auto; 
+      accent-color: var(--accent); 
+    }
+    .time-input { 
+      display: none; 
+      grid-template-columns: repeat(5, 1fr); 
+      gap: 10px; 
+      margin-top: 16px; 
+    }
+    .time-input.show { 
+      display: grid; 
+    }
+    .time-input label { 
+      font-size: 13px; 
+      color: #666; 
+      text-align: center; 
+    }
+    .time-input input { 
+      text-align: center; 
+      padding: 10px 0;
+    }
+    button { 
+      background: var(--theme); 
+      color: white; 
+      border: none; 
+      padding: 14px; 
+      border-radius: 8px; 
+      font-size: 16px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      width: 100%; 
+      margin-top: 8px; 
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover { 
+      background: #0d1f2f; 
+    }
+    button:active { 
+      transform: scale(0.99); 
+    }
+    #qrcode { 
+      text-align: center; 
+      margin: 24px 0 16px; 
+    }
+    #qrcode canvas { 
+      background: var(--theme); 
+      border-radius: 12px; 
+      padding: 16px; 
+      box-shadow: 0 4px 12px rgba(16, 38, 59, 0.1); 
+    }
+    .note { 
+      background: var(--accent-20); 
+      border: 1px solid var(--accent); 
+      border-radius: 8px; 
+      padding: 16px; 
+      font-size: 14px; 
+      color: var(--theme); 
+      line-height: 1.5;
+    }
+    .note a { 
+      color: var(--accent); 
+      text-decoration: none; 
+      font-weight: 600;
+    }
+    .note a:hover { 
+      text-decoration: underline; 
+    }
   </style>
 </head>
 <body>
@@ -28,32 +146,38 @@
   
   <div class="note">
     重要提示：仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用<br>
-    使用步骤详见<a href="https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8">教程</a><br>
+    使用步骤详见 <a href="https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8">教程</a>
   </div>
 
   <div class="card">
-    <label><strong>课程详情链接</strong></label>
-    <textarea id="urlInput" rows="2" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx"></textarea>
+    <h3>课程详情链接</h3>
+    <textarea id="urlInput" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx"></textarea>
   </div>
 
   <div class="card">
-    <label><strong>模式</strong></label>
-    <label><input type="radio" name="mode" value="auto" checked> 自动（当前时间+1分钟）</label>
-    <label><input type="radio" name="mode" value="manual"> 手动输入时间</label>
+    <h3>时间模式</h3>
+    <div class="radio-group">
+      <label class="radio-option">
+        <input type="radio" name="mode" value="auto" checked> 自动
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="mode" value="manual"> 手动
+      </label>
+    </div>
 
     <div id="manualTime" class="time-input">
-      <input type="number" id="year" placeholder="年" value="" />
-      <input type="number" id="month" placeholder="月" value="" />
-      <input type="number" id="day" placeholder="日" value="" />
-      <input type="number" id="hour" placeholder="时" value="" />
-      <input type="number" id="minute" placeholder="分" value="" />
+      <div><label>年</label><input type="number" id="year" min="2020" max="2030"></div>
+      <div><label>月</label><input type="number" id="month" min="1" max="12"></div>
+      <div><label>日</label><input type="number" id="day" min="1" max="31"></div>
+      <div><label>时</label><input type="number" id="hour" min="0" max="23"></div>
+      <div><label>分</label><input type="number" id="minute" min="0" max="59"></div>
     </div>
   </div>
 
   <button id="genBtn">生成签到二维码</button>
 
   <div id="qrcode"></div>
-  <a id="dlLink" style="display:none;">下载 qrcode.png</a>
+  <a id="dlLink" style="display:none;"></a>
 
   <script>
     const now = new Date();
@@ -96,7 +220,7 @@
         const a = document.getElementById('dlLink');
         a.href = url;
         a.download = filename;
-        a.style.display = 'inline-block';
+        a.style.display = 'none';
         a.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }, 'image/png');
@@ -122,8 +246,8 @@
       document.getElementById('qrcode').innerHTML = '';
       new QRCode(document.getElementById('qrcode'), {
         text: attendanceUrl,
-        width: 300,
-        height: 300,
+        width: 320,
+        height: 320,
         colorDark: "#ffffff",
         colorLight: "#10263B",
         correctLevel: QRCode.CorrectLevel.L
