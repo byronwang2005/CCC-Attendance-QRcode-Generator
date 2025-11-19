@@ -1,6 +1,6 @@
 # UNNC中国文化课签到二维码生成器
 
-> 网页端上线！一键生成，无需安装！
+> [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)焕然一新！配色全面遵循学校官方品牌手册！一键生成，无需安装！
 
 ---
 
@@ -17,7 +17,7 @@
 
 ### 方法一（网页，全平台可用）
 
-1. **前往 [程序官方网页](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)**  
+1. **前往 [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)**  
 
 2. 按照网页指引操作：
    - 粘贴课程链接（[获取方法](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5)）
@@ -28,7 +28,9 @@
 
 ### 方法二（电脑端下载应用程序）
 
-1. **前往 [Releases](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/releases)**  
+> 不再推荐您使用本方法，因此应用包不再在`v3.1.0`及之后的 **Releases页面** 中提供
+
+1. **前往 [v3.0.0 的 Releases 页面](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/releases/tag/v3.0.0)**  
 
 2. 根据你的电脑系统，下载对应文件：
    - **Windows 用户** → 下载 `CCC_Attendance_Windows_x64.zip`
