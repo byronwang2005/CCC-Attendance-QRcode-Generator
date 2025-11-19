@@ -78,5 +78,11 @@ A：不能。SPDPO签到已经被BAN，本工具**仅支持 CCC 课程**。
 
 ---
 
+## 开源协议
+
+本项目采用 MIT 协议开源，详见 [LICENSE](LICENSE) 文件。
+
+---
+
 **Made with ❤️ for UNNC students**  
 By Byron | [GitHub](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator)
