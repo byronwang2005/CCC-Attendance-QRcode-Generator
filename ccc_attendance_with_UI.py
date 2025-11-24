@@ -43,15 +43,9 @@ class QRGeneratorApp:
 
         # ===== 使用说明（固定顶部）=====
         instruction = (
-            "重要提示：\n"
-            "• 仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用\n"
-            "• 请在课程进行时间段内扫描\n\n"
-            "使用步骤：\n"
-            "1. 在手机浏览器（非微信）打开：https://ccc.nottingham.edu.cn/study/\n"
-            "2. 长按「查看详情」→「复制链接」\n"
-            "3. 粘贴下方（格式：.../details?id=xxxx 或 ...scheduleId=xxxx）\n"
-            "4. 选择模式 → 点击「生成」→ 立即扫描！\n\n"
-            "自动模式：当前时间+1分钟（推荐）｜ 手动模式：自定义时间（24小时制）"
+            "重要提示：仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用\n"
+            "使用步骤详见：\n"
+            "https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/tree/main?tab=readme-ov-file#如何使用\n"
         )
         instr_label = tk.Label(
             root, text=instruction, justify="left", anchor="w",
