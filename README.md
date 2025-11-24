@@ -1,6 +1,6 @@
 # UNNC中国文化课签到二维码生成器
 
-> [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)焕然一新！配色全面遵循学校官方品牌手册！一键生成，无需安装！
+> [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)焕然一新！一键生成，无需安装！
 
 ---
 
@@ -72,9 +72,6 @@ A：请确认：
 
 **Q：Mac 打不开 `CCC Attendance.app`，提示“已损坏”或“无法验证开发者”？**  
 A：这是 macOS 的安全限制。请**右键点击应用 → 选择“打开”**，即可绕过。
-
-**Q：未来能用于SPDPO课程吗？**  
-A：不能。SPDPO签到已经被BAN，本工具**仅支持 CCC 课程**。
 
 > **Hint**：99% 的情况请使用 **自动模式**，无需手动输入时间！
 
