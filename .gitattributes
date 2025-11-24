@@ -1,0 +1,3 @@
+*.swift linguist-generated=true
+*.html linguist-generated=true
+!ContentView.swift linguist-generated=false
