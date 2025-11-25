@@ -1,263 +1,82 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UNNC中国文化课签到二维码生成器</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23faf6ef'/%3E%3Cpath d='M30 30 L70 30 L70 70 L30 70 Z' fill='none' stroke='%2310263B' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M35 40 L65 40' stroke='%2337B4B0' stroke-width='3' fill='none'/%3E%3Cpath d='M35 50 L60 50' stroke='%2337B4B0' stroke-width='3' fill='none'/%3E%3Cpath d='M35 60 L55 60' stroke='%2337B4B0' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='45' y='80' width='10' height='15' fill='%235D4037'/%3E%3Cpolygon points='50,20 35,50 65,50' fill='%232E7D32'/%3E%3Cpolygon points='50,35 30,65 70,65' fill='%23388E3C'/%3E%3Cpolygon points='50,55 25,80 75,80' fill='%234CAF50'/%3E%3Cpolygon points='50,12 52,20 60,20 53,25 55,33 50,28 45,33 47,25 40,20 48,20' fill='%23FFD700'/%3E%3Ccircle cx='42' cy='55' r='2' fill='%23E53935'/%3E%3Ccircle cx='58' cy='65' r='2' fill='%23FFD700'/%3E%3Ccircle cx='38' cy='72' r='2' fill='%23E53935'/%3E%3C/svg%3E">
   <style>
-    :root {
-      --theme: #10263B;
-      --accent: #37B4B0;
-      --bg-offwhite: #faf6ef;
-      --theme-20: #cfd4d8;
-      --accent-20: #d7f0ef;
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0a3d1e, #1e5631);
+      color: white;
+      font-family: "Arial", sans-serif;
+      text-align: center;
+      overflow: hidden;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-      background-color: var(--bg-offwhite); 
-      color: var(--theme); 
-      padding: 16px; 
-      max-width: 640px; 
-      margin: 0 auto; 
+    .snow {
+      position: fixed;
+      top: -10px;
+      z-index: -1;
     }
-    h2 { 
-      font-weight: 700; 
-      font-size: 24px; 
-      text-align: center; 
-      margin: 24px 0 16px; 
-      color: var(--theme); 
+    h1 {
+      font-size: 3.5em;
+      margin: 0 0 20px;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
     }
-    .card { 
-      background: white; 
-      border-radius: 12px; 
-      padding: 20px; 
-      margin: 16px 0; 
-      box-shadow: 0 4px 12px rgba(16, 38, 59, 0.06); 
-      border: 1px solid var(--theme-20); 
-    }
-    .card h3 { 
-      font-size: 16px; 
-      font-weight: 600; 
-      margin-bottom: 12px; 
-      color: var(--theme); 
-    }
-    textarea, input[type="number"] { 
-      width: 100%; 
-      padding: 12px 16px; 
-      border: 1px solid var(--theme-20); 
-      border-radius: 8px; 
-      font-size: 15px; 
-      background: white; 
-      resize: none; 
-      outline: none; 
-      transition: border-color 0.2s;
-    }
-    textarea:focus, input[type="number"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px var(--accent-20);
-    }
-    textarea { min-height: 60px; }
-    .radio-group { 
-      display: flex; 
-      gap: 20px; 
-      margin-top: 8px; 
-    }
-    .radio-option { 
-      display: flex; 
-      align-items: center; 
-      gap: 8px; 
+    .btn {
+      padding: 12px 32px;
+      font-size: 1.3em;
+      background: #d42426;
+      color: white;
+      border: none;
+      border-radius: 50px;
       cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
-    .radio-option input { 
-      width: auto; 
-      accent-color: var(--accent); 
-    }
-    .time-input { 
-      display: none; 
-      grid-template-columns: repeat(5, 1fr); 
-      gap: 10px; 
-      margin-top: 16px; 
-    }
-    .time-input.show { 
-      display: grid; 
-    }
-    .time-input label { 
-      font-size: 13px; 
-      color: #666; 
-      text-align: center; 
-    }
-    .time-input input { 
-      text-align: center; 
-      padding: 10px 0;
-    }
-    button { 
-      background: var(--theme); 
-      color: white; 
-      border: none; 
-      padding: 14px; 
-      border-radius: 8px; 
-      font-size: 16px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      width: 100%; 
-      margin-top: 8px; 
-      transition: background 0.2s, transform 0.1s;
-    }
-    button:hover { 
-      background: #0d1f2f; 
-    }
-    button:active { 
-      transform: scale(0.99); 
-    }
-    #qrcode { 
-      text-align: center; 
-      margin: 24px 0 16px; 
-    }
-    #qrcode canvas { 
-      background: var(--theme); 
-      border-radius: 12px; 
-      padding: 16px; 
-      box-shadow: 0 4px 12px rgba(16, 38, 59, 0.1); 
-    }
-    .note { 
-      background: var(--accent-20); 
-      border: 1px solid var(--accent); 
-      border-radius: 8px; 
-      padding: 16px; 
-      font-size: 14px; 
-      color: var(--theme); 
-      line-height: 1.5;
-    }
-    .note a { 
-      color: var(--accent); 
-      text-decoration: none; 
-      font-weight: 600;
-    }
-    .note a:hover { 
-      text-decoration: underline; 
+    .btn:hover {
+      background: #f04e4f;
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body>
-  <h2>UNNC中国文化课签到二维码生成器</h2>
+  <div class="snow" id="snow"></div>
+
+  <h1>🎄Merry Christmas!</h1>
+  <p>老莱祝您平安喜乐，幸福常伴～</p>
   
-  <div class="note">
-    重要提示：仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用<br>
-    使用步骤详见 <a href="https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8">教程</a>
-  </div>
-
-  <div class="card">
-    <h3>课程详情链接</h3>
-    <textarea id="urlInput" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx"></textarea>
-  </div>
-
-  <div class="card">
-    <h3>时间模式</h3>
-    <div class="radio-group">
-      <label class="radio-option">
-        <input type="radio" name="mode" value="auto" checked> 自动
-      </label>
-      <label class="radio-option">
-        <input type="radio" name="mode" value="manual"> 手动
-      </label>
-    </div>
-
-    <div id="manualTime" class="time-input">
-      <div><label>年</label><input type="number" id="year" min="2020" max="2030"></div>
-      <div><label>月</label><input type="number" id="month" min="1" max="12"></div>
-      <div><label>日</label><input type="number" id="day" min="1" max="31"></div>
-      <div><label>时</label><input type="number" id="hour" min="0" max="23"></div>
-      <div><label>分</label><input type="number" id="minute" min="0" max="59"></div>
-    </div>
-  </div>
-
-  <button id="genBtn">生成签到二维码</button>
-
-  <div id="qrcode"></div>
-  <a id="dlLink" style="display:none;"></a>
+  <button class="btn" onclick="location.href='main.html'">
+    进入主页 →
+  </button>
 
   <script>
-    const now = new Date();
-    document.getElementById('year').value = now.getFullYear();
-    document.getElementById('month').value = now.getMonth() + 1;
-    document.getElementById('day').value = now.getDate();
-    document.getElementById('hour').value = now.getHours();
-    document.getElementById('minute').value = now.getMinutes();
-
-    document.querySelectorAll('input[name="mode"]').forEach(r => 
-      r.addEventListener('change', e => {
-        document.getElementById('manualTime').classList.toggle('show', e.target.value === 'manual');
-      })
-    );
-
-    function extractScheduleId(url) {
-      const m1 = url.match(/[?&]id=([^&#]+)/);
-      const m2 = url.match(/[?&]scheduleId=([^&#]+)/);
-      return m1 ? m1[1] : (m2 ? m2[1] : null);
+    const snowContainer = document.getElementById('snow');
+    for (let i = 0; i < 50; i++) {
+      const snow = document.createElement('div');
+      snow.style.position = 'absolute';
+      snow.style.left = `${Math.random() * 100}vw`;
+      snow.style.top = `${-10 - Math.random() * 20}px`;
+      snow.style.fontSize = `${Math.random() * 10 + 5}px`;
+      snow.style.opacity = Math.random();
+      snow.innerHTML = '❄';
+      snow.style.animation = `fall ${Math.random() * 5 + 5}s linear infinite`;
+      snow.style.color = 'white';
+      snowContainer.appendChild(snow);
     }
-
-    function getTimestamp(mode) {
-      if (mode === 'auto') {
-        return Date.now() + 60 * 1000;
-      } else {
-        const y = parseInt(document.getElementById('year').value);
-        const m = parseInt(document.getElementById('month').value) - 1;
-        const d = parseInt(document.getElementById('day').value);
-        const h = parseInt(document.getElementById('hour').value);
-        const mi = parseInt(document.getElementById('minute').value);
-        const dt = new Date(y, m, d, h, mi);
-        if (isNaN(dt.getTime())) throw new Error('时间无效');
-        return dt.getTime();
-      }
-    }
-
-    function downloadCanvas(canvas, filename) {
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.getElementById('dlLink');
-        a.href = url;
-        a.download = filename;
-        a.style.display = 'none';
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }, 'image/png');
-    }
-
-    document.getElementById('genBtn').addEventListener('click', () => {
-      const url = document.getElementById('urlInput').value.trim();
-      if (!url) return alert('请先粘贴链接');
-
-      const sid = extractScheduleId(url);
-      if (!sid) return alert('无法提取 scheduleId，请检查链接是否包含 id= 或 scheduleId=');
-
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      let ts;
-      try {
-        ts = getTimestamp(mode);
-      } catch (e) {
-        return alert('手动时间格式错误（月1-12，日1-31，时0-23）');
-      }
-
-      const attendanceUrl = `https://ccc.nottingham.edu.cn/study/attendance?scheduleId=${sid}&time=${ts}`;
-
-      document.getElementById('qrcode').innerHTML = '';
-      new QRCode(document.getElementById('qrcode'), {
-        text: attendanceUrl,
-        width: 320,
-        height: 320,
-        colorDark: "#ffffff",
-        colorLight: "#10263B",
-        correctLevel: QRCode.CorrectLevel.L
-      });
-
-      setTimeout(() => {
-        const canvas = document.querySelector('#qrcode canvas');
-        if (canvas) downloadCanvas(canvas, 'qrcode.png');
-      }, 100);
-    });
+    document.head.insertAdjacentHTML('beforeend', `
+      <style>
+        @keyframes fall {
+          to { transform: translateY(105vh) rotate(360deg); }
+        }
+      </style>
+    `);
   </script>
 </body>
 </html>
