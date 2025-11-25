@@ -280,12 +280,10 @@
       }, 100);
     });
 
-    // ========== 自动下雪（无开关） ==========
+    //下雪
     document.addEventListener('DOMContentLoaded', () => {
       const snowContainer = document.getElementById('snow');
       if (!snowContainer) return;
-
-      // 注入 keyframes（带随机旋转）
       const styleId = 'auto-snow-keyframes';
       if (!document.getElementById(styleId)) {
         const style = document.createElement('style');
@@ -297,8 +295,6 @@
         `;
         document.head.appendChild(style);
       }
-
-      // 生成雪花
       for (let i = 0; i < 50; i++) {
         const snow = document.createElement('div');
         snow.style.position = 'absolute';
