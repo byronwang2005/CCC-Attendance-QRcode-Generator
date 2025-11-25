@@ -3,6 +3,8 @@ name: 构建跨平台签到工具
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'ccc_attendance_with_UI.py'
   workflow_dispatch:   
 
 # 定义两个并行任务：Windows 和 macOS
