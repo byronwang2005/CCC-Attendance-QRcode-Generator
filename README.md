@@ -1,4 +1,4 @@
-# UNNC中国文化课签到二维码生成器
+# UNNC中国文化课签到二维码生成器（圣诞彩蛋版）
 
 > [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)焕然一新！一键生成，无需安装！
 
