@@ -38,17 +38,18 @@
 
 ### 方法二（电脑端下载应用程序）
 
-> 不再推荐您使用本方法，因此`.dmg`、`.exe`文件不再在每一个版本的 **Releases页面** 中提供
+> 非首选，`.dmg`、`.exe`文件现不再在所有版本的 **Releases页面** 中提供
 
 1. **前往 [v3.3.0 的 Releases 页面](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/releases/tag/v3.3.0)**  
 
 2. 根据你的电脑系统，下载对应文件：
-   - **Windows 用户** → 下载 `CCC_Attendance_Windows_x64.zip`
-   - **Mac 用户** → 下载 `CCC_Attendance_macOS.zip`
+   - **Windows 用户** → 下载 `CCC_Attendance_Windows_x64.exe`
+   - **Mac 用户** → 下载 `CCC_Attendance_macOS.dmg`
 
-3. 解压 ZIP 文件，双击运行程序：
-   - Windows：运行 `CCC Attendance.exe`
-   - Mac：双击 `CCC Attendance.app`（首次打开若提示“无法验证开发者”，请右键 → “打开”）
+3. 对于**Mac 用户**：
+   - 双击 `CCC Attendance.dmg`
+   - 再双击运行 `CCC Attendance.app`（首次打开若提示“无法验证开发者”，请右键 → “打开”）
+   - 若您想长期使用本软件，请将 `CCC Attendance.app` 拖入 `Applications`或`应用程序` 文件夹
 
 4. 按照程序内指引操作：
    - 粘贴课程链接（[获取方法](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5)）
