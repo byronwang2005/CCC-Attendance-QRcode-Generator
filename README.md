@@ -38,9 +38,9 @@
 
 ### 方法二（电脑端下载应用程序）
 
-> 不再推荐您使用本方法，因此应用包不再在`v3.1.0`及之后的 **Releases页面** 中提供
+> 不再推荐您使用本方法，因此`.dmg`、`.exe`文件不再在每一个版本的 **Releases页面** 中提供
 
-1. **前往 [v3.0.0 的 Releases 页面](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/releases/tag/v3.0.0)**  
+1. **前往 [v3.3.0 的 Releases 页面](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/releases/tag/v3.3.0)**  
 
 2. 根据你的电脑系统，下载对应文件：
    - **Windows 用户** → 下载 `CCC_Attendance_Windows_x64.zip`
