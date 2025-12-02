@@ -25,7 +25,7 @@
 
 >务必等到课程结束前后再扫码签到！
 
-### 方法一（网页，全平台可用）
+### 方法一（网页端，全平台可用）
 
 1. **前往 [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)**  
 
@@ -36,9 +36,9 @@
 
 二维码会自动下载！
 
-### 方法二（电脑端下载应用程序）
+### 方法二（桌面端）
 
-> 非首选，`.dmg`、`.exe`文件现不再在所有版本的 **Releases页面** 中提供
+> 仅在指定版本的 **Releases页面** 中提供
 
 1. **前往 [v3.3.0 的 Releases 页面](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/releases/tag/v3.3.0)**  
 
