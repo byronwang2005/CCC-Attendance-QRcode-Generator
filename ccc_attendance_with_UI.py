@@ -2,6 +2,7 @@ import qrcode
 import tkinter as tk
 from tkinter import ttk, messagebox
 import datetime
+import webbrowser
 from PIL import ImageTk
 
 
@@ -55,13 +56,14 @@ class QRGeneratorApp:
 
         # ===== 使用说明（固定顶部）=====
         instruction = (
-            "重要提示：仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用\n"
-            "使用步骤详见：\n"
-            "https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/tree/main?tab=readme-ov-file#如何使用\n"
+            "重要提示：仅限 eduroam / UNNC-living / UNNC_IPSec VPN 环境使用"
         )
         note_frame = tk.Frame(root, bg="#d7f0ef", highlightbackground="#37B4B0", highlightthickness=1, bd=0)
         note_label = tk.Label(note_frame, text=instruction, justify="left", anchor="w", bg="#d7f0ef", fg="#10263B", padx=10, pady=8, wraplength=600)
         note_label.pack(fill="x")
+        link_label = tk.Label(note_frame, text="教程", bg="#d7f0ef", fg="#37B4B0", cursor="hand2")
+        link_label.pack(anchor="w", padx=10, pady=(0,8))
+        link_label.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/tree/main?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8"))
         note_frame.pack(fill="x", padx=15, pady=(10, 10))
 
         # ===== 主内容容器（严格控制顺序）=====
@@ -71,9 +73,10 @@ class QRGeneratorApp:
         # --- 链接输入 ---
         link_card = tk.Frame(main_frame, bg="#ffffff", highlightbackground="#cfd4d8", highlightthickness=1, bd=0)
         tk.Label(link_card, text="课程详情链接", bg="#ffffff", fg="#10263B", font=("Segoe UI", 12, "bold")).pack(anchor='w')
-        self.url_entry = ttk.Entry(link_card, width=80, style="App.TEntry")
+        self.url_entry = tk.Entry(link_card, width=80, relief="solid", bd=1, highlightthickness=2, highlightbackground="#cfd4d8", highlightcolor="#37B4B0")
         self.url_entry.pack(pady=(8, 0), fill="x")
-        self.url_entry.bind("<FocusIn>", lambda e: self.url_entry.selection_range(0, 'end'))
+        self.url_entry.bind("<FocusIn>", lambda e: (self.url_entry.selection_range(0, 'end'), self.url_entry.config(highlightbackground="#37B4B0", highlightcolor="#37B4B0")))
+        self.url_entry.bind("<FocusOut>", lambda e: self.url_entry.config(highlightbackground="#cfd4d8"))
         self.url_entry.focus_set()
         link_card.pack(fill="x", pady=12)
 
