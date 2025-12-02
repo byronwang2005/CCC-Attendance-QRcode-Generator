@@ -23,16 +23,19 @@ jobs:
 
       - name: 安装依赖
         run: |
-          pip install pyinstaller qrcode[pil] matplotlib
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir pyinstaller qrcode[pil] matplotlib
 
+      - name: 安装 UPX（压缩可执行文件）
+        run: choco install upx -y
       - name: 打包为 Windows 可执行文件
-        run: pyinstaller --onefile --windowed --name "CCC Attendance" ccc_attendance_with_UI.py
+        run: pyinstaller --onefile --windowed --noconfirm --clean --name "CCC Attendance" ccc_attendance_with_UI.py
 
       - name: 上传 Windows 构建结果
         uses: actions/upload-artifact@v4
         with:
           name: CCC_Attendance_Windows_x64
-          path: dist/
+          path: "dist/CCC Attendance.exe"
 
   # ========== macOS 打包任务 ==========
   build-macos:
@@ -49,13 +52,16 @@ jobs:
 
       - name: 安装依赖
         run: |
-          pip install pyinstaller qrcode[pil] matplotlib
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir pyinstaller qrcode[pil] matplotlib
 
+      - name: 安装 UPX（可选，用于压缩二进制）
+        run: brew install upx || true
       - name: 打包为 macOS 应用
-        run: pyinstaller --windowed --name "CCC Attendance" ccc_attendance_with_UI.py
+        run: pyinstaller --onefile --windowed --strip --noconfirm --clean --name "CCC Attendance" ccc_attendance_with_UI.py
 
       - name: 上传 macOS 构建结果
         uses: actions/upload-artifact@v4
         with:
           name: CCC_Attendance_macOS
-          path: dist/
+          path: "dist/CCC Attendance.app"

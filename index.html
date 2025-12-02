@@ -50,8 +50,7 @@
   <div class="snow" id="snow"></div>
 
   <h1>🎄Merry Christmas!</h1>
-  <p>老莱祝愿您：</p>
-  <p id="blessing"></p>
+  <p>老莱祝愿您：<span id="blessing"></span></p>
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const blessings = ["这个冬日，温暖常驻你心间～",
@@ -75,7 +74,7 @@
     let isDeleting = false;
     const typeSpeed = 60;
     const eraseSpeed = 40;
-    const pause = 2400;
+    const pause = 3000;
 
     function type() {
       const current = blessings[i];
@@ -84,7 +83,7 @@
         if (charIndex === 0) {
           isDeleting = false;
           i = (i + 1) % blessings.length;
-          setTimeout(type, pause / 2);
+          setTimeout(type, pause / 3);
           return;
         }
       } else {
