@@ -61,9 +61,11 @@ jobs:
         run: brew install upx || true
       - name: 打包为 macOS 应用
         run: pyinstaller --onefile --windowed --strip --noconfirm --clean --name "CCC Attendance" ccc_attendance_with_UI.py
+      - name: 生成 DMG 安装包
+        run: hdiutil create -volname "CCC Attendance" -srcfolder "dist/CCC Attendance.app" -ov -format UDZO "dist/CCC Attendance.dmg"
 
       - name: 上传 macOS 构建结果
         uses: actions/upload-artifact@v4
         with:
           name: CCC_Attendance_macOS
-          path: "dist/CCC Attendance.app"
+          path: "dist/CCC Attendance.dmg"
