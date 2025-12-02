@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'ccc_attendance_with_UI.py'
+      - '.github/workflows/main.yml'
   workflow_dispatch:   
 
 # 定义两个并行任务：Windows 和 macOS
