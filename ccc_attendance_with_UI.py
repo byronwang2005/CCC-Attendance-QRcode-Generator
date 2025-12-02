@@ -1,9 +1,8 @@
 import qrcode
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import datetime
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+from PIL import ImageTk
 
 
 # ------------------ 工具函数 ------------------
@@ -36,10 +35,23 @@ def make_qr_image(url):
 class QRGeneratorApp:
     def __init__(self, root):
         self.root = root
-        root.title("UNNC 中国文化课签到二维码生成器")
+        root.title("UNNC中国文化课签到二维码生成器")
         root.geometry("640x820")
         root.resizable(False, False)
-        root.configure(bg="#f5f7fa")
+        root.configure(bg="#faf6ef")
+        style = ttk.Style()
+        try:
+            style.theme_use("clam")
+        except:
+            pass
+        style.configure("App.TFrame", background="#faf6ef")
+        style.configure("Card.TFrame", background="#ffffff")
+        style.configure("TLabel", padding=4, font=("Segoe UI", 11))
+        style.configure("Card.TLabel", background="#ffffff", foreground="#10263B", padding=4, font=("Segoe UI", 12, "bold"))
+        style.configure("Card.TRadiobutton", background="#ffffff", foreground="#10263B", padding=4, font=("Segoe UI", 11))
+        style.configure("App.TEntry", fieldbackground="#ffffff")
+        style.configure("Theme.TButton", background="#10263B", foreground="#ffffff", padding=8, font=("Segoe UI", 12))
+        style.map("Theme.TButton", background=[["active", "#0d1f2f"]])
 
         # ===== 使用说明（固定顶部）=====
         instruction = (
@@ -47,39 +59,42 @@ class QRGeneratorApp:
             "使用步骤详见：\n"
             "https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/tree/main?tab=readme-ov-file#如何使用\n"
         )
-        instr_label = tk.Label(
-            root, text=instruction, justify="left", anchor="w",
-            bg="#eef2f7", fg="#2c3e50",
-            relief="solid", bd=1, padx=10, pady=8, wraplength=600
-        )
-        instr_label.pack(fill="x", padx=15, pady=(10, 10))
+        note_frame = tk.Frame(root, bg="#d7f0ef", highlightbackground="#37B4B0", highlightthickness=1, bd=0)
+        note_label = tk.Label(note_frame, text=instruction, justify="left", anchor="w", bg="#d7f0ef", fg="#10263B", padx=10, pady=8, wraplength=600)
+        note_label.pack(fill="x")
+        note_frame.pack(fill="x", padx=15, pady=(10, 10))
 
         # ===== 主内容容器（严格控制顺序）=====
-        main_frame = tk.Frame(root, bg="#f5f7fa")
+        main_frame = tk.Frame(root, bg="#faf6ef")
         main_frame.pack(fill="both", expand=True, padx=20)
 
         # --- 链接输入 ---
-        tk.Label(main_frame, text="课程详情链接：", bg="#f5f7fa", fg="#2c3e50").pack(anchor='w')
-        self.url_entry = tk.Entry(main_frame, width=80, relief="solid", bd=1)
-        self.url_entry.pack(pady=(5, 10))
+        link_card = tk.Frame(main_frame, bg="#ffffff", highlightbackground="#cfd4d8", highlightthickness=1, bd=0)
+        tk.Label(link_card, text="课程详情链接", bg="#ffffff", fg="#10263B", font=("Segoe UI", 12, "bold")).pack(anchor='w')
+        self.url_entry = ttk.Entry(link_card, width=80, style="App.TEntry")
+        self.url_entry.pack(pady=(8, 0), fill="x")
         self.url_entry.bind("<FocusIn>", lambda e: self.url_entry.selection_range(0, 'end'))
         self.url_entry.focus_set()
+        link_card.pack(fill="x", pady=12)
 
         # --- 模式选择 ---
         self.mode = tk.StringVar(value="auto")
-        mode_frame = tk.Frame(main_frame, bg="#f5f7fa")
-        mode_frame.pack()
-        tk.Radiobutton(
-            mode_frame, text="自动模式（推荐）", variable=self.mode, value="auto",
-            command=self.toggle_time_input, bg="#f5f7fa", fg="#2c3e50", selectcolor="#d6eaf8"
+        mode_card = tk.Frame(main_frame, bg="#ffffff", highlightbackground="#cfd4d8", highlightthickness=1, bd=0)
+        tk.Label(mode_card, text="时间模式", bg="#ffffff", fg="#10263B", font=("Segoe UI", 12, "bold")).pack(anchor='w')
+        mode_frame = tk.Frame(mode_card, bg="#ffffff")
+        mode_frame.pack(pady=(4, 0))
+        ttk.Radiobutton(
+            mode_frame, text="自动", variable=self.mode, value="auto",
+            command=self.toggle_time_input, style="Card.TRadiobutton"
         ).pack(side=tk.LEFT, padx=15)
-        tk.Radiobutton(
-            mode_frame, text="手动模式", variable=self.mode, value="manual",
-            command=self.toggle_time_input, bg="#f5f7fa", fg="#2c3e50", selectcolor="#d6eaf8"
+        ttk.Radiobutton(
+            mode_frame, text="手动", variable=self.mode, value="manual",
+            command=self.toggle_time_input, style="Card.TRadiobutton"
         ).pack(side=tk.LEFT, padx=15)
+        self.time_frame = tk.Frame(mode_card, bg="#ffffff")
+        mode_card.pack(fill="x", pady=12)
 
         # --- 手动时间输入框（不 pack，仅创建）---
-        self.time_frame = tk.Frame(main_frame, bg="#f5f7fa")
         labels = ["年:", "月:", "日:", "时:", "分:"]
         now = datetime.datetime.now()
         defaults = [now.year, now.month, now.day, now.hour, now.minute]
@@ -87,32 +102,25 @@ class QRGeneratorApp:
         for i, (lbl, default) in enumerate(zip(labels, defaults)):
             row = i // 3
             col = (i % 3) * 2
-            tk.Label(self.time_frame, text=lbl, bg="#f5f7fa", fg="#2c3e50").grid(row=row, column=col, padx=2, pady=4)
+            tk.Label(self.time_frame, text=lbl, bg="#ffffff", fg="#10263B").grid(row=row, column=col, padx=2, pady=4)
             width = 5 if "年" in lbl else 4
-            entry = tk.Entry(self.time_frame, width=width, justify="center")
+            entry = ttk.Entry(self.time_frame, width=width, justify="center", style="App.TEntry")
             entry.insert(0, str(default))
             entry.grid(row=row, column=col + 1, padx=2, pady=4)
             self.entries.append(entry)
 
         # --- 生成按钮 ---
-        self.generate_btn = tk.Button(
-            main_frame, text="生成签到二维码", command=self.generate_qr,
-            bg="#10263B", fg="white", height=2,
-            activebackground="#0d1f2f", relief="flat", cursor="hand2"
+        self.generate_btn = ttk.Button(
+            main_frame, text="生成签到二维码", command=self.generate_qr, style="Theme.TButton"
         )
-        self.generate_btn.pack(pady=12)
+        self.generate_btn.pack(pady=12, fill="x")
 
         # ===== 二维码显示区域（固定底部）=====
-        qr_frame = tk.Frame(root, bg="#f5f7fa")
-        qr_frame.pack(pady=5)
-        self.fig = Figure(figsize=(4.2, 4.2), dpi=100, facecolor='#f5f7fa')
-        self.ax = self.fig.add_subplot(111)
-        self.ax.axis('off')
-        self.ax.set_facecolor('#f5f7fa')
-        self.canvas = FigureCanvasTkAgg(self.fig, master=qr_frame)
-        canvas_widget = self.canvas.get_tk_widget()
-        canvas_widget.config(highlightthickness=1, highlightbackground="#cbd5e0")
-        canvas_widget.pack()
+        qr_card = tk.Frame(root, bg="#ffffff", highlightbackground="#cfd4d8", highlightthickness=1, bd=0)
+        tk.Label(qr_card, text="二维码预览", bg="#ffffff", fg="#10263B", font=("Segoe UI", 12, "bold")).pack(anchor='w')
+        self.qr_label = ttk.Label(qr_card)
+        self.qr_label.pack(pady=8)
+        qr_card.pack(fill="x", padx=20, pady=(5, 10))
 
     def toggle_time_input(self):
         if self.mode.get() == "manual":
@@ -129,8 +137,6 @@ class QRGeneratorApp:
 
         if "ccc.nottingham.edu.cn/study/home/details" not in url:
             messagebox.showerror("链接错误", "链接必须来自 UNNC 中国文化课详情页！")
-            self.url_entry.config(bg="#ffebee")
-            self.root.after(1500, lambda: self.url_entry.config(bg="white"))
             return
 
         try:
@@ -155,11 +161,8 @@ class QRGeneratorApp:
                 attendance_url = generate_attendance_url(schedule_id)
 
             img = make_qr_image(attendance_url)
-            self.ax.clear()
-            self.ax.imshow(img)
-            self.ax.axis('off')
-            self.ax.set_facecolor('#f5f7fa')
-            self.canvas.draw()
+            self.qr_photo = ImageTk.PhotoImage(img)
+            self.qr_label.configure(image=self.qr_photo)
             img.save("qrcode.png")
             messagebox.showinfo("成功！", f"二维码已保存为当前目录下的 qrcode.png\n\n签到链接：\n{attendance_url}")
 
