@@ -1,6 +1,14 @@
-# UNNC中国文化课签到二维码生成器
+# 娱乐项目：CCC签到二维码生成器
 
-> [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)焕然一新！一键生成，无需安装！
+> [Merry Christmas!](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)🎄
+
+---
+
+## 项目目的
+
+- 作者根据坊间**流传数年的古法**设计了本repo
+- 作者通过本repo提升自己前端（`Py GUI` / `html` / `swift`）能力
+- 作者希望在每个节日给大家带来及时的祝福
 
 ---
 
@@ -8,6 +16,8 @@
 
 - 本程序作为开源娱乐项目，严禁用于中国文化课代签！
 - 作者保留对非法使用本程序者追责的权利！
+- **学校官方/外包平台**可通过本repo联系我，若有侵权，我会立即处理
+- 作者完全不保证项目实现效果，若声明有任何更改恕不另外通知，参考 [LICENSE](LICENSE) 
 
 ---
 
