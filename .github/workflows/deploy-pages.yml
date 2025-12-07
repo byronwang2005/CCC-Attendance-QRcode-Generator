@@ -45,6 +45,8 @@ jobs:
           cp index.html site/
           cp main.html site/
           cp -r christmas-tree/dist/* site/christmas-tree/
+          mkdir -p site/christmas-tree/dist
+          cp -r christmas-tree/dist/* site/christmas-tree/dist/
 
       - name: 上传 Pages 构建产物
         uses: actions/upload-pages-artifact@v3
@@ -61,4 +63,3 @@ jobs:
       - name: 部署到 GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
