@@ -44,10 +44,10 @@ const CONFIG = {
     candyColors: ['#FF0000', '#FFFFFF']
   },
   counts: {
-    foliage: 1000,
+    foliage: 15000,
     ornaments: 30,
-    elements: 10,
-    lights: 10
+    elements: 300,
+    lights: 400
   },
   tree: { height: 22, radius: 9 }, // 树体尺寸
   photos: {
@@ -439,31 +439,15 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
     const setup = async () => {
       onStatus("DOWNLOADING AI...");
       try {
-        const wasmLocal = new URL('mediapipe/wasm', ABS_BASE).href;
-        let vision;
-        try {
-          vision = await FilesetResolver.forVisionTasks(wasmLocal);
-        } catch {
-          vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
-        }
-
-        const modelLocal = new URL('mediapipe/models/gesture_recognizer.task', ABS_BASE).href;
-        try {
-          gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
-            baseOptions: { modelAssetPath: modelLocal, delegate: "GPU" },
-            runningMode: "VIDEO",
-            numHands: 1
-          });
-        } catch {
-          gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
-            baseOptions: {
-              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
-              delegate: "GPU"
-            },
-            runningMode: "VIDEO",
-            numHands: 1
-          });
-        }
+        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+        gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+            delegate: "GPU"
+          },
+          runningMode: "VIDEO",
+          numHands: 1
+        });
         onStatus("REQUESTING CAMERA...");
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           const constraints: MediaStreamConstraints = {

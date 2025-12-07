@@ -47,12 +47,7 @@ jobs:
           cp -r christmas-tree/dist/* site/christmas-tree/
           mkdir -p site/christmas-tree/dist
           cp -r christmas-tree/dist/* site/christmas-tree/dist/
-      - name: 准备离线 MediaPipe 资源
-        run: |
-          mkdir -p site/christmas-tree/mediapipe/wasm
-          cp -r christmas-tree/node_modules/@mediapipe/tasks-vision/wasm/* site/christmas-tree/mediapipe/wasm/
-          mkdir -p site/christmas-tree/mediapipe/models
-          curl -L -o site/christmas-tree/mediapipe/models/gesture_recognizer.task https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task
+      # 已回退使用外部 CDN/Cloud 加载 MediaPipe 资源，故不再复制离线资源
 
       - name: 上传 Pages 构建产物
         uses: actions/upload-pages-artifact@v3
