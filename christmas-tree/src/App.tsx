@@ -497,7 +497,6 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
 export default function GrandTreeApp() {
   const [sceneState, setSceneState] = useState<'CHAOS' | 'FORMED'>('CHAOS');
   const [rotationSpeed, setRotationSpeed] = useState(0);
-  const [aiStatus, setAiStatus] = useState("INITIALIZING...");
 
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000', position: 'relative', overflow: 'hidden' }}>
@@ -506,14 +505,10 @@ export default function GrandTreeApp() {
             <Experience sceneState={sceneState} rotationSpeed={rotationSpeed} />
         </Canvas>
       </div>
-      <GestureController onGesture={setSceneState} onMove={setRotationSpeed} onStatus={setAiStatus} />
+      <GestureController onGesture={setSceneState} onMove={setRotationSpeed} onStatus={(text) => { void text; }} />
 
       
 
-      {/* UI - AI Status */}
-      <div style={{ position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', color: aiStatus.includes('ERROR') ? '#FF0000' : 'rgba(255, 215, 0, 0.4)', fontSize: '10px', letterSpacing: '2px', zIndex: 10, background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px' }}>
-        {aiStatus}
-      </div>
     </div>
   );
 }
