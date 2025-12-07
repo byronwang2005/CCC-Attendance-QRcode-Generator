@@ -40,13 +40,38 @@
       background: #f04e4f;
       transform: scale(1.05);
     }
+    .footer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .footer .btn { margin: 0; }
+    .footer .blessing { margin: 0; font-size: 1.1em; }
+    .tip-close {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tip-close:hover { background: rgba(255,255,255,0.1); }
   </style>
 </head>
 <body>
   
 
-  <h1>🎄Merry Christmas!</h1>
-  <p>老莱祝愿您：<span id="blessing"></span></p>
+  <div class="footer">
+    <p class="blessing">老莱祝愿您：<span id="blessing"></span></p>
+    <button class="btn" onclick="location.href='main.html'">进入主页 →</button>
+  </div>
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const blessings = ["这个冬日，温暖常驻你心间～",
@@ -95,6 +120,12 @@
 
     el.textContent = blessings[Math.floor(Math.random() * blessings.length)];
     type();
+
+    const tip = document.getElementById('tip');
+    const tipClose = document.getElementById('tipClose');
+    if (tip && tipClose) {
+      tipClose.addEventListener('click', () => { tip.style.display = 'none'; });
+    }
   });
   </script>
   
@@ -103,11 +134,12 @@
   </button>
 
   
-  <section style="max-width: 900px; margin: 30px auto 0; padding: 20px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: #fff; line-height: 1.6;">
+  <section id="tip" style="max-width: 900px; margin: 30px auto 0; padding: 20px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: #fff; line-height: 1.6;">
     <ul style="padding-left: 18px;">
       张开手掌切换到「散开」，握拳切换到「聚合」</br>
       首次访问请允许摄像头权限，画面用于互动而不会被上传
     </ul>
+    <button id="tipClose" class="tip-close">知道了</button>
   </section>
 
   <div id="tree-bg" style="position:fixed; inset:0; z-index:-2; pointer-events:none;">
