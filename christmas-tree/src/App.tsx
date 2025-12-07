@@ -44,10 +44,10 @@ const CONFIG = {
     candyColors: ['#FF0000', '#FFFFFF']
   },
   counts: {
-    foliage: 8000,
-    ornaments: 120,
-    elements: 80,
-    lights: 150
+    foliage: 3000,
+    ornaments: 80,
+    elements: 30,
+    lights: 80
   },
   tree: { height: 22, radius: 9 }, // 树体尺寸
   photos: {
@@ -488,10 +488,12 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
           }
         } else {
             onStatus("ERROR: CAMERA PERMISSION DENIED");
+            onGesture('FORMED');
         }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         onStatus(`ERROR: ${message || 'MODEL FAILED'}`);
+        onGesture('FORMED');
       }
     };
 
