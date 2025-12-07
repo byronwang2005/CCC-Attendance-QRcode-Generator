@@ -93,11 +93,9 @@
       setTimeout(type, isDeleting ? eraseSpeed : typeSpeed);
     }
 
+    el.textContent = blessings[Math.floor(Math.random() * blessings.length)];
     type();
   });
-
-  document.getElementById("blessing").textContent =
-    blessings[Math.floor(Math.random() * blessings.length)];
   </script>
   
   <button class="btn" onclick="location.href='main.html'">

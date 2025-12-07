@@ -19,7 +19,8 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 // --- 动态生成照片列表 (top.jpg + 1.jpg 到 N.jpg) ---
 const TOTAL_NUMBERED_PHOTOS = 1;
-const withBase = (p: string) => new URL(p, import.meta.env.BASE_URL).href;
+const ABS_BASE = new URL(import.meta.env.BASE_URL, window.location.origin).href;
+const withBase = (p: string) => new URL(p, ABS_BASE).href;
 const bodyPhotoPaths = [
   withBase('photos/top.jpg'),
   ...Array.from({ length: TOTAL_NUMBERED_PHOTOS }, (_, i) => withBase(`photos/${i + 1}.jpg`))
