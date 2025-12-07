@@ -44,9 +44,9 @@ const CONFIG = {
     candyColors: ['#FF0000', '#FFFFFF']
   },
   counts: {
-    foliage: 5000,
+    foliage: 2000,
     ornaments: 10,
-    elements: 200,
+    elements: 100,
     lights: 100
   },
   tree: { height: 22, radius: 9 }, // 树体尺寸
@@ -435,19 +435,25 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
   useEffect(() => {
     let gestureRecognizer: GestureRecognizer;
     let requestRef: number;
+    let startupFallback: number;
 
     const setup = async () => {
       onStatus("DOWNLOADING AI...");
       try {
-        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
-        gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+        const withTimeout = <T,>(p: Promise<T>, ms: number) => new Promise<T>((resolve, reject) => {
+          const t = window.setTimeout(() => reject(new Error('TIMEOUT')), ms);
+          p.then(v => { window.clearTimeout(t); resolve(v); }).catch(e => { window.clearTimeout(t); reject(e); });
+        });
+        startupFallback = window.setTimeout(() => { onGesture('FORMED'); }, 4000);
+        const vision = await withTimeout(FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"), 6000);
+        gestureRecognizer = await withTimeout(GestureRecognizer.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
             delegate: "GPU"
           },
           runningMode: "VIDEO",
           numHands: 1
-        });
+        }), 3000);
         onStatus("REQUESTING CAMERA...");
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           const constraints: MediaStreamConstraints = {
@@ -467,17 +473,20 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
             videoRef.current.play();
+            window.clearTimeout(startupFallback);
             onStatus("AI READY: SHOW HAND");
             predictWebcam();
           }
         } else {
             onStatus("ERROR: CAMERA PERMISSION DENIED");
             onGesture('FORMED');
+            window.clearTimeout(startupFallback);
         }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         onStatus(`ERROR: ${message || 'MODEL FAILED'}`);
         onGesture('FORMED');
+        window.clearTimeout(startupFallback);
       }
     };
 
@@ -500,7 +509,7 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
       }
     };
     setup();
-    return () => cancelAnimationFrame(requestRef);
+    return () => { cancelAnimationFrame(requestRef); window.clearTimeout(startupFallback); };
   }, [onGesture, onMove, onStatus]);
 
   return (

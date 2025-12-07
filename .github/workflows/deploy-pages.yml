@@ -47,7 +47,6 @@ jobs:
           cp -r christmas-tree/dist/* site/christmas-tree/
           mkdir -p site/christmas-tree/dist
           cp -r christmas-tree/dist/* site/christmas-tree/dist/
-      # 已回退使用外部 CDN/Cloud 加载 MediaPipe 资源，故不再复制离线资源
 
       - name: 上传 Pages 构建产物
         uses: actions/upload-pages-artifact@v3
