@@ -2,7 +2,6 @@ import { useState, useMemo, useRef, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
 import {
   OrbitControls,
-  Environment,
   PerspectiveCamera,
   shaderMaterial,
   Float,
@@ -401,7 +400,6 @@ const Experience = ({ sceneState, rotationSpeed }: { sceneState: 'CHAOS' | 'FORM
 
       <color attach="background" args={['#000300']} />
       <Stars radius={100} depth={50} count={2500} factor={3} saturation={0} fade speed={0.6} />
-      <Environment preset="night" background={false} />
 
       <ambientLight intensity={0.4} color="#003311" />
       <pointLight position={[30, 30, 30]} intensity={100} color={CONFIG.colors.warmLight} />
@@ -445,10 +443,10 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
           p.then(v => { window.clearTimeout(t); resolve(v); }).catch(e => { window.clearTimeout(t); reject(e); });
         });
         startupFallback = window.setTimeout(() => { onGesture('FORMED'); }, 4000);
-        const vision = await withTimeout(FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"), 6000);
+        const vision = await withTimeout(FilesetResolver.forVisionTasks(withBase('mediapipe/wasm')), 6000);
         gestureRecognizer = await withTimeout(GestureRecognizer.createFromOptions(vision, {
           baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+            modelAssetPath: withBase('mediapipe/models/gesture_recognizer.task'),
             delegate: "GPU"
           },
           runningMode: "VIDEO",
@@ -458,8 +456,8 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           const constraints: MediaStreamConstraints = {
             video: {
-              width: { ideal: 480 },
-              height: { ideal: 480 },
+              width: { ideal: 256 },
+              height: { ideal: 256 },
               aspectRatio: 1,
               facingMode: 'user'
             }
@@ -490,10 +488,18 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
       }
     };
 
+    let lastInference = 0;
+    const targetInterval = 1000 / 10;
     const predictWebcam = () => {
       if (gestureRecognizer && videoRef.current) {
         if (videoRef.current.videoWidth > 0) {
+            const now = Date.now();
+            if (now - lastInference < targetInterval) {
+              requestRef = requestAnimationFrame(predictWebcam);
+              return;
+            }
             const results = gestureRecognizer.recognizeForVideo(videoRef.current, Date.now());
+            lastInference = now;
             if (results.gestures.length > 0) {
               const name = results.gestures[0][0].categoryName; const score = results.gestures[0][0].score;
               if (score > 0.4) {
@@ -519,13 +525,24 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
 
 // --- App Entry ---
 export default function GrandTreeApp() {
-  const [sceneState, setSceneState] = useState<'CHAOS' | 'FORMED'>('CHAOS');
+  const [sceneState, setSceneState] = useState<'CHAOS' | 'FORMED'>('FORMED');
   const [rotationSpeed, setRotationSpeed] = useState(0);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const k = e.key.toLowerCase();
+      if (k === ' ') { setSceneState(s => s === 'CHAOS' ? 'FORMED' : 'CHAOS'); }
+      else if (k === 'c') { setSceneState('CHAOS'); }
+      else if (k === 'f') { setSceneState('FORMED'); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#000', position: 'relative', overflow: 'hidden' }}>
       <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
-        <Canvas dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.ReinhardToneMapping }}>
+        <Canvas dpr={1} gl={{ antialias: false, powerPreference: 'high-performance', toneMapping: THREE.ReinhardToneMapping }}>
             <Experience sceneState={sceneState} rotationSpeed={rotationSpeed} />
         </Canvas>
       </div>
