@@ -44,9 +44,9 @@ const CONFIG = {
     candyColors: ['#FF0000', '#FFFFFF']
   },
   counts: {
-    foliage: 15000,
-    ornaments: 30,
-    elements: 300,
+    foliage: 8000,
+    ornaments: 10,
+    elements: 200,
     lights: 400
   },
   tree: { height: 22, radius: 9 }, // 树体尺寸
@@ -452,8 +452,8 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           const constraints: MediaStreamConstraints = {
             video: {
-              width: { ideal: 640 },
-              height: { ideal: 640 },
+              width: { ideal: 480 },
+              height: { ideal: 480 },
               aspectRatio: 1,
               facingMode: 'user'
             }
