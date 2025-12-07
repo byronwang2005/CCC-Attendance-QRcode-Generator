@@ -44,10 +44,10 @@ const CONFIG = {
     candyColors: ['#FF0000', '#FFFFFF']
   },
   counts: {
-    foliage: 3000,
-    ornaments: 80,
-    elements: 30,
-    lights: 80
+    foliage: 1000,
+    ornaments: 30,
+    elements: 10,
+    lights: 10
   },
   tree: { height: 22, radius: 9 }, // 树体尺寸
   photos: {
