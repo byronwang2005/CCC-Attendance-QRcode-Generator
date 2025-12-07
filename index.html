@@ -19,11 +19,7 @@
       text-align: center;
       overflow: hidden;
     }
-    .snow {
-      position: fixed;
-      top: -10px;
-      z-index: -1;
-    }
+    
     h1 {
       font-size: 3.5em;
       margin: 0 0 20px;
@@ -47,7 +43,7 @@
   </style>
 </head>
 <body>
-  <div class="snow" id="snow"></div>
+  
 
   <h1>🎄Merry Christmas!</h1>
   <p>老莱祝愿您：<span id="blessing"></span></p>
@@ -108,27 +104,17 @@
     进入主页 →
   </button>
 
-  <script>
-    const snowContainer = document.getElementById('snow');
-    for (let i = 0; i < 50; i++) {
-      const snow = document.createElement('div');
-      snow.style.position = 'absolute';
-      snow.style.left = `${Math.random() * 100}vw`;
-      snow.style.top = `${-10 - Math.random() * 20}px`;
-      snow.style.fontSize = `${Math.random() * 10 + 5}px`;
-      snow.style.opacity = Math.random();
-      snow.innerHTML = '❄';
-      snow.style.animation = `fall ${Math.random() * 5 + 5}s linear infinite`;
-      snow.style.color = 'white';
-      snowContainer.appendChild(snow);
-    }
-    document.head.insertAdjacentHTML('beforeend', `
-      <style>
-        @keyframes fall {
-          to { transform: translateY(105vh) rotate(360deg); }
-        }
-      </style>
-    `);
-  </script>
+  
+  <section style="max-width: 900px; margin: 30px auto 0; padding: 20px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: #fff; line-height: 1.6;">
+    <ul style="padding-left: 18px;">
+      手势：张开手掌切换到「散开」，握拳切换到「聚合」</br>
+      相机权限：首次访问请允许摄像头权限</br>
+      （iOS Safari 建议点击一次页面以启动）
+    </ul>
+  </section>
+
+  <div id="tree-bg" style="position:fixed; inset:0; z-index:-2; pointer-events:none;">
+    <iframe src="./christmas-tree/dist/index.html" style="width:100%; height:100%; border:0;" allow="autoplay; camera; microphone" loading="lazy"></iframe>
+  </div>
 </body>
 </html>
