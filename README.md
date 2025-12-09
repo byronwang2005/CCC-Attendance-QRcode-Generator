@@ -6,16 +6,16 @@
 
 ## 项目目的
 
-- 作者根据坊间**流传数年的古法**设计了本repo
-- 作者通过本repo提升自己前端（`Py GUI` / `html` / `swift`）能力
+- 作者为坊间**流传数年的古法**创建了本repo
+- 作者希望通过本repo提升自己的前端开发能力
 - 作者希望在每个节日给大家带来及时的祝福
 
 ---
 
 ## 特别声明
 
-- 本程序作为开源娱乐项目，严禁用于中国文化课代签！
-- 作者保留对非法使用本程序者追责的权利！
+- 本程序作为开源娱乐项目，严禁用于中国文化课代签
+- 作者保留对非法使用本程序者追责的权利
 - **学校官方/外包平台**可通过本repo联系我，若有侵权，我会立即处理
 - 作者完全不保证项目实现效果，若声明有任何更改恕不另外通知，参考 [LICENSE](LICENSE) 
 
@@ -45,8 +45,8 @@
 1. **前往 [v3.3.0 的 Releases 页面](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator/releases/tag/v3.3.0)**  
 
 2. 根据你的电脑系统，下载对应文件：
-   - **Windows 用户** → 下载 `CCC_Attendance_Windows_x64.exe`
-   - **Mac 用户** → 下载 `CCC_Attendance_macOS.dmg`
+   - **Windows 用户** → 下载 `CCC_Attendance.exe`
+   - **Mac 用户** → 下载 `CCC_Attendance.dmg`
 
 3. 对于**Mac 用户**：
    - 双击 `CCC Attendance.dmg`
