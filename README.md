@@ -1,4 +1,4 @@
-# 娱乐项目：CCC签到二维码生成器
+# 娱乐项目 - CCC签到二维码生成器
 
 > [Merry Christmas!](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)🎄
 
@@ -95,6 +95,10 @@ A：这是 macOS 的安全限制。请**右键点击应用 → 选择“打开�
 本项目采用 MIT 协议开源，详见 [LICENSE](LICENSE) 文件。
 
 ---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=byronwang2005/ccc-attendance-qrcode-generator&type=date&legend=top-left)](https://www.star-history.com/#byronwang2005/ccc-attendance-qrcode-generator&type=date&legend=top-left)
 
 **Made with ❤️ for UNNC students**  
 By Byron | [GitHub](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator)
