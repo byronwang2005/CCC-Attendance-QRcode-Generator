@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, Suspense } from 'react';
+import { useState, useMemo, useRef, useEffect, Suspense, useCallback } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
 import {
   OrbitControls,
@@ -20,6 +20,18 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 const TOTAL_NUMBERED_PHOTOS = 1;
 const ABS_BASE = new URL(import.meta.env.BASE_URL, window.location.origin).href;
 const withBase = (p: string) => new URL(p, ABS_BASE).href;
+let cachedVision: Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>> | undefined;
+let cachedVisionPromise: Promise<Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>> | undefined;
+const getVision = () => {
+  if (cachedVision) return Promise.resolve(cachedVision);
+  if (!cachedVisionPromise) {
+    cachedVisionPromise = FilesetResolver.forVisionTasks(withBase('mediapipe/wasm')).then(v => {
+      cachedVision = v;
+      return v;
+    });
+  }
+  return cachedVisionPromise;
+};
 const bodyPhotoPaths = [
   withBase('photos/top.jpg'),
   ...Array.from({ length: TOTAL_NUMBERED_PHOTOS }, (_, i) => withBase(`photos/${i + 1}.jpg`))
@@ -431,9 +443,18 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    let gestureRecognizer: GestureRecognizer;
-    let requestRef: number;
-    let startupFallback: number;
+    let gestureRecognizer: GestureRecognizer | undefined;
+    let startupFallback: number | undefined;
+    let inferenceTimer: number | undefined;
+    let stream: MediaStream | undefined;
+    let stopped = false;
+    const perfEnabled = new URLSearchParams(window.location.search).has('mpPerf');
+    const videoEl = videoRef.current;
+
+    const clearTimers = () => {
+      if (startupFallback !== undefined) window.clearTimeout(startupFallback);
+      if (inferenceTimer !== undefined) window.clearTimeout(inferenceTimer);
+    };
 
     const setup = async () => {
       onStatus("DOWNLOADING AI...");
@@ -443,15 +464,29 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
           p.then(v => { window.clearTimeout(t); resolve(v); }).catch(e => { window.clearTimeout(t); reject(e); });
         });
         startupFallback = window.setTimeout(() => { onGesture('FORMED'); }, 4000);
-        const vision = await withTimeout(FilesetResolver.forVisionTasks(withBase('mediapipe/wasm')), 6000);
+
+        const tVision0 = performance.now();
+        const vision = await withTimeout(getVision(), 6000);
+        const tVision1 = performance.now();
+
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+        if (perfEnabled) console.log(`[mp] vision ready in ${Math.round(tVision1 - tVision0)}ms`);
+
+        const tModel0 = performance.now();
         gestureRecognizer = await withTimeout(GestureRecognizer.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath: withBase('mediapipe/models/gesture_recognizer.task'),
-            delegate: "GPU"
+            delegate: "CPU"
           },
           runningMode: "VIDEO",
           numHands: 1
         }), 3000);
+        const tModel1 = performance.now();
+
+        if (perfEnabled) console.log(`[mp] model ready in ${Math.round(tModel1 - tModel0)}ms`);
+
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 0));
         onStatus("REQUESTING CAMERA...");
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           const constraints: MediaStreamConstraints = {
@@ -459,10 +494,10 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
               width: { ideal: 256 },
               height: { ideal: 256 },
               aspectRatio: 1,
+              frameRate: { ideal: 15, max: 15 },
               facingMode: 'user'
             }
           };
-          let stream: MediaStream;
           try {
             stream = await navigator.mediaDevices.getUserMedia(constraints);
           } catch {
@@ -470,52 +505,118 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
           }
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            videoRef.current.play();
-            window.clearTimeout(startupFallback);
+            await videoRef.current.play().catch(() => undefined);
+            clearTimers();
             onStatus("AI READY: SHOW HAND");
-            predictWebcam();
+            startInferenceLoop();
           }
         } else {
             onStatus("ERROR: CAMERA PERMISSION DENIED");
             onGesture('FORMED');
-            window.clearTimeout(startupFallback);
+            clearTimers();
         }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         onStatus(`ERROR: ${message || 'MODEL FAILED'}`);
         onGesture('FORMED');
-        window.clearTimeout(startupFallback);
+        clearTimers();
       }
     };
 
-    let lastInference = 0;
-    const targetInterval = 1000 / 10;
-    const predictWebcam = () => {
-      if (gestureRecognizer && videoRef.current) {
-        if (videoRef.current.videoWidth > 0) {
-            const now = Date.now();
-            if (now - lastInference < targetInterval) {
-              requestRef = requestAnimationFrame(predictWebcam);
-              return;
-            }
-            const results = gestureRecognizer.recognizeForVideo(videoRef.current, Date.now());
-            lastInference = now;
-            if (results.gestures.length > 0) {
-              const name = results.gestures[0][0].categoryName; const score = results.gestures[0][0].score;
-              if (score > 0.4) {
-                 if (name === "Open_Palm") onGesture("CHAOS"); if (name === "Closed_Fist") onGesture("FORMED");
-              }
-              if (results.landmarks.length > 0) {
-                const speed = (0.5 - results.landmarks[0][0].x) * 0.15;
-                onMove(Math.abs(speed) > 0.01 ? speed : 0);
-              }
-            } else { onMove(0); }
+    const minIntervalMs = 160;
+    const maxIntervalMs = 450;
+    let lastInferenceAt = 0;
+    const lastDurations: number[] = [];
+
+    const scheduleNextInference = (delayMs: number) => {
+      if (stopped) return;
+      inferenceTimer = window.setTimeout(() => runInference(), delayMs);
+    };
+
+    const runInference = () => {
+      if (stopped) return;
+      const video = videoRef.current;
+      const recognizer = gestureRecognizer;
+      if (!video || !recognizer || video.videoWidth <= 0) {
+        scheduleNextInference(minIntervalMs);
+        return;
+      }
+
+      const now = performance.now();
+      const sinceLast = now - lastInferenceAt;
+      if (sinceLast < minIntervalMs) {
+        scheduleNextInference(minIntervalMs - sinceLast);
+        return;
+      }
+
+      const t0 = performance.now();
+      let results: ReturnType<GestureRecognizer['recognizeForVideo']> | undefined;
+      try {
+        results = recognizer.recognizeForVideo(video, Date.now());
+      } catch (e) {
+        if (perfEnabled) console.warn('[mp] recognizeForVideo failed', e);
+        clearTimers();
+        scheduleNextInference(maxIntervalMs);
+        return;
+      }
+      const t1 = performance.now();
+      lastInferenceAt = now;
+
+      if (results) {
+        if (results.gestures.length > 0) {
+          const name = results.gestures[0][0].categoryName;
+          const score = results.gestures[0][0].score;
+          if (score > 0.4) {
+            if (name === "Open_Palm") onGesture("CHAOS");
+            if (name === "Closed_Fist") onGesture("FORMED");
+          }
+          if (results.landmarks.length > 0) {
+            const speed = (0.5 - results.landmarks[0][0].x) * 0.15;
+            onMove(Math.abs(speed) > 0.01 ? speed : 0);
+          }
+        } else {
+          onMove(0);
         }
-        requestRef = requestAnimationFrame(predictWebcam);
+      }
+
+      const inferenceMs = t1 - t0;
+      lastDurations.push(inferenceMs);
+      if (lastDurations.length > 30) lastDurations.shift();
+      if (perfEnabled && lastDurations.length === 30) {
+        const avg = lastDurations.reduce((a, b) => a + b, 0) / lastDurations.length;
+        const max = Math.max(...lastDurations);
+        console.log(`[mp] inference avg=${avg.toFixed(1)}ms max=${max.toFixed(1)}ms next=${Math.round(Math.max(minIntervalMs, Math.min(maxIntervalMs, inferenceMs * 2)))}ms`);
+      }
+      const nextDelay = Math.max(minIntervalMs, Math.min(maxIntervalMs, inferenceMs * 2));
+      scheduleNextInference(nextDelay);
+    };
+
+    const startInferenceLoop = () => {
+      scheduleNextInference(minIntervalMs);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        clearTimers();
+      } else {
+        if (gestureRecognizer && videoRef.current?.srcObject) startInferenceLoop();
       }
     };
-    setup();
-    return () => { cancelAnimationFrame(requestRef); window.clearTimeout(startupFallback); };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    void (async () => {
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      if (!stopped) await setup();
+    })();
+
+    return () => {
+      stopped = true;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      clearTimers();
+      if (videoEl) videoEl.srcObject = null;
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      gestureRecognizer?.close();
+    };
   }, [onGesture, onMove, onStatus]);
 
   return (
@@ -527,6 +628,7 @@ const GestureController = ({ onGesture, onMove, onStatus }: GestureControllerPro
 export default function GrandTreeApp() {
   const [sceneState, setSceneState] = useState<'CHAOS' | 'FORMED'>('FORMED');
   const [rotationSpeed, setRotationSpeed] = useState(0);
+  const handleStatus = useCallback((text: string) => { void text; }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -546,7 +648,7 @@ export default function GrandTreeApp() {
             <Experience sceneState={sceneState} rotationSpeed={rotationSpeed} />
         </Canvas>
       </div>
-      <GestureController onGesture={setSceneState} onMove={setRotationSpeed} onStatus={(text) => { void text; }} />
+      <GestureController onGesture={setSceneState} onMove={setRotationSpeed} onStatus={handleStatus} />
 
       
 
