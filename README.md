@@ -1,6 +1,7 @@
 # 娱乐项目：CCC签到二维码生成器
 
-> [Merry Christmas!](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)🎄
+> Merry Christmas!🎄  
+> 认准网址不迷路：[**ccc.byron.wang**](https://ccc.byron.wang)
 
 ---
 
@@ -29,7 +30,7 @@
 
 ### 方法一（网页端，全平台可用）
 
-1. **前往 [网页端](https://byronwang2005.github.io/CCC-Attendance-QRcode-Generator/)**  
+1. **前往 [网页端](https://ccc.byron.wang)**  
 
 2. 按照网页指引操作：
    - 粘贴课程链接（[获取方法](https://github.com/byronwang2005/CCC-Attendance-QRcode-Generator?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E8%AF%BE%E7%A8%8B%E9%93%BE%E6%8E%A5)）
