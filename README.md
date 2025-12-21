@@ -1,6 +1,6 @@
-![CCC](public/ccc.png)
-
 # 娱乐项目：CCC签到二维码生成器
+
+<img src="public/ccc.png" alt="CCC" width="120" />
 
 > Merry Christmas!🎄  
 > 认准网址不迷路：[**ccc.byron.wang**](https://ccc.byron.wang)

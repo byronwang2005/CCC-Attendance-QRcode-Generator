@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>UNNC中国文化课签到二维码生成器</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='45' y='80' width='10' height='15' fill='%235D4037'/%3E%3Cpolygon points='50,20 35,50 65,50' fill='%232E7D32'/%3E%3Cpolygon points='50,35 30,65 70,65' fill='%23388E3C'/%3E%3Cpolygon points='50,55 25,80 75,80' fill='%234CAF50'/%3E%3Cpolygon points='50,12 52,20 60,20 53,25 55,33 50,28 45,33 47,25 40,20 48,20' fill='%23FFD700'/%3E%3Ccircle cx='42' cy='55' r='2' fill='%23E53935'/%3E%3Ccircle cx='58' cy='65' r='2' fill='%23FFD700'/%3E%3Ccircle cx='38' cy='72' r='2' fill='%23E53935'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="public/ccc.png">
   <style>
     :root {
       --theme: #10263B;
@@ -27,6 +27,10 @@
     h2 {
       font-weight: 700;
       font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       text-align: center;
       margin: 24px 0 16px;
       color: var(--theme);
@@ -155,14 +159,10 @@
   </style>
 </head>
 <body>
-  <div style="text-align: center; margin-top: 8px;">
-    <img src="public/ccc.png" alt="CCC" style="max-width: 180px; width: 45%; height: auto;" />
-  </div>
-
   <!-- Snow container (always on) -->
   <div id="snow"></div>
 
-  <h2>UNNC中国文化课签到二维码生成器</h2>
+  <h2><img src="public/ccc.png" alt="CCC" style="height: 28px; width: auto;" />UNNC中国文化课签到二维码生成器</h2>
   
   <div class="note">
     重要提示：<br>
