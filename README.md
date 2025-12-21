@@ -1,3 +1,5 @@
+![CCC](public/ccc.png)
+
 # 娱乐项目：CCC签到二维码生成器
 
 > Merry Christmas!🎄  
