@@ -1,6 +1,6 @@
-# 娱乐项目：CCC签到二维码生成器
+# CCC Attendance QRcode Generator  
 
-<img src="public/ccc.png" alt="CCC" width="120" />
+<img src="public/ccc.png" alt="CCC" width="500" />
 
 > Merry Christmas!🎄  
 > 认准网址不迷路：[**ccc.byron.wang**](https://ccc.byron.wang)
@@ -10,7 +10,7 @@
 ## 项目目的
 
 - 作者根据坊间**流传数年的古法**设计了本repo
-- 作者通过本repo提升自己前端（`Py GUI` / `html` / `swift`）能力
+- 作者通过本repo训练自己的前端能力
 - 作者希望在每个节日给大家带来及时的祝福
 
 ---
