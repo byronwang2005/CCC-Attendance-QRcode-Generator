@@ -1,6 +1,6 @@
 # CCC Attendance QRcode Generator  
 
-<img src="public/ccc.png" alt="CCC" width="500" />
+<img src="public/ccc.webp" alt="CCC" width="500" />
 
 > Merry Christmas!🎄  
 > 认准网址不迷路：[**ccc.byron.wang**](https://ccc.byron.wang)
