@@ -296,7 +296,7 @@ export const formatDateTime = (timestamp) => {
 
 export const getTimeModeLabel = (state) => {
   if (state.timeMode !== TIME_MODES.manual) {
-    return '自动模式（生成时取当前时间 + 1 分钟）';
+    return '自动模式';
   }
 
   try {

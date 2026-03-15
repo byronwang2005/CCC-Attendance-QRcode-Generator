@@ -9,6 +9,7 @@
   <title>步骤 3 | UNNC中国文化课签到二维码生成器</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="modulepreload" href="scripts/wizard.js" />
+  <link rel="modulepreload" href="scripts/receipt-stage.js" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -45,7 +46,7 @@
         </article>
       </section>
 
-      <section class="panel panel-slim">
+      <section class="panel panel-slim" hidden aria-hidden="true">
         <div class="summary-grid summary-grid-wide">
           <article class="summary-card">
             <span>当前身份</span>
@@ -62,40 +63,11 @@
         </div>
       </section>
 
-      <section class="panel qr-panel">
-        <div class="panel-header">
-          <p class="panel-kicker">Step 3</p>
-          <h2>签到二维码</h2>
-          <p>生成成功后会自动下载 <code>qrcode.png</code>，并在下方保留预览。</p>
+      <div id="qrcode" class="qrcode-stage" aria-label="生成的二维码热敏小票">
+        <div class="qrcode-placeholder">
+          <div>二维码将在这里生成</div>
         </div>
-
-        <div id="generatedTimeWrap" class="generated-meta" hidden>
-          本次二维码时间：<strong id="generatedTime"></strong>
-        </div>
-
-        <div id="qrcode" class="qrcode-stage" aria-label="生成的二维码">
-          <div class="qrcode-placeholder">
-            <div>二维码将在这里生成</div>
-            <small>进入本页后会自动尝试生成一次</small>
-          </div>
-        </div>
-
-        <div class="actions actions-stack-mobile">
-          <button type="button" id="generateBtn" class="button-primary">生成签到二维码</button>
-          <button type="button" id="downloadBtn" class="button-secondary" hidden>再次下载</button>
-        </div>
-      </section>
-
-      <section class="panel panel-soft">
-        <div class="panel-header">
-          <p class="panel-kicker">Reminder</p>
-          <h2>使用提醒</h2>
-        </div>
-        <ul class="guide-list">
-          <li>使用手机微信扫描二维码完成签到。</li>
-          <li>如果签到页出现“答题”选项，记得继续完成答题流程。</li>
-        </ul>
-      </section>
+      </div>
 
       <div class="actions">
         <button type="button" id="backBtn" class="button-secondary">返回上一步</button>

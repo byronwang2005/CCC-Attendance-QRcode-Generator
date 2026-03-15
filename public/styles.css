@@ -290,7 +290,7 @@ h1 {
 
 .stepper {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
@@ -728,27 +728,19 @@ select:focus {
   margin-top: 18px;
 }
 
-.qr-panel {
-  display: grid;
-  gap: 10px;
-}
-
-.generated-meta {
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
-  background: var(--color-fill-accent-soft);
-  color: var(--theme);
-}
-
 .qrcode-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 320px;
-  padding: 18px;
-  border: 1px dashed var(--color-border-stage);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, var(--color-fill-surface-mid), var(--color-fill-surface-stage-end));
+  position: relative;
+  z-index: 4;
+  min-height: clamp(720px, 78vw, 960px);
+  margin: -78px 0 18px;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  cursor: grab;
+}
+
+.qrcode-stage.is-grabbing {
+  cursor: grabbing;
 }
 
 .qrcode-placeholder,
@@ -756,9 +748,19 @@ select:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  min-height: clamp(720px, 78vw, 960px);
   text-align: center;
   color: var(--text-soft);
+}
+
+.receipt-stage-canvas {
+  display: block;
+  width: 100%;
+  min-height: clamp(720px, 78vw, 960px);
+  height: 100%;
+  touch-action: none;
 }
 
 .qrcode-image {
@@ -767,7 +769,13 @@ select:focus {
   padding: 18px;
   border-radius: var(--radius-md);
   background: var(--theme);
-  box-shadow: 0 14px 28px var(--shadow-color-strong);
+}
+
+.qrcode-image-fallback {
+  max-width: min(100%, 380px);
+  padding: 20px;
+  border-radius: 24px;
+  background: #ffffff;
 }
 
 .loading-spinner {
@@ -885,7 +893,13 @@ select:focus {
   }
 
   .qrcode-stage {
-    min-height: 260px;
+    min-height: 620px;
+  }
+
+  .qrcode-placeholder,
+  .loading-state,
+  .receipt-stage-canvas {
+    min-height: 620px;
   }
 
   .toast {
