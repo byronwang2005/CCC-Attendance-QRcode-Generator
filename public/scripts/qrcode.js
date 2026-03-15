@@ -1,7 +1,6 @@
 import {
   buildTimestamp,
   clearState,
-  downloadFile,
   formatDateTime,
   getIdentityLabel,
   getTimeModeLabel,
@@ -140,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
           URL.revokeObjectURL(previousImageUrl);
         }
 
-        downloadFile(currentImageUrl, QR_CODE.filename);
         showToast(TEXT.status.qrCodeGenerated);
       } catch (error) {
         const message = error instanceof Error && error.message === 'Failed to fetch'

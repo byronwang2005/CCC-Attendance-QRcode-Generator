@@ -3,10 +3,40 @@ const FIXED_TIME_STEP = 1 / 60;
 const RECEIPT_WIDTH = 1.18;
 const RECEIPT_HEIGHT = 2.34;
 const WAKEUP_VELOCITY_SQ = 0.0000032;
+const INTRO_DROP_DISTANCE = 1.34;
+const INTRO_DURATION_MS = 1080;
+const PIN_DROP_DISTANCE = 0.28;
+const PIN_ANIMATION_DURATION_MS = 220;
+const PIN_ANIMATION_STAGGER_MS = 90;
+const PIN_LAYOUT = Object.freeze([
+  Object.freeze({
+    x: -RECEIPT_WIDTH * 0.41,
+    y: RECEIPT_HEIGHT * 0.464,
+    z: 0.036,
+    rotationZ: -0.16
+  }),
+  Object.freeze({
+    x: RECEIPT_WIDTH * 0.41,
+    y: RECEIPT_HEIGHT * 0.464,
+    z: 0.036,
+    rotationZ: 0.16
+  })
+]);
+const PIN_CORE_RADIUS_X = 0.072;
+const PIN_CORE_RADIUS_Y = 0.06;
+const PIN_TETHER_RADIUS_X = 0.152;
+const PIN_TETHER_RADIUS_Y = 0.138;
+const PIN_SURFACE_BULGE = 0.018;
+const PIN_SURFACE_DENT = 0.011;
 
 let threeModulePromise;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
+const receiptPointToTexture = (x, y, width, height) => ({
+  x: (x / RECEIPT_WIDTH + 0.5) * width,
+  y: (0.5 - y / RECEIPT_HEIGHT) * height
+});
 
 const loadThreeModule = async () => {
   if (!threeModulePromise) {
@@ -69,6 +99,28 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   sheenGradient.addColorStop(1, 'rgba(210,210,210,0.05)');
   context.fillStyle = sheenGradient;
   context.fillRect(0, 0, width, height);
+
+  for (const pinLayout of PIN_LAYOUT) {
+    const pinPoint = receiptPointToTexture(pinLayout.x, pinLayout.y, width, height);
+
+    context.save();
+    context.translate(pinPoint.x, pinPoint.y + 4);
+    context.scale(1.18, 0.72);
+    const contactGradient = context.createRadialGradient(0, -4, 5, 0, 0, 58);
+    contactGradient.addColorStop(0, 'rgba(26, 22, 18, 0.18)');
+    contactGradient.addColorStop(0.48, 'rgba(26, 22, 18, 0.08)');
+    contactGradient.addColorStop(1, 'rgba(26, 22, 18, 0)');
+    context.fillStyle = contactGradient;
+    context.beginPath();
+    context.arc(0, 0, 58, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+
+    context.fillStyle = 'rgba(38, 31, 26, 0.16)';
+    context.beginPath();
+    context.arc(pinPoint.x, pinPoint.y + 2, 7, 0, Math.PI * 2);
+    context.fill();
+  }
 
   for (let row = 0; row < height; row += 4) {
     const alpha = 0.004 + ((row % 28) / 28) * 0.005;
@@ -194,6 +246,87 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   return { map, bumpMap };
 };
 
+const createPushPin = (THREE) => {
+  const pin = new THREE.Group();
+
+  const headMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xc9463f,
+    roughness: 0.34,
+    metalness: 0.08,
+    clearcoat: 0.44,
+    clearcoatRoughness: 0.16
+  });
+  const headBaseMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xb43731,
+    roughness: 0.4,
+    metalness: 0.12,
+    clearcoat: 0.28,
+    clearcoatRoughness: 0.22
+  });
+  const metalMaterial = new THREE.MeshStandardMaterial({
+    color: 0xcbd2da,
+    roughness: 0.24,
+    metalness: 0.92
+  });
+  const ferruleMaterial = new THREE.MeshStandardMaterial({
+    color: 0xaab1bb,
+    roughness: 0.32,
+    metalness: 0.88
+  });
+
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.056, 28, 22),
+    headMaterial
+  );
+  head.scale.set(1, 0.52, 1);
+  head.position.y = 0.012;
+  pin.add(head);
+
+  const headBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.05, 0.054, 0.026, 28),
+    headBaseMaterial
+  );
+  headBase.position.y = -0.003;
+  pin.add(headBase);
+
+  const ferrule = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.019, 0.024, 0.024, 22),
+    ferruleMaterial
+  );
+  ferrule.position.y = -0.033;
+  pin.add(ferrule);
+
+  const needle = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.0054, 0.0032, 0.204, 16),
+    metalMaterial
+  );
+  needle.position.y = -0.145;
+  pin.add(needle);
+
+  const tip = new THREE.Mesh(
+    new THREE.ConeGeometry(0.0048, 0.042, 16),
+    metalMaterial
+  );
+  tip.position.y = -0.268;
+  pin.add(tip);
+
+  const highlight = new THREE.Mesh(
+    new THREE.SphereGeometry(0.018, 14, 12),
+    new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.22,
+      depthWrite: false
+    })
+  );
+  highlight.position.set(-0.014, 0.032, 0.025);
+  highlight.scale.set(1.16, 0.62, 0.92);
+  pin.add(highlight);
+
+  pin.rotation.x = 0.3;
+  return pin;
+};
+
 class ReceiptStage {
   constructor(container, options, THREE) {
     this.container = container;
@@ -208,6 +341,7 @@ class ReceiptStage {
     this.receiptGeometry = null;
     this.receiptTexture = null;
     this.receiptBumpMap = null;
+    this.pushPins = [];
     this.frameId = 0;
     this.accumulator = 0;
     this.isRunning = false;
@@ -215,6 +349,10 @@ class ReceiptStage {
     this.lastTimestamp = 0;
     this.maxVelocitySq = WAKEUP_VELOCITY_SQ * 3;
     this.dragState = null;
+    this.introAnimation = null;
+    this.pinAnimation = null;
+    this.pinsPlaced = false;
+    this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.resizeObserver = null;
 
     this.particles = [];
@@ -247,6 +385,7 @@ class ReceiptStage {
     this.bindEvents();
     this.resetPose();
     this.onResize();
+    this.startIntroAnimation();
     this.wake();
   }
 
@@ -314,17 +453,24 @@ class ReceiptStage {
     });
 
     this.receiptMesh = new THREE.Mesh(this.receiptGeometry, this.receiptMaterial);
+    this.baseReceiptPositionY = this.receiptMesh.position.y;
+    this.baseReceiptRotationX = this.receiptMesh.rotation.x;
+    this.baseReceiptRotationZ = this.receiptMesh.rotation.z;
     this.presentationGroup.add(this.receiptMesh);
 
-    const clampGeometry = new THREE.BoxGeometry(RECEIPT_WIDTH * 1.04, 0.055, 0.075);
-    const clampMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.94,
-      metalness: 0.02
+    this.pushPins = PIN_LAYOUT.map((pinLayout) => {
+      const pin = createPushPin(THREE);
+      pin.position.set(pinLayout.x, pinLayout.y, pinLayout.z);
+      pin.rotation.z = pinLayout.rotationZ;
+      return pin;
     });
-    this.topClamp = new THREE.Mesh(clampGeometry, clampMaterial);
-    this.topClamp.position.set(0, RECEIPT_HEIGHT * 0.5 + 0.02, -0.02);
-    this.presentationGroup.add(this.topClamp);
+
+    for (const pin of this.pushPins) {
+      pin.userData.restPosition = pin.position.clone();
+      pin.userData.restRotationX = pin.rotation.x;
+      pin.visible = false;
+      this.presentationGroup.add(pin);
+    }
   }
 
   buildPhysicsGrid() {
@@ -351,7 +497,8 @@ class ReceiptStage {
         this.particles.push({
           column,
           row,
-          pinned: row === 0,
+          pinned: false,
+          pinHoldStrength: 0,
           position,
           previous: position.clone(),
           home: position.clone(),
@@ -398,6 +545,49 @@ class ReceiptStage {
 
         if (row + 2 <= this.ySegments) {
           addConstraint(currentIndex, indexOf(column, row + 2), clamp(0.44 + rowInfluence * 0.1, 0, 0.58));
+        }
+      }
+    }
+
+    this.configurePinAnchors();
+  }
+
+  configurePinAnchors() {
+    for (const particle of this.particles) {
+      particle.pinned = false;
+      particle.pinHoldStrength = 0;
+      particle.anchor.copy(particle.home);
+    }
+
+    for (const pinLayout of PIN_LAYOUT) {
+      for (const particle of this.particles) {
+        const dx = particle.home.x - pinLayout.x;
+        const dy = particle.home.y - pinLayout.y;
+        const tetherDistance = Math.hypot(dx / PIN_TETHER_RADIUS_X, dy / PIN_TETHER_RADIUS_Y);
+
+        if (tetherDistance > 1) {
+          continue;
+        }
+
+        const tetherFalloff = easeOutCubic(1 - tetherDistance);
+        const coreDistance = Math.hypot(dx / PIN_CORE_RADIUS_X, dy / PIN_CORE_RADIUS_Y);
+        const coreFalloff = easeOutCubic(clamp(1 - coreDistance, 0, 1));
+        const nextAnchor = particle.home.clone();
+
+        nextAnchor.x -= dx * tetherFalloff * 0.045;
+        nextAnchor.y -= dy * tetherFalloff * 0.038;
+        nextAnchor.z += tetherFalloff * 0.003 + coreFalloff * PIN_SURFACE_BULGE;
+        nextAnchor.z -= Math.max(tetherFalloff - coreFalloff * 0.68, 0) * PIN_SURFACE_DENT;
+
+        if (tetherFalloff >= particle.pinHoldStrength) {
+          particle.pinHoldStrength = tetherFalloff;
+          particle.anchor.copy(nextAnchor);
+        }
+
+        if (coreDistance <= 1) {
+          particle.pinned = true;
+          particle.pinHoldStrength = 1;
+          particle.anchor.copy(nextAnchor);
         }
       }
     }
@@ -522,6 +712,7 @@ class ReceiptStage {
     }
 
     event.preventDefault();
+    this.finishIntroAnimation();
 
     const hit = intersections[0];
     const localPoint = this.receiptMesh.worldToLocal(hit.point.clone());
@@ -604,8 +795,9 @@ class ReceiptStage {
     const time = performance.now() * 0.0017;
 
     for (const particle of this.particles) {
-      particle.position.copy(particle.home);
-      particle.previous.copy(particle.home);
+      const restPosition = particle.pinHoldStrength > 0 ? particle.anchor : particle.home;
+      particle.position.copy(restPosition);
+      particle.previous.copy(restPosition);
 
       if (!particle.pinned) {
         const sway = Math.sin((particle.column + 1) * 0.6 + time) * 0.004 * (particle.row / this.ySegments);
@@ -619,6 +811,121 @@ class ReceiptStage {
     this.updateGeometry();
     this.render();
     this.wake();
+  }
+
+  startIntroAnimation() {
+    if (this.prefersReducedMotion || !this.receiptMesh) {
+      this.finishIntroAnimation();
+      return;
+    }
+
+    this.introAnimation = {
+      startTime: 0,
+      duration: INTRO_DURATION_MS
+    };
+
+    this.receiptMesh.position.y = this.baseReceiptPositionY + INTRO_DROP_DISTANCE;
+    this.receiptMesh.position.x = -0.1;
+    this.receiptMesh.position.z = 0;
+    this.receiptMesh.rotation.x = this.baseReceiptRotationX - 0.2;
+    this.receiptMesh.rotation.z = -0.16;
+  }
+
+  startPinAnimation() {
+    if (!this.pushPins.length || this.pinsPlaced) {
+      return;
+    }
+
+    this.pinsPlaced = true;
+
+    if (this.prefersReducedMotion) {
+      for (const pin of this.pushPins) {
+        pin.visible = true;
+        pin.position.copy(pin.userData.restPosition);
+        pin.rotation.x = pin.userData.restRotationX;
+      }
+      this.pinAnimation = null;
+      return;
+    }
+
+    this.pinAnimation = {
+      startTime: 0
+    };
+
+    for (const pin of this.pushPins) {
+      pin.visible = true;
+      pin.position.copy(pin.userData.restPosition);
+      pin.position.y += PIN_DROP_DISTANCE;
+      pin.rotation.x = pin.userData.restRotationX - 0.22;
+    }
+  }
+
+  finishIntroAnimation() {
+    this.introAnimation = null;
+    if (!this.receiptMesh) {
+      return;
+    }
+
+    this.receiptMesh.position.set(0, this.baseReceiptPositionY, 0);
+    this.receiptMesh.rotation.x = this.baseReceiptRotationX;
+    this.receiptMesh.rotation.z = this.baseReceiptRotationZ;
+    this.startPinAnimation();
+  }
+
+  updatePinAnimation(timestamp) {
+    if (!this.pinAnimation) {
+      return;
+    }
+
+    if (!this.pinAnimation.startTime) {
+      this.pinAnimation.startTime = timestamp;
+    }
+
+    let finishedPins = 0;
+
+    for (let index = 0; index < this.pushPins.length; index += 1) {
+      const pin = this.pushPins[index];
+      const localElapsed = timestamp - this.pinAnimation.startTime - index * PIN_ANIMATION_STAGGER_MS;
+      const progress = clamp(localElapsed / PIN_ANIMATION_DURATION_MS, 0, 1);
+      const eased = easeOutCubic(progress);
+      const bounce = Math.sin(progress * Math.PI * 3.4) * Math.pow(1 - progress, 1.8);
+
+      pin.position.copy(pin.userData.restPosition);
+      pin.position.y += (1 - eased) * PIN_DROP_DISTANCE - bounce * 0.045;
+      pin.rotation.x = pin.userData.restRotationX - (1 - eased) * 0.22 + bounce * 0.045;
+
+      if (progress >= 1) {
+        finishedPins += 1;
+      }
+    }
+
+    if (finishedPins === this.pushPins.length) {
+      this.pinAnimation = null;
+    }
+  }
+
+  updateIntroAnimation(timestamp) {
+    if (!this.introAnimation || !this.receiptMesh) {
+      return;
+    }
+
+    if (!this.introAnimation.startTime) {
+      this.introAnimation.startTime = timestamp;
+    }
+
+    const elapsed = timestamp - this.introAnimation.startTime;
+    const progress = clamp(elapsed / this.introAnimation.duration, 0, 1);
+    const eased = easeOutCubic(progress);
+    const bounce = Math.sin(progress * Math.PI * 3.2) * Math.pow(1 - progress, 1.65);
+
+    this.receiptMesh.position.y = this.baseReceiptPositionY + (1 - eased) * INTRO_DROP_DISTANCE - bounce * 0.11;
+    this.receiptMesh.position.x = (1 - eased) * -0.1 + bounce * 0.024;
+    this.receiptMesh.rotation.x = this.baseReceiptRotationX - (1 - eased) * 0.2 + bounce * 0.028;
+    this.receiptMesh.rotation.z = (1 - eased) * -0.16 + bounce * 0.085;
+
+    if (progress >= 1) {
+      this.finishIntroAnimation();
+    }
   }
 
   applyVerletStep(step) {
@@ -694,10 +1001,20 @@ class ReceiptStage {
         particleB.position.addScaledVector(this.tempVectorA, -halfDifference);
       }
 
-      for (let column = 0; column <= this.xSegments; column += 1) {
-        const topParticle = this.particles[column];
-        topParticle.position.copy(topParticle.anchor);
-        topParticle.previous.copy(topParticle.anchor);
+      for (const particle of this.particles) {
+        if (particle.pinned) {
+          particle.position.copy(particle.anchor);
+          particle.previous.copy(particle.anchor);
+          continue;
+        }
+
+        if (particle.pinHoldStrength <= 0) {
+          continue;
+        }
+
+        const tetherStrength = 0.05 + particle.pinHoldStrength * 0.18;
+        particle.position.lerp(particle.anchor, tetherStrength);
+        particle.previous.lerp(particle.anchor, tetherStrength * 0.34);
       }
     }
   }
@@ -750,6 +1067,8 @@ class ReceiptStage {
       this.accumulator -= FIXED_TIME_STEP;
     }
 
+    this.updateIntroAnimation(timestamp);
+    this.updatePinAnimation(timestamp);
     this.render();
 
     if (!this.dragState && this.maxVelocitySq < WAKEUP_VELOCITY_SQ) {
@@ -758,7 +1077,7 @@ class ReceiptStage {
       this.idleFrames = 0;
     }
 
-    if (this.dragState || this.idleFrames < 10) {
+    if (this.introAnimation || this.pinAnimation || this.dragState || this.idleFrames < 10) {
       this.frameId = window.requestAnimationFrame((nextTimestamp) => this.frame(nextTimestamp));
       return;
     }
@@ -809,8 +1128,12 @@ class ReceiptStage {
     this.receiptMaterial?.dispose();
     this.receiptTexture?.dispose();
     this.receiptBumpMap?.dispose();
-    this.topClamp?.geometry?.dispose();
-    this.topClamp?.material?.dispose();
+    for (const pin of this.pushPins) {
+      for (const child of pin.children) {
+        child.geometry?.dispose?.();
+        child.material?.dispose?.();
+      }
+    }
     this.renderer?.dispose();
   }
 }

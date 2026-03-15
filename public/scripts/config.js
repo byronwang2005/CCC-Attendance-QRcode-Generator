@@ -20,7 +20,6 @@ export const TIME_MODES = Object.freeze({
 });
 
 export const QR_CODE = Object.freeze({
-  filename: 'qrcode.png',
   alt: 'Attendance QR Code'
 });
 
@@ -77,14 +76,13 @@ export const TEXT = Object.freeze({
   status: Object.freeze({
     copySuccess: '复制成功！',
     copied: '已复制!',
-    qrCodeGenerated: '二维码已生成并下载！如果有“答题”选项，请记得继续完成。',
+    qrCodeGenerated: '二维码已生成！如果有“答题”选项，请记得继续完成。',
     generating: '生成中...',
     regenerate: '重新生成二维码',
     generate: '生成签到二维码'
   }),
   placeholders: Object.freeze({
     qrCode: '二维码将在这里生成',
-    qrCodeAutoDownloadHint: '生成成功后会自动下载到本地',
     qrCodeLoading: '正在生成二维码...'
   }),
   redirects: Object.freeze({
