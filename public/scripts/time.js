@@ -11,9 +11,7 @@ import {
   showToast,
   validateCourseUrl
 } from './wizard.js';
-
-const MANUAL_YEAR_MIN = 2025;
-const MANUAL_YEAR_MAX = 2050;
+import { APP_PATHS, MANUAL_TIME_FIELDS, TEXT, TIME_LIMITS, TIME_MODES } from './config.js';
 
 const parseInteger = (value) => {
   if (value === '' || value === null || value === undefined) {
@@ -61,12 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const state = loadState();
   if (!state.url) {
-    redirectTo('index.html', '请先完成第一步并粘贴课程链接');
+    redirectTo(APP_PATHS.index, TEXT.redirects.finishFirstStep);
     return;
   }
   const urlValidation = validateCourseUrl(state.url);
   if (!urlValidation.valid) {
-    redirectTo('index.html', urlValidation.message);
+    redirectTo(APP_PATHS.index, urlValidation.message);
     return;
   }
 
@@ -85,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   linkPreview.textContent = state.url;
   identityPreview.textContent = getIdentityLabel(state.identity);
-  populateSelect(yearElement, MANUAL_YEAR_MIN, MANUAL_YEAR_MAX);
+  populateSelect(yearElement, TIME_LIMITS.manualYearMin, TIME_LIMITS.manualYearMax);
   populateSelect(monthElement, 1, 12);
   populateSelect(hourElement, 0, 23, true);
   populateSelect(minuteElement, 0, 59, true);
@@ -94,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
   syncDayOptions(yearElement, monthElement, dayElement);
 
   const applyMode = (mode) => {
-    const nextMode = mode === 'manual' ? 'manual' : 'auto';
-    manualTime.hidden = nextMode !== 'manual';
+    const nextMode = mode === TIME_MODES.manual ? TIME_MODES.manual : TIME_MODES.auto;
+    manualTime.hidden = nextMode !== TIME_MODES.manual;
   };
 
   const collectState = () => ({
@@ -113,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   applyMode(state.timeMode);
 
-  [yearElement, monthElement, dayElement, hourElement, minuteElement].forEach((element) => {
+  MANUAL_TIME_FIELDS.map((field) => document.getElementById(field)).forEach((element) => {
     if (!element) {
       return;
     }
@@ -128,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   backBtn.addEventListener('click', () => {
     saveState(collectState());
-    window.location.href = 'index.html';
+    window.location.href = APP_PATHS.index;
   });
 
   nextBtn.addEventListener('click', () => {
@@ -137,8 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       buildTimestamp(nextState);
     } catch (error) {
-      showToast(error.message, 'error');
-      if (nextState.timeMode === 'manual') {
+      showToast(error instanceof Error ? error.message : TEXT.errors.invalidManualTime, 'error');
+      if (nextState.timeMode === TIME_MODES.manual) {
         const firstManualInput = document.getElementById('year');
         if (firstManualInput) {
           firstManualInput.focus();
@@ -147,6 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    window.location.href = 'qrcode.html';
+    window.location.href = APP_PATHS.qrcode;
   });
 });

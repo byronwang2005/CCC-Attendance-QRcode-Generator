@@ -13,18 +13,19 @@ import {
   showToast,
   validateCourseUrl
 } from './wizard.js';
+import { APP_PATHS, QR_CODE, TEXT } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   readPageMessage();
 
   const state = loadState();
   if (!state.url) {
-    redirectTo('index.html', '请先完成前两步后再生成二维码');
+    redirectTo(APP_PATHS.index, TEXT.redirects.finishPreviousSteps);
     return;
   }
   const urlValidation = validateCourseUrl(state.url);
   if (!urlValidation.valid) {
-    redirectTo('index.html', urlValidation.message);
+    redirectTo(APP_PATHS.index, urlValidation.message);
     return;
   }
 
@@ -46,11 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
   summaryMode.textContent = getTimeModeLabel(state);
   summaryUrl.textContent = state.url;
 
-  const renderPlaceholder = (message = '二维码将在这里生成') => {
+  const renderPlaceholder = (message = TEXT.placeholders.qrCode) => {
     qrcodeContainer.innerHTML = `
       <div class="qrcode-placeholder">
         <div>${message}</div>
-        <small>生成成功后会自动下载到本地</small>
+        <small>${TEXT.placeholders.qrCodeAutoDownloadHint}</small>
       </div>
     `;
   };
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     qrcodeContainer.innerHTML = `
       <div class="loading-state">
         <div class="loading-spinner"></div>
-        <div>正在生成二维码...</div>
+        <div>${TEXT.placeholders.qrCodeLoading}</div>
       </div>
     `;
   };
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderImage = (src) => {
     const image = new Image();
     image.src = src;
-    image.alt = 'Attendance QR Code';
+    image.alt = QR_CODE.alt;
     image.className = 'qrcode-image';
     qrcodeContainer.innerHTML = '';
     qrcodeContainer.appendChild(image);
@@ -81,16 +82,16 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       timestamp = buildTimestamp(state);
     } catch (error) {
-      redirectTo('time.html', error.message);
+      redirectTo(APP_PATHS.time, error instanceof Error ? error.message : TEXT.errors.invalidManualTime);
       return;
     }
 
     renderLoading();
     generateBtn.disabled = true;
-    generateBtn.textContent = '生成中...';
+    generateBtn.textContent = TEXT.status.generating;
 
     try {
-      const response = await fetch('/api/generate', {
+      const response = await fetch(APP_PATHS.generateApi, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -119,12 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
         URL.revokeObjectURL(previousImageUrl);
       }
 
-      downloadFile(currentImageUrl, 'qrcode.png');
-      showToast('二维码已生成并下载！如果有“答题”选项，请记得继续完成。');
+      downloadFile(currentImageUrl, QR_CODE.filename);
+      showToast(TEXT.status.qrCodeGenerated);
     } catch (error) {
-      const message = error && error.message === 'Failed to fetch'
-        ? '网络异常，请检查网络后重试'
-        : error.message;
+      const message = error instanceof Error && error.message === 'Failed to fetch'
+        ? TEXT.errors.networkError
+        : (error instanceof Error ? error.message : TEXT.errors.qrCodeGenerationFallback);
       if (previousImageUrl) {
         currentImageUrl = previousImageUrl;
         renderImage(previousImageUrl);
@@ -132,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generatedTimeWrap.hidden = false;
         downloadBtn.hidden = false;
       } else {
-        renderPlaceholder('二维码生成失败，请检查链接或时间设置');
+        renderPlaceholder(TEXT.errors.qrCodeGenerationFailed);
         generatedTime.textContent = '';
         generatedTimeWrap.hidden = true;
         downloadBtn.hidden = true;
@@ -140,26 +141,26 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(`二维码生成失败：${message}`, 'error');
     } finally {
       generateBtn.disabled = false;
-      generateBtn.textContent = currentImageUrl ? '重新生成二维码' : '生成签到二维码';
+      generateBtn.textContent = currentImageUrl ? TEXT.status.regenerate : TEXT.status.generate;
     }
   };
 
   downloadBtn.addEventListener('click', () => {
     if (!currentImageUrl) {
-      showToast('当前还没有可下载的二维码', 'error');
+      showToast(TEXT.errors.noQrCodeToDownload, 'error');
       return;
     }
 
-    downloadFile(currentImageUrl, 'qrcode.png');
+    downloadFile(currentImageUrl, QR_CODE.filename);
   });
 
   backBtn.addEventListener('click', () => {
-    window.location.href = 'time.html';
+    window.location.href = APP_PATHS.time;
   });
 
   restartBtn.addEventListener('click', () => {
     clearState();
-    window.location.href = 'index.html';
+    window.location.href = APP_PATHS.index;
   });
 
   generateBtn.addEventListener('click', () => {

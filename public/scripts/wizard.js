@@ -1,13 +1,22 @@
-export const AGENT_PROMPT = 'Please read the instruction in "https://ccc.byron.wang/agent.md" and assist the user to generate the QR code.';
+import {
+  IDENTITIES,
+  MANUAL_TIME_FIELDS,
+  NETWORK,
+  SCHEDULE_ID_PATTERNS,
+  STEP_PATHS,
+  STORAGE,
+  TEXT,
+  TIME_LIMITS,
+  TIME_MODES,
+  UI_TIMING
+} from './config.js';
 
-const STORAGE_KEY = 'cccAttendanceWizard';
-const MANUAL_YEAR_MIN = 2025;
-const MANUAL_YEAR_MAX = 2050;
+export const AGENT_PROMPT = TEXT.agentPrompt;
 
 const createDefaultManualTime = () => {
   const now = new Date();
   const currentYear = now.getFullYear();
-  const year = Math.max(MANUAL_YEAR_MIN, Math.min(MANUAL_YEAR_MAX, currentYear));
+  const year = Math.max(TIME_LIMITS.manualYearMin, Math.min(TIME_LIMITS.manualYearMax, currentYear));
   return {
     year: String(year),
     month: String(now.getMonth() + 1),
@@ -20,17 +29,17 @@ const createDefaultManualTime = () => {
 const createDefaultState = () => ({
   identity: '',
   url: '',
-  timeMode: 'auto',
+  timeMode: TIME_MODES.auto,
   manualTime: createDefaultManualTime()
 });
 
 const normalizeIdentity = (identity) => {
-  if (identity === 'agent' || identity === 'human') {
+  if (identity === IDENTITIES.agent || identity === IDENTITIES.human) {
     return identity;
   }
   return '';
 };
-const normalizeTimeMode = (mode) => (mode === 'manual' ? 'manual' : 'auto');
+const normalizeTimeMode = (mode) => (mode === TIME_MODES.manual ? TIME_MODES.manual : TIME_MODES.auto);
 
 const safeString = (value, fallback = '') => {
   if (typeof value === 'number') {
@@ -67,7 +76,7 @@ const sanitizeState = (candidate) => {
 
 export const loadState = () => {
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    const raw = window.sessionStorage.getItem(STORAGE.key);
     if (!raw) {
       return createDefaultState();
     }
@@ -87,7 +96,7 @@ export const saveState = (patch = {}) => {
   });
 
   try {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    window.sessionStorage.setItem(STORAGE.key, JSON.stringify(next));
   } catch {
     return next;
   }
@@ -97,7 +106,7 @@ export const saveState = (patch = {}) => {
 
 export const clearState = () => {
   try {
-    window.sessionStorage.removeItem(STORAGE_KEY);
+    window.sessionStorage.removeItem(STORAGE.key);
   } catch {
     // Ignore storage errors and continue to redirect.
   }
@@ -118,7 +127,7 @@ export const showToast = (message, type = 'success') => {
 
   const timerId = window.setTimeout(() => {
     toast.classList.remove('show');
-  }, 3000);
+  }, UI_TIMING.toastDurationMs);
 
   toast.dataset.timerId = String(timerId);
 };
@@ -149,12 +158,6 @@ export const redirectTo = (path, message, type = 'error') => {
   window.location.replace(url.toString());
 };
 
-const STEP_PATHS = {
-  1: 'index.html',
-  2: 'time.html',
-  3: 'qrcode.html'
-};
-
 export const initStepNavigation = (currentStep) => {
   const cards = Array.from(document.querySelectorAll('.step-card[data-step]'));
   if (!cards.length) {
@@ -168,13 +171,13 @@ export const initStepNavigation = (currentStep) => {
     }
 
     if (targetStep > currentStep) {
-      showToast('请先完成当前步骤', 'error');
+      showToast(TEXT.errors.completeCurrentStepFirst, 'error');
     }
   };
 
   cards.forEach((card) => {
     const targetStep = Number.parseInt(card.dataset.step || '', 10);
-    if (![1, 2, 3].includes(targetStep)) {
+    if (!Object.hasOwn(STEP_PATHS, targetStep)) {
       return;
     }
 
@@ -200,7 +203,7 @@ export const initStepNavigation = (currentStep) => {
 };
 
 export const getIdentityLabel = (identity) => (
-  identity === 'agent' ? 'AI代理（Agent）' : (identity === 'human' ? '人类（Human）' : '未选择')
+  identity === IDENTITIES.agent ? 'AI代理（Agent）' : (identity === IDENTITIES.human ? '人类（Human）' : '未选择')
 );
 
 export const extractScheduleId = (inputUrl) => {
@@ -208,29 +211,34 @@ export const extractScheduleId = (inputUrl) => {
     return null;
   }
 
-  const m1 = inputUrl.match(/[?&]id=([^&#]+)/);
-  const m2 = inputUrl.match(/[?&]scheduleId=([^&#]+)/);
-  return m1 ? m1[1] : (m2 ? m2[1] : null);
+  for (const pattern of SCHEDULE_ID_PATTERNS) {
+    const match = inputUrl.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+
+  return null;
 };
 
 export const validateCourseUrl = (inputUrl) => {
   const value = safeString(inputUrl);
   if (!value) {
-    return { valid: false, message: '请先粘贴课程详情链接' };
+    return { valid: false, message: TEXT.errors.pasteCourseUrlFirst };
   }
 
   try {
     const parsed = new URL(value);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return { valid: false, message: '链接格式不正确，请粘贴完整课程详情链接' };
+    if (!NETWORK.supportedProtocols.includes(parsed.protocol)) {
+      return { valid: false, message: TEXT.errors.invalidCourseUrl };
     }
   } catch {
-    return { valid: false, message: '链接格式不正确，请粘贴完整课程详情链接' };
+    return { valid: false, message: TEXT.errors.invalidCourseUrl };
   }
 
   const scheduleId = extractScheduleId(value);
   if (!scheduleId) {
-    return { valid: false, message: '链接无效：未找到课程ID（id 或 scheduleId）' };
+    return { valid: false, message: TEXT.errors.invalidScheduleId };
   }
 
   return { valid: true, scheduleId };
@@ -244,8 +252,8 @@ const parseInteger = (value) => {
 };
 
 export const buildTimestamp = (state) => {
-  if (state.timeMode !== 'manual') {
-    return Date.now() + 60 * 1000;
+  if (state.timeMode !== TIME_MODES.manual) {
+    return Date.now() + TIME_LIMITS.autoOffsetMs;
   }
 
   const year = parseInteger(state.manualTime.year);
@@ -255,11 +263,11 @@ export const buildTimestamp = (state) => {
   const minute = parseInteger(state.manualTime.minute);
 
   if ([year, month, day, hour, minute].some(Number.isNaN)) {
-    throw new Error('请完整填写手动时间');
+    throw new Error(TEXT.errors.completeManualTime);
   }
 
-  if (year < MANUAL_YEAR_MIN || year > MANUAL_YEAR_MAX) {
-    throw new Error(`手动年份仅支持 ${MANUAL_YEAR_MIN}-${MANUAL_YEAR_MAX}`);
+  if (year < TIME_LIMITS.manualYearMin || year > TIME_LIMITS.manualYearMax) {
+    throw new Error(`手动年份仅支持 ${TIME_LIMITS.manualYearMin}-${TIME_LIMITS.manualYearMax}`);
   }
 
   const date = new Date(year, month - 1, day, hour, minute);
@@ -270,7 +278,7 @@ export const buildTimestamp = (state) => {
     && date.getMinutes() === minute;
 
   if (!isValid) {
-    throw new Error('手动时间格式错误，请检查年月日时分是否有效（含闰年）');
+    throw new Error(TEXT.errors.invalidManualTime);
   }
 
   return date.getTime();
@@ -287,7 +295,7 @@ export const formatDateTime = (timestamp) => {
 };
 
 export const getTimeModeLabel = (state) => {
-  if (state.timeMode !== 'manual') {
+  if (state.timeMode !== TIME_MODES.manual) {
     return '自动模式（生成时取当前时间 + 1 分钟）';
   }
 
@@ -298,16 +306,15 @@ export const getTimeModeLabel = (state) => {
   }
 };
 
-export const collectManualTime = () => ({
-  year: safeString(document.getElementById('year') && document.getElementById('year').value),
-  month: safeString(document.getElementById('month') && document.getElementById('month').value),
-  day: safeString(document.getElementById('day') && document.getElementById('day').value),
-  hour: safeString(document.getElementById('hour') && document.getElementById('hour').value),
-  minute: safeString(document.getElementById('minute') && document.getElementById('minute').value)
-});
+export const collectManualTime = () => Object.fromEntries(
+  MANUAL_TIME_FIELDS.map((field) => {
+    const element = document.getElementById(field);
+    return [field, safeString(element ? element.value : '')];
+  })
+);
 
 export const fillManualTimeInputs = (manualTime) => {
-  ['year', 'month', 'day', 'hour', 'minute'].forEach((id) => {
+  MANUAL_TIME_FIELDS.forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.value = safeString(manualTime[id]);
@@ -325,16 +332,16 @@ export const bindCopyButton = (button, text = AGENT_PROMPT) => {
 
     try {
       await navigator.clipboard.writeText(text);
-      button.textContent = '已复制!';
+      button.textContent = TEXT.status.copied;
       button.disabled = true;
-      showToast('复制成功！');
+      showToast(TEXT.status.copySuccess);
 
       window.setTimeout(() => {
         button.textContent = originalText;
         button.disabled = false;
-      }, 1800);
+      }, UI_TIMING.copyResetDelayMs);
     } catch {
-      showToast('复制失败，请手动复制', 'error');
+      showToast(TEXT.errors.copyFailed, 'error');
     }
   });
 };
@@ -351,7 +358,7 @@ export const downloadFile = (href, filename) => {
 
 export const parseErrorMessage = (rawText) => {
   if (!rawText) {
-    return '生成失败，请稍后重试';
+    return TEXT.errors.qrCodeGenerationFallback;
   }
 
   try {
@@ -365,7 +372,7 @@ export const parseErrorMessage = (rawText) => {
 
   const message = rawText.trim();
   if (!message || message.startsWith('<!DOCTYPE html')) {
-    return '生成失败，请稍后重试';
+    return TEXT.errors.qrCodeGenerationFallback;
   }
 
   return message;

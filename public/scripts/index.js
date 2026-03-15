@@ -8,6 +8,7 @@ import {
   showToast,
   validateCourseUrl
 } from './wizard.js';
+import { APP_PATHS, IDENTITIES, TEXT } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   readPageMessage();
@@ -22,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedIdentity = '';
 
   const applyIdentity = (identity, { persist = true } = {}) => {
-    const nextIdentity = identity === 'agent' || identity === 'human' ? identity : '';
+    const nextIdentity = identity === IDENTITIES.agent || identity === IDENTITIES.human ? identity : '';
     selectedIdentity = nextIdentity;
     identityButtons.forEach((button) => {
       button.classList.toggle('active', button.dataset.identity === nextIdentity);
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   nextBtn.addEventListener('click', () => {
     if (!selectedIdentity) {
-      showToast('请先选择身份（人类或AI代理）', 'error');
+      showToast(TEXT.errors.chooseIdentityFirst, 'error');
       return;
     }
 
@@ -80,6 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     saveState({ url, identity: selectedIdentity });
-    window.location.href = 'time.html';
+    window.location.href = APP_PATHS.time;
   });
 });

@@ -1,12 +1,16 @@
 {
   "name": "ccc-attendance",
   "version": "1.0.0",
+  "type": "module",
   "description": "UNNC中国文化课签到二维码生成器",
   "scripts": {
     "dev": "wrangler pages dev",
-    "deploy": "wrangler pages deploy"
+    "deploy": "wrangler pages deploy",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
     "wrangler": "^3.0.0"
   },
   "dependencies": {
