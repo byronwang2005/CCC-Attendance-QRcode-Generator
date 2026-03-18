@@ -77,11 +77,17 @@
   --mouse-y: 0.5;
   --pointer-x: 50vw;
   --pointer-y: 50vh;
+  --trail-pointer-x: 50vw;
+  --trail-pointer-y: 50vh;
   --pointer-offset-x: 0px;
   --pointer-offset-y: 0px;
   --core-scale: 0.72;
   --core-blur: 10px;
   --core-opacity: 0.42;
+  --trail-scale: 1;
+  --trail-stretch: 1;
+  --trail-blur: 42px;
+  --trail-opacity: 0.12;
   --aura-scale: 0.86;
   --aura-blur: 28px;
   --aura-opacity: 0.18;
@@ -129,7 +135,8 @@ body::before {
 }
 
 .background-core,
-.background-aura {
+.background-aura,
+.background-trail {
   position: absolute;
   top: calc(var(--pointer-y) - 11rem);
   left: calc(var(--pointer-x) - 11rem);
@@ -137,6 +144,22 @@ body::before {
   height: 22rem;
   border-radius: 50%;
   will-change: transform, opacity, filter;
+}
+
+.background-trail {
+  top: calc(var(--trail-pointer-y) - 12rem);
+  left: calc(var(--trail-pointer-x) - 12rem);
+  width: 24rem;
+  height: 24rem;
+  background:
+    radial-gradient(ellipse at 34% 50%, rgba(var(--color-brand-highlight-rgb), 0.18) 0%, rgba(var(--color-brand-highlight-rgb), 0.12) 18%, rgba(var(--color-brand-highlight-rgb), 0.04) 44%, rgba(var(--color-brand-highlight-rgb), 0) 72%),
+    radial-gradient(circle at 62% 50%, rgba(var(--color-brand-highlight-rgb), 0.08) 0%, rgba(var(--color-brand-highlight-rgb), 0.02) 34%, rgba(var(--color-brand-highlight-rgb), 0) 64%);
+  opacity: var(--trail-opacity);
+  filter: blur(var(--trail-blur));
+  transform: translate3d(calc(var(--pointer-offset-x) * -0.02), calc(var(--pointer-offset-y) * -0.02), 0) rotate(calc(var(--pointer-offset-x) * 0.015deg)) scaleX(calc(var(--trail-scale) * var(--trail-stretch))) scaleY(var(--trail-scale));
+  transform-origin: 50% 50%;
+  animation: trailPulse 6s ease-in-out infinite;
+  mix-blend-mode: normal;
 }
 
 .background-core {
@@ -178,6 +201,17 @@ body::before {
   }
   50% {
     transform: translate3d(calc(var(--pointer-offset-x) * 0.03 + var(--aura-shift-x) * 1.3 + 10px), calc(var(--pointer-offset-y) * 0.03 + var(--aura-shift-y) * 1.3 - 12px), 0) scale(calc(var(--aura-scale) + 0.12));
+  }
+}
+
+@keyframes trailPulse {
+  0%, 100% {
+    opacity: calc(var(--trail-opacity) - 0.02);
+    filter: blur(calc(var(--trail-blur) + 2px));
+  }
+  50% {
+    opacity: calc(var(--trail-opacity) + 0.035);
+    filter: blur(calc(var(--trail-blur) - 3px)) brightness(1.04);
   }
 }
 
@@ -419,6 +453,7 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
   body::before,
+  .background-trail,
   .background-core,
   .background-aura {
     animation: none;

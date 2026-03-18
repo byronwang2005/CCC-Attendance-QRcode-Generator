@@ -489,8 +489,8 @@ class ReceiptStage {
         const v = row / this.ySegments;
         const x = (u - 0.5) * RECEIPT_WIDTH;
         const y = RECEIPT_HEIGHT * 0.5 - v * RECEIPT_HEIGHT;
-        const forwardCurl = Math.pow(v, 1.55) * 0.16;
-        const wrinkle = Math.sin(u * Math.PI * 6) * Math.pow(v, 1.8) * 0.008;
+        const forwardCurl = Math.pow(v, 1.7) * 0.092;
+        const wrinkle = Math.sin(u * Math.PI * 6) * Math.pow(v, 1.95) * 0.0038;
         const z = row === 0 ? 0 : forwardCurl + wrinkle;
         const position = new THREE.Vector3(x, y, z);
 
@@ -521,30 +521,30 @@ class ReceiptStage {
       for (let column = 0; column <= this.xSegments; column += 1) {
         const currentIndex = indexOf(column, row);
         const rowInfluence = 1 - row / this.ySegments;
-        const structuralBoost = 0.02 + rowInfluence * 0.04;
+        const structuralBoost = 0.01 + rowInfluence * 0.03;
 
         if (column < this.xSegments) {
-          addConstraint(currentIndex, indexOf(column + 1, row), clamp(0.965 + structuralBoost, 0, 0.995));
+          addConstraint(currentIndex, indexOf(column + 1, row), clamp(0.981 + structuralBoost, 0, 0.998));
         }
 
         if (row < this.ySegments) {
-          addConstraint(currentIndex, indexOf(column, row + 1), clamp(0.972 + structuralBoost, 0, 0.998));
+          addConstraint(currentIndex, indexOf(column, row + 1), clamp(0.986 + structuralBoost, 0, 0.999));
         }
 
         if (column < this.xSegments && row < this.ySegments) {
-          addConstraint(currentIndex, indexOf(column + 1, row + 1), 0.71);
+          addConstraint(currentIndex, indexOf(column + 1, row + 1), 0.79);
         }
 
         if (column > 0 && row < this.ySegments) {
-          addConstraint(currentIndex, indexOf(column - 1, row + 1), 0.71);
+          addConstraint(currentIndex, indexOf(column - 1, row + 1), 0.79);
         }
 
         if (column + 2 <= this.xSegments) {
-          addConstraint(currentIndex, indexOf(column + 2, row), clamp(0.38 + rowInfluence * 0.08, 0, 0.48));
+          addConstraint(currentIndex, indexOf(column + 2, row), clamp(0.46 + rowInfluence * 0.06, 0, 0.54));
         }
 
         if (row + 2 <= this.ySegments) {
-          addConstraint(currentIndex, indexOf(column, row + 2), clamp(0.44 + rowInfluence * 0.1, 0, 0.58));
+          addConstraint(currentIndex, indexOf(column, row + 2), clamp(0.52 + rowInfluence * 0.08, 0, 0.62));
         }
       }
     }
@@ -673,7 +673,7 @@ class ReceiptStage {
 
   createDragInfluences(centerParticle) {
     const influences = [];
-    const radius = 3.2;
+    const radius = 2.8;
 
     for (const particle of this.particles) {
       if (particle.row === 0) {
@@ -758,9 +758,9 @@ class ReceiptStage {
       this.pointer.x - this.dragState.startPointer.x,
       this.pointer.y - this.dragState.startPointer.y
     );
-    const lift = 0.17 + dragDistance * 0.82 + Math.abs(localPoint.x - this.dragState.startLocal.x) * 0.18;
+    const lift = 0.11 + dragDistance * 0.56 + Math.abs(localPoint.x - this.dragState.startLocal.x) * 0.12;
 
-    localPoint.z = clamp(localPoint.z + lift, -0.15, 0.94);
+    localPoint.z = clamp(localPoint.z + lift, -0.1, 0.58);
     localPoint.y = clamp(localPoint.y, -RECEIPT_HEIGHT * 0.48, RECEIPT_HEIGHT * 0.48);
     localPoint.x = clamp(localPoint.x, -RECEIPT_WIDTH * 0.46, RECEIPT_WIDTH * 0.46);
 
@@ -936,15 +936,15 @@ class ReceiptStage {
         continue;
       }
 
-      const velocityX = (particle.position.x - particle.previous.x) * 0.985;
-      const velocityY = (particle.position.y - particle.previous.y) * 0.987;
-      const velocityZ = (particle.position.z - particle.previous.z) * 0.982;
+      const velocityX = (particle.position.x - particle.previous.x) * 0.972;
+      const velocityY = (particle.position.y - particle.previous.y) * 0.974;
+      const velocityZ = (particle.position.z - particle.previous.z) * 0.968;
 
       particle.previous.copy(particle.position);
       particle.position.x += velocityX;
-      particle.position.y += velocityY - 11.5 * step * step;
-      particle.position.z += velocityZ + 0.42 * step * step;
-      particle.position.z = clamp(particle.position.z, -0.48, 0.98);
+      particle.position.y += velocityY - 10.2 * step * step;
+      particle.position.z += velocityZ + 0.18 * step * step;
+      particle.position.z = clamp(particle.position.z, -0.26, 0.64);
     }
   }
 
@@ -960,14 +960,14 @@ class ReceiptStage {
       }
 
       this.tempVectorA.copy(influence.offset);
-      this.tempVectorA.multiplyScalar(0.24 + (1 - influence.weight) * 0.14);
+      this.tempVectorA.multiplyScalar(0.18 + (1 - influence.weight) * 0.08);
       this.tempVectorA.add(this.dragState.target);
-      particle.position.lerp(this.tempVectorA, 0.32 * influence.weight);
+      particle.position.lerp(this.tempVectorA, 0.24 * influence.weight);
     }
   }
 
   solveConstraints() {
-    for (let iteration = 0; iteration < 7; iteration += 1) {
+    for (let iteration = 0; iteration < 9; iteration += 1) {
       this.applyDragConstraint();
 
       for (const constraint of this.constraints) {
@@ -1012,7 +1012,7 @@ class ReceiptStage {
           continue;
         }
 
-        const tetherStrength = 0.05 + particle.pinHoldStrength * 0.18;
+        const tetherStrength = 0.08 + particle.pinHoldStrength * 0.22;
         particle.position.lerp(particle.anchor, tetherStrength);
         particle.previous.lerp(particle.anchor, tetherStrength * 0.34);
       }

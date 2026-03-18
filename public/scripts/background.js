@@ -9,6 +9,7 @@ const applyBackground = () => {
   layer.className = 'background-orbs';
   layer.setAttribute('aria-hidden', 'true');
   layer.innerHTML = `
+    <span class="background-trail"></span>
     <span class="background-aura"></span>
     <span class="background-core"></span>
   `;
@@ -28,12 +29,15 @@ const bindPointerTracking = () => {
   let pointerY = window.innerHeight / 2;
   let currentPointerX = pointerX;
   let currentPointerY = pointerY;
+  let trailPointerX = pointerX;
+  let trailPointerY = pointerY;
   let lastMoveTime = performance.now();
   let lastEventX = pointerX;
   let lastEventY = pointerY;
   let movementEnergy = 0;
   let currentExpanded = 0;
   let currentEnergy = 0;
+  let trailStretch = 1;
   let frameId = 0;
 
   const syncVars = () => {
@@ -46,13 +50,17 @@ const bindPointerTracking = () => {
     const auraScale = 0.82 + expanded * 1.5;
     const coreBlur = 8 + expanded * 14;
     const auraBlur = 24 + expanded * 52;
+    const trailBlur = 36 + expanded * 44 + currentEnergy * 16;
     const coreOpacity = 0.46 - expanded * 0.34 + currentEnergy * 0.07;
     const auraOpacity = 0.1 + expanded * 0.24;
+    const trailOpacity = 0.08 + currentEnergy * 0.18 + expanded * 0.06;
 
     root.style.setProperty('--mouse-x', currentX.toFixed(4));
     root.style.setProperty('--mouse-y', currentY.toFixed(4));
     root.style.setProperty('--pointer-x', `${currentPointerX.toFixed(1)}px`);
     root.style.setProperty('--pointer-y', `${currentPointerY.toFixed(1)}px`);
+    root.style.setProperty('--trail-pointer-x', `${trailPointerX.toFixed(1)}px`);
+    root.style.setProperty('--trail-pointer-y', `${trailPointerY.toFixed(1)}px`);
     root.style.setProperty('--pointer-offset-x', `${(currentPointerX - window.innerWidth / 2).toFixed(1)}px`);
     root.style.setProperty('--pointer-offset-y', `${(currentPointerY - window.innerHeight / 2).toFixed(1)}px`);
     root.style.setProperty('--core-scale', coreScale.toFixed(3));
@@ -61,6 +69,10 @@ const bindPointerTracking = () => {
     root.style.setProperty('--aura-scale', auraScale.toFixed(3));
     root.style.setProperty('--aura-blur', `${auraBlur.toFixed(1)}px`);
     root.style.setProperty('--aura-opacity', auraOpacity.toFixed(3));
+    root.style.setProperty('--trail-scale', (1 + expanded * 0.72 + currentEnergy * 0.36).toFixed(3));
+    root.style.setProperty('--trail-stretch', trailStretch.toFixed(3));
+    root.style.setProperty('--trail-blur', `${trailBlur.toFixed(1)}px`);
+    root.style.setProperty('--trail-opacity', Math.max(0.03, Math.min(trailOpacity, 0.28)).toFixed(3));
     root.style.setProperty('--aura-shift-x', `${auraShiftX.toFixed(1)}px`);
     root.style.setProperty('--aura-shift-y', `${auraShiftY.toFixed(1)}px`);
   };
@@ -74,9 +86,12 @@ const bindPointerTracking = () => {
     currentY += (targetY - currentY) * 0.18;
     currentPointerX += (pointerX - currentPointerX) * pointerEase;
     currentPointerY += (pointerY - currentPointerY) * pointerEase;
+    trailPointerX += (currentPointerX - trailPointerX) * (pointerEase * 0.42);
+    trailPointerY += (currentPointerY - trailPointerY) * (pointerEase * 0.42);
     movementEnergy *= 0.96;
     currentEnergy += (movementEnergy - currentEnergy) * 0.08;
     currentExpanded += (targetExpanded - currentExpanded) * 0.07;
+    trailStretch += ((1 + currentEnergy * 1.15) - trailStretch) * 0.12;
     syncVars();
 
     if (
@@ -84,7 +99,10 @@ const bindPointerTracking = () => {
       Math.abs(targetY - currentY) > 0.0002 ||
       Math.abs(pointerX - currentPointerX) > 0.12 ||
       Math.abs(pointerY - currentPointerY) > 0.12 ||
+      Math.abs(currentPointerX - trailPointerX) > 0.12 ||
+      Math.abs(currentPointerY - trailPointerY) > 0.12 ||
       Math.abs(targetExpanded - currentExpanded) > 0.002 ||
+      Math.abs((1 + currentEnergy * 1.15) - trailStretch) > 0.01 ||
       currentEnergy > 0.01 ||
       performance.now() - lastMoveTime < 980
     ) {
@@ -122,6 +140,8 @@ const bindPointerTracking = () => {
   window.addEventListener('resize', () => {
     currentPointerX = Math.min(currentPointerX, window.innerWidth);
     currentPointerY = Math.min(currentPointerY, window.innerHeight);
+    trailPointerX = Math.min(trailPointerX, window.innerWidth);
+    trailPointerY = Math.min(trailPointerY, window.innerHeight);
     pointerX = currentPointerX;
     pointerY = currentPointerY;
     targetX = pointerX / window.innerWidth;
