@@ -1,15 +1,17 @@
 # CCC-Attendance for UNNC
 
-<img src="public/ccc.webp" alt="CCC" width="300" />
 
-> 访问：[**https://ccc.byron.wang**](https://ccc.byron.wang)
+<img src="public/ccc.webp" alt="CCC" width=“240”/>
+
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fccc.byron.wang&label=site)](https://ccc.byron.wang)
+[![License](https://img.shields.io/github/license/byronwang2005/CCC-Attendance)](https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/byronwang2005/CCC-Attendance?style=social)](https://github.com/byronwang2005/CCC-Attendance)
 
 ## 特别声明
 
 - 本程序作为开源娱乐项目，严禁用于中国文化课代签！
 - 作者保留对非法使用本程序者追责的权利！
 - **学校官方/外包平台**可通过本repo联系我，若有侵权，我会立即处理
-- 采用 MIT 协议开源，参考 [LICENSE](LICENSE) 
 
 ---
 
