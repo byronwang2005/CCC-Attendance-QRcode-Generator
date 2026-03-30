@@ -1,7 +1,7 @@
 # CCC-Attendance for UNNC
 
 
-<img src="public/ccc.webp" alt="CCC" width=“240”/>
+<img src="public/ccc.webp" alt="CCC" width="160"/>
 
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fccc.byron.wang&label=site)](https://ccc.byron.wang)
 [![License](https://img.shields.io/github/license/byronwang2005/CCC-Attendance)](https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE)
