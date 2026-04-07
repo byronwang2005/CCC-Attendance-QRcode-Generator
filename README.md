@@ -19,11 +19,11 @@
 
 **前往 [https://ccc.byron.wang](https://ccc.byron.wang)**
 
-### 方式一：AI Agent 智能生成
+### 方式一：Agent智能生成
 1. 点击「**AI代理**」标签
 2. 点击「复制」按钮
-3. 将提示词粘贴给您的 AI Agent
-4. 根据 AI Agent 的指引完成操作
+3. 将提示词粘贴给您的AI Agent（如小龙虾）
+4. 根据Agent指引完成操作
 
 ### 方式二：人类手动生成
 1. 点击「**人类**」标签
