@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
           generatedTime: receiptMeta?.generatedTime ?? '',
           identityLabel: summaryIdentity.textContent,
           modeLabel: summaryMode.textContent,
-          courseUrl: summaryUrl.textContent
+          scheduleId: urlValidation.scheduleId ?? ''
         });
       } catch (error) {
         console.error('Failed to initialize receipt stage:', error);

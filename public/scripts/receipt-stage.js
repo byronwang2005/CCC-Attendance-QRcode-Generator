@@ -142,10 +142,6 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   context.font = '700 50px "SF Mono", "Menlo", "PingFang SC", monospace';
   context.fillText('CCC ATTENDANCE', width / 2, 136);
 
-  context.fillStyle = 'rgba(36, 30, 24, 0.68)';
-  context.font = '500 24px "SF Mono", "Menlo", "PingFang SC", monospace';
-  context.fillText('THERMAL RECEIPT PREVIEW', width / 2, 184);
-
   context.strokeStyle = 'rgba(35, 28, 24, 0.18)';
   context.lineWidth = 3;
   context.setLineDash([10, 9]);
@@ -159,7 +155,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     ['TIME', meta.generatedTime ?? '--'],
     ['MODE', meta.modeLabel ?? '--'],
     ['IDENTITY', meta.identityLabel ?? '--'],
-    ['COURSE', shortenUrl(meta.courseUrl)]
+    ['SCHEDULE ID', meta.scheduleId ?? '--']
   ];
 
   context.textAlign = 'left';
@@ -250,14 +246,14 @@ const createPushPin = (THREE) => {
   const pin = new THREE.Group();
 
   const headMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xc9463f,
+    color: 0x10263b,
     roughness: 0.34,
     metalness: 0.08,
     clearcoat: 0.44,
     clearcoatRoughness: 0.16
   });
   const headBaseMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xb43731,
+    color: 0x0b1b2a,
     roughness: 0.4,
     metalness: 0.12,
     clearcoat: 0.28,
@@ -521,30 +517,30 @@ class ReceiptStage {
       for (let column = 0; column <= this.xSegments; column += 1) {
         const currentIndex = indexOf(column, row);
         const rowInfluence = 1 - row / this.ySegments;
-        const structuralBoost = 0.01 + rowInfluence * 0.03;
+        const structuralBoost = 0.016 + rowInfluence * 0.024;
 
         if (column < this.xSegments) {
-          addConstraint(currentIndex, indexOf(column + 1, row), clamp(0.981 + structuralBoost, 0, 0.998));
+          addConstraint(currentIndex, indexOf(column + 1, row), clamp(0.987 + structuralBoost, 0, 0.999));
         }
 
         if (row < this.ySegments) {
-          addConstraint(currentIndex, indexOf(column, row + 1), clamp(0.986 + structuralBoost, 0, 0.999));
+          addConstraint(currentIndex, indexOf(column, row + 1), clamp(0.991 + structuralBoost, 0, 0.999));
         }
 
         if (column < this.xSegments && row < this.ySegments) {
-          addConstraint(currentIndex, indexOf(column + 1, row + 1), 0.79);
+          addConstraint(currentIndex, indexOf(column + 1, row + 1), 0.86);
         }
 
         if (column > 0 && row < this.ySegments) {
-          addConstraint(currentIndex, indexOf(column - 1, row + 1), 0.79);
+          addConstraint(currentIndex, indexOf(column - 1, row + 1), 0.86);
         }
 
         if (column + 2 <= this.xSegments) {
-          addConstraint(currentIndex, indexOf(column + 2, row), clamp(0.46 + rowInfluence * 0.06, 0, 0.54));
+          addConstraint(currentIndex, indexOf(column + 2, row), clamp(0.62 + rowInfluence * 0.08, 0, 0.72));
         }
 
         if (row + 2 <= this.ySegments) {
-          addConstraint(currentIndex, indexOf(column, row + 2), clamp(0.52 + rowInfluence * 0.08, 0, 0.62));
+          addConstraint(currentIndex, indexOf(column, row + 2), clamp(0.68 + rowInfluence * 0.08, 0, 0.78));
         }
       }
     }
@@ -673,7 +669,7 @@ class ReceiptStage {
 
   createDragInfluences(centerParticle) {
     const influences = [];
-    const radius = 2.8;
+    const radius = 2.15;
 
     for (const particle of this.particles) {
       if (particle.row === 0) {
@@ -758,9 +754,9 @@ class ReceiptStage {
       this.pointer.x - this.dragState.startPointer.x,
       this.pointer.y - this.dragState.startPointer.y
     );
-    const lift = 0.11 + dragDistance * 0.56 + Math.abs(localPoint.x - this.dragState.startLocal.x) * 0.12;
+    const lift = 0.055 + dragDistance * 0.28 + Math.abs(localPoint.x - this.dragState.startLocal.x) * 0.05;
 
-    localPoint.z = clamp(localPoint.z + lift, -0.1, 0.58);
+    localPoint.z = clamp(localPoint.z + lift, -0.06, 0.34);
     localPoint.y = clamp(localPoint.y, -RECEIPT_HEIGHT * 0.48, RECEIPT_HEIGHT * 0.48);
     localPoint.x = clamp(localPoint.x, -RECEIPT_WIDTH * 0.46, RECEIPT_WIDTH * 0.46);
 
@@ -800,9 +796,9 @@ class ReceiptStage {
       particle.previous.copy(restPosition);
 
       if (!particle.pinned) {
-        const sway = Math.sin((particle.column + 1) * 0.6 + time) * 0.004 * (particle.row / this.ySegments);
+        const sway = Math.sin((particle.column + 1) * 0.6 + time) * 0.0016 * (particle.row / this.ySegments);
         particle.position.z += sway;
-        particle.previous.z = particle.position.z - 0.017 * Math.pow(particle.row / this.ySegments, 1.35);
+        particle.previous.z = particle.position.z - 0.006 * Math.pow(particle.row / this.ySegments, 1.35);
       }
     }
 
@@ -936,15 +932,15 @@ class ReceiptStage {
         continue;
       }
 
-      const velocityX = (particle.position.x - particle.previous.x) * 0.972;
-      const velocityY = (particle.position.y - particle.previous.y) * 0.974;
-      const velocityZ = (particle.position.z - particle.previous.z) * 0.968;
+      const velocityX = (particle.position.x - particle.previous.x) * 0.91;
+      const velocityY = (particle.position.y - particle.previous.y) * 0.918;
+      const velocityZ = (particle.position.z - particle.previous.z) * 0.84;
 
       particle.previous.copy(particle.position);
       particle.position.x += velocityX;
       particle.position.y += velocityY - 10.2 * step * step;
-      particle.position.z += velocityZ + 0.18 * step * step;
-      particle.position.z = clamp(particle.position.z, -0.26, 0.64);
+      particle.position.z += velocityZ + 0.08 * step * step;
+      particle.position.z = clamp(particle.position.z, -0.16, 0.38);
     }
   }
 
@@ -960,14 +956,14 @@ class ReceiptStage {
       }
 
       this.tempVectorA.copy(influence.offset);
-      this.tempVectorA.multiplyScalar(0.18 + (1 - influence.weight) * 0.08);
+      this.tempVectorA.multiplyScalar(0.12 + (1 - influence.weight) * 0.05);
       this.tempVectorA.add(this.dragState.target);
-      particle.position.lerp(this.tempVectorA, 0.24 * influence.weight);
+      particle.position.lerp(this.tempVectorA, 0.18 * influence.weight);
     }
   }
 
   solveConstraints() {
-    for (let iteration = 0; iteration < 9; iteration += 1) {
+    for (let iteration = 0; iteration < 11; iteration += 1) {
       this.applyDragConstraint();
 
       for (const constraint of this.constraints) {
@@ -1012,9 +1008,9 @@ class ReceiptStage {
           continue;
         }
 
-        const tetherStrength = 0.08 + particle.pinHoldStrength * 0.22;
+        const tetherStrength = 0.14 + particle.pinHoldStrength * 0.3;
         particle.position.lerp(particle.anchor, tetherStrength);
-        particle.previous.lerp(particle.anchor, tetherStrength * 0.34);
+        particle.previous.lerp(particle.anchor, tetherStrength * 0.5);
       }
     }
   }
