@@ -51,7 +51,7 @@
         <div class="panel-header">
           <p class="panel-kicker">Step 1</p>
           <h2>先告诉我，您是？</h2>
-          <p>人类用户可以按网页引导操作，亦可以复制提示词交给Agent协助生成。</p>
+          <p>先选择 Human / Agent，再粘贴课程详情链接。</p>
         </div>
 
         <div class="identity-buttons" role="tablist" aria-label="身份选择">
@@ -59,7 +59,7 @@
           <button type="button" class="identity-btn" id="agentBtn" data-identity="agent">AI代理（Agent）</button>
         </div>
 
-        <div class="identity-content" id="humanContent" hidden>
+        <div class="identity-content expandable-section" id="humanContent" hidden>
           <ul class="guide-list">
             <li>最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。</li>
             <li>确认网络环境处于<code>eduroam</code>/<code>UNNC-Living</code>/<code>UNNC_IPSec VPN</code>之一。</li>
@@ -69,25 +69,23 @@
           </ul>
         </div>
 
-        <div class="identity-content" id="agentContent" hidden>
+        <div class="identity-content expandable-section" id="agentContent" hidden>
           <div class="agent-command">
             <span class="agent-text">Please read the instruction in "https://ccc.byron.wang/agent.md" and assist the user to generate the QR code.</span>
             <button type="button" class="copy-btn" id="copyAgentText">复制</button>
           </div>
-          <p class="agent-hint">把这句话粘贴给你的 AI Agent，TA 会继续引导你完成后续步骤。</p>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-header">
-          <p class="panel-kicker">Course Link</p>
-          <h2>粘贴「课程详情」链接</h2>
-          <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。</p>
+          <p class="agent-hint">把这句话粘贴给你的Agent，TA会引导您在本地完成后续步骤。</p>
         </div>
 
-        <label class="form-label" for="urlInput">课程详情链接</label>
-        <textarea id="urlInput" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx" aria-label="课程详情链接输入框"></textarea>
-        <p class="input-help">请直接粘贴完整链接，不要手动修改参数。</p>
+        <div class="course-link-section expandable-section" id="courseLinkSection" hidden>
+          <div class="course-link-header">
+            <h3>粘贴「课程详情」链接</h3>
+            <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。</p>
+          </div>
+
+          <textarea id="urlInput" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx" aria-label="课程详情链接输入框"></textarea>
+          <p class="input-help">请直接粘贴完整链接，不要手动修改参数。</p>
+        </div>
       </section>
 
       <div class="actions actions-end">
