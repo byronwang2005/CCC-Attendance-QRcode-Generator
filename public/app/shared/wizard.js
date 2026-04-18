@@ -152,11 +152,10 @@ export const readPageMessage = () => {
 const TYPEWRITER_MESSAGES = [
   '一个签到码，三步搞定',
   '一個簽到碼，三步搞定',
-  'One check-in code, done in 3 steps.',
-  '1つのチェックインコードで、3ステップ完了。',
-  'Один код для отметки, и всё готово за три шага.',
-  '하나의 출석 코드, 세 단계면 완료.',
-  'رمز حضور واحد، وثلاث خطوات تكفي.'
+  'One attendance code, done in 3 steps',
+  '1つのチェックインコードで、3ステップ完了',
+  '하나의 출석 코드, 세 단계면 완료',
+  'رمز حضور واحد، وثلاث خطوات تكفي'
 ];
 
 const TYPEWRITER_TIMING = {

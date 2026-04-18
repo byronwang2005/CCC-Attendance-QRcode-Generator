@@ -7,6 +7,8 @@
 [![License](https://img.shields.io/github/license/byronwang2005/CCC-Attendance)](https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/byronwang2005/CCC-Attendance?style=social)](https://github.com/byronwang2005/CCC-Attendance)
 
+---
+
 ## 特别声明
 
 - 本程序作为开源娱乐项目，严禁用于中国文化课代签
