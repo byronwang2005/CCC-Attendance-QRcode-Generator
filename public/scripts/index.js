@@ -1,6 +1,7 @@
 import {
   AGENT_PROMPT,
   bindCopyButton,
+  initHeaderTypewriter,
   initStepNavigation,
   loadState,
   readPageMessage,
@@ -11,6 +12,7 @@ import {
 import { APP_PATHS, IDENTITIES, TEXT } from './config.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  initHeaderTypewriter();
   readPageMessage();
 
   const state = loadState();

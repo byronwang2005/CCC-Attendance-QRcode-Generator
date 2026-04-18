@@ -4,6 +4,7 @@ import {
   formatDateTime,
   getIdentityLabel,
   getTimeModeLabel,
+  initHeaderTypewriter,
   initStepNavigation,
   loadState,
   parseErrorMessage,
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentImageUrl = '';
 
   try {
+    initHeaderTypewriter();
     readPageMessage();
 
     const state = loadState();

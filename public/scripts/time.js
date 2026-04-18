@@ -3,6 +3,7 @@ import {
   collectManualTime,
   fillManualTimeInputs,
   getIdentityLabel,
+  initHeaderTypewriter,
   initStepNavigation,
   loadState,
   readPageMessage,
@@ -55,6 +56,7 @@ const syncDayOptions = (yearElement, monthElement, dayElement) => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  initHeaderTypewriter();
   readPageMessage();
 
   const state = loadState();
