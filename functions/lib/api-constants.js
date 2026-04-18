@@ -12,12 +12,3 @@ export const ERROR_MESSAGES = Object.freeze({
   invalidScheduleId: '链接无效：未找到课程ID（id 或 scheduleId）',
   serverError: '服务异常，请稍后重试'
 });
-
-export const CCC = Object.freeze({
-  attendanceBaseUrl: 'https://ccc.nottingham.edu.cn/study/attendance'
-});
-
-export const SCHEDULE_ID_PATTERNS = Object.freeze([
-  /[?&]id=([^&#]+)/,
-  /[?&]scheduleId=([^&#]+)/
-]);

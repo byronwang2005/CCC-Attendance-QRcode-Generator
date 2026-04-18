@@ -12,11 +12,11 @@ import {
   redirectTo,
   showToast,
   validateCourseUrl
-} from './wizard.js';
-import { APP_PATHS, QR_CODE, TEXT } from './config.js';
-import { createReceiptStage } from './receipt-stage.js';
+} from '../shared/wizard.js';
+import { APP_PATHS, QR_CODE, TEXT } from '../config/app-config.js';
+import { createReceiptStage } from './qrcode/receipt-stage.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+export const initQrcodePage = () => {
   let receiptStage = null;
   let currentImageUrl = '';
 
@@ -187,4 +187,4 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }
   }
-});
+};

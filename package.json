@@ -5,7 +5,7 @@
   "description": "UNNC中国文化课签到二维码生成器",
   "scripts": {
     "dev": "wrangler pages dev",
-    "preview": "node scripts/local-preview.js",
+    "preview": "node scripts/dev/local-preview.js",
     "deploy": "wrangler pages deploy",
     "lint": "eslint ."
   },

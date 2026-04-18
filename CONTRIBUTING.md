@@ -32,18 +32,19 @@ npm run lint
 
 ## Project Structure
 
-- `public/index.html`: 步骤 1，身份与课程链接
-- `public/time.html`: 步骤 2，时间模式
-- `public/qrcode.html`: 步骤 3，二维码结果
+- `public/index.html`: 单页入口，通过 `?step=` 切换向导步骤
 - `public/styles.css`: 全局样式
-- `public/scripts/`: 前端交互逻辑
-- `functions/api/`: 服务端函数
+- `public/app/`: 前端应用代码
+- `functions/api/`: 服务端函数入口
+- `functions/lib/`: 服务端内部常量
+- `shared/`: 前后端共用规则
+- `scripts/dev/`: 本地开发辅助脚本
 
 ## Code Style
 
 - 保持实现直接，不要引入无必要的视觉特效或复杂动画。
 - 优先沿用现有命名和文件组织方式。
-- 修改 UI 时，请同时检查 3 个步骤页面的视觉一致性。
+- 修改 UI 时，请同时检查 3 个步骤状态的视觉一致性。
 - 不要顺手重构无关文件，除非该问题会直接影响当前改动。
 
 ## Commit Style

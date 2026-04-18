@@ -1,8 +1,15 @@
 export const APP_PATHS = Object.freeze({
   index: 'index.html',
-  time: 'time.html',
-  qrcode: 'qrcode.html',
+  time: 'index.html?step=2',
+  qrcode: 'index.html?step=3',
+  step: (step) => `index.html?step=${step}`,
   generateApi: '/api/generate'
+});
+
+export const STEPS = Object.freeze({
+  index: 1,
+  time: 2,
+  qrcode: 3
 });
 
 export const STORAGE = Object.freeze({

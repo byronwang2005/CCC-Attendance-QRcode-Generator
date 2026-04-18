@@ -1,21 +1,11 @@
 import qr from 'qr-image';
-import { CCC, ERROR_MESSAGES, RESPONSE_HEADERS, SCHEDULE_ID_PATTERNS } from './constants.js';
+import { buildAttendanceUrl, extractScheduleId } from '../../shared/attendance.js';
+import { ERROR_MESSAGES, RESPONSE_HEADERS } from '../lib/api-constants.js';
 
 const jsonResponse = (payload, status) => new Response(JSON.stringify(payload), {
   status,
   headers: RESPONSE_HEADERS.json
 });
-
-const extractScheduleId = (inputUrl) => {
-  for (const pattern of SCHEDULE_ID_PATTERNS) {
-    const match = inputUrl.match(pattern);
-    if (match) {
-      return match[1];
-    }
-  }
-
-  return null;
-};
 
 export async function onRequestPost(context) {
   try {
@@ -36,7 +26,7 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: ERROR_MESSAGES.invalidScheduleId }, 400);
     }
 
-    const attendanceUrl = `${CCC.attendanceBaseUrl}?scheduleId=${sid}&time=${timestamp}`;
+    const attendanceUrl = buildAttendanceUrl({ scheduleId: sid, timestamp });
 
     const qrBuffer = qr.imageSync(attendanceUrl, { type: 'png', margin: 2, size: 10 });
 

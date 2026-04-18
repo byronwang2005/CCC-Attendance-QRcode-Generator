@@ -3,136 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="UNNC中国文化课签到二维码生成器 - 三步生成签到二维码" />
+  <meta name="description" content="CCC Attendance - 三步生成签到二维码" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="theme-color" content="#0f2437" />
-  <title>步骤 1 | UNNC中国文化课签到二维码生成器</title>
-  <link rel="preload" href="ccc-small.webp" as="image" type="image/webp" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="modulepreload" href="scripts/wizard.js" />
-  <link rel="prefetch" href="time.html" />
+  <title>CCC Attendance</title>
+  <link rel="preload" href="assets/images/ccc-small.webp" as="image" type="image/webp" />
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+  <link rel="modulepreload" href="app/main.js" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="page-shell">
-    <header class="site-header">
-      <h1>
-        <img src="ccc-small.webp" alt="CCC Logo" class="logo" loading="eager" fetchpriority="high" width="200" height="150" />
-        <span class="site-title-text" data-typewriter aria-label="一个签到码，三步搞定"></span>
-      </h1>
-    </header>
-
-    <main class="wizard-layout">
-      <section class="stepper" aria-label="步骤进度">
-        <article class="step-card is-active" aria-current="step" data-step="1">
-          <span class="step-number">1</span>
-          <div>
-            <strong>身份与链接</strong>
-            <small>选择Human/Agent，并粘贴课程链接</small>
-          </div>
-        </article>
-        <article class="step-card" data-step="2">
-          <span class="step-number">2</span>
-          <div>
-            <strong>时间模式</strong>
-            <small>选择自动或手动签到时间</small>
-          </div>
-        </article>
-        <article class="step-card" data-step="3">
-          <span class="step-number">3</span>
-          <div>
-            <strong>二维码</strong>
-            <small>查看结果</small>
-          </div>
-        </article>
-      </section>
-
-      <section class="panel hero-panel">
-        <div class="panel-header">
-          <p class="panel-kicker">Step 1</p>
-          <h2>先告诉我，您是？</h2>
-        </div>
-
-        <div class="identity-buttons" role="tablist" aria-label="身份选择">
-          <button type="button" class="identity-btn" data-identity="human">人类（Human）</button>
-          <button type="button" class="identity-btn" id="agentBtn" data-identity="agent">AI代理（Agent）</button>
-        </div>
-
-        <div class="identity-content expandable-section" id="humanContent" hidden>
-    
-          <div class="guide-list" role="list" aria-label="人工签到指引">
-            <article class="guide-card" role="listitem">
-              <div class="guide-card-index">01</div>
-              <div class="guide-card-body">
-                <div class="guide-card-meta">准备条件</div>
-                <h3>先卡准签到时间</h3>
-                <p>最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。</p>
-              </div>
-            </article>
-
-            <article class="guide-card" role="listitem">
-              <div class="guide-card-index">02</div>
-              <div class="guide-card-body">
-                <div class="guide-card-meta">网络检查</div>
-                <h3>确认连接到校园网络</h3>
-                <p>网络环境需处于 <code>eduroam</code>、<code>UNNC-Living</code> 或 <code>UNNC_IPSec VPN</code> 之一。</p>
-              </div>
-            </article>
-
-            <article class="guide-card" role="listitem">
-              <div class="guide-card-index">03</div>
-              <div class="guide-card-body">
-                <div class="guide-card-meta">操作步骤</div>
-                <h3>在手机浏览器里复制课程详情链接</h3>
-                <p>用手机浏览器（如 Safari）打开 <a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。</p>
-                <p>找到要签到的课程，长按“查看详情”，选择“复制链接”，再把完整链接粘贴到下方输入框。</p>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <div class="identity-content expandable-section" id="agentContent" hidden>
-          <div class="agent-command">
-            <span class="agent-text">Please read the instruction in "https://ccc.byron.wang/agent.md" and assist the user to generate the QR code.</span>
-            <button type="button" class="copy-btn" id="copyAgentText">复制</button>
-          </div>
-          <p class="agent-hint">把这句话粘贴给你的Agent，TA会引导您在本地完成后续步骤。</p>
-        </div>
-
-        <div class="course-link-section expandable-section" id="courseLinkSection" hidden>
-          <div class="course-link-header">
-            <h3>粘贴「课程详情」链接</h3>
-            <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。</p>
-          </div>
-
-          <div class="course-link-input-wrap">
-            <textarea id="urlInput" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx" aria-label="课程详情链接输入框"></textarea>
-            <button type="button" class="button-secondary paste-btn" id="pasteUrlBtn">粘贴</button>
-          </div>
-          <p class="input-help">请直接粘贴完整链接，不要手动修改参数。</p>
-        </div>
-      </section>
-
-      <div class="actions actions-end">
-        <button type="button" id="nextBtn" class="button-primary">下一步：时间模式</button>
-      </div>
-    </main>
-
-    <footer class="site-footer">
-      <p>
-        This software is open-sourced under the
-        <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>, with the source code available on
-        <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>.
-      </p>
-      <p>
-        This software uses HarmonyOS Sans SC fonts. See
-        <a href="/fonts/HarmonyOS_Sans_SC/LICENSE.txt" target="_blank" rel="noopener noreferrer">HarmonyOS Sans Fonts License Agreement</a>.
-      </p>
-    </footer>
-
-    <div id="toast" class="toast" role="alert" aria-live="polite"></div>
-  </div>
-
-  <script type="module" src="scripts/index.js"></script>
+  <div id="app"></div>
+  <script type="module" src="app/main.js"></script>
 </body>
 </html>

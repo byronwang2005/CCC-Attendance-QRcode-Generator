@@ -11,8 +11,8 @@ import {
   saveState,
   showToast,
   validateCourseUrl
-} from './wizard.js';
-import { APP_PATHS, MANUAL_TIME_FIELDS, TEXT, TIME_LIMITS, TIME_MODES } from './config.js';
+} from '../shared/wizard.js';
+import { APP_PATHS, MANUAL_TIME_FIELDS, TEXT, TIME_LIMITS, TIME_MODES } from '../config/app-config.js';
 
 const parseInteger = (value) => {
   if (value === '' || value === null || value === undefined) {
@@ -55,7 +55,7 @@ const syncDayOptions = (yearElement, monthElement, dayElement) => {
   dayElement.value = String(Math.min(Number.isNaN(previousDay) ? 1 : previousDay, maxDay));
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+export const initTimePage = () => {
   initHeaderTypewriter();
   readPageMessage();
 
@@ -149,4 +149,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.location.href = APP_PATHS.qrcode;
   });
-});
+};

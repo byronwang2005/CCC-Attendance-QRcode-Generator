@@ -3,20 +3,15 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import qr from 'qr-image';
+import { buildAttendanceUrl, extractScheduleId } from '../../shared/attendance.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(__dirname, '../..');
 const publicDir = path.join(rootDir, 'public');
 
 const HOST = process.env.HOST || '127.0.0.1';
 const PORT = Number.parseInt(process.env.PORT || '8788', 10);
-
-const CCC_ATTENDANCE_BASE_URL = 'https://ccc.nottingham.edu.cn/study/attendance';
-const SCHEDULE_ID_PATTERNS = [
-  /[?&]id=([^&#]+)/,
-  /[?&]scheduleId=([^&#]+)/
-];
 
 const MIME_TYPES = new Map([
   ['.css', 'text/css; charset=utf-8'],
@@ -39,17 +34,6 @@ const sendJson = (response, statusCode, payload) => {
 const sendText = (response, statusCode, message) => {
   response.writeHead(statusCode, { 'Content-Type': 'text/plain; charset=utf-8' });
   response.end(message);
-};
-
-const extractScheduleId = (inputUrl) => {
-  for (const pattern of SCHEDULE_ID_PATTERNS) {
-    const match = inputUrl.match(pattern);
-    if (match) {
-      return match[1];
-    }
-  }
-
-  return null;
 };
 
 const readRequestBody = async (request) => {
@@ -91,7 +75,7 @@ const handleGenerateApi = async (request, response) => {
       return;
     }
 
-    const attendanceUrl = `${CCC_ATTENDANCE_BASE_URL}?scheduleId=${scheduleId}&time=${timestamp}`;
+    const attendanceUrl = buildAttendanceUrl({ scheduleId, timestamp });
     const png = qr.imageSync(attendanceUrl, { type: 'png', margin: 2, size: 10 });
 
     response.writeHead(200, {

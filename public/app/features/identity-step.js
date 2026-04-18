@@ -8,10 +8,10 @@ import {
   saveState,
   showToast,
   validateCourseUrl
-} from './wizard.js';
-import { APP_PATHS, IDENTITIES, TEXT } from './config.js';
+} from '../shared/wizard.js';
+import { APP_PATHS, IDENTITIES, TEXT } from '../config/app-config.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+export const initIndexPage = () => {
   initHeaderTypewriter();
   readPageMessage();
 
@@ -240,4 +240,4 @@ document.addEventListener('DOMContentLoaded', () => {
     saveState({ url, identity: selectedIdentity });
     window.location.href = APP_PATHS.time;
   });
-});
+};

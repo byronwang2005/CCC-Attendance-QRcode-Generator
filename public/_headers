@@ -4,11 +4,14 @@
 /styles.css
   Cache-Control: public, max-age=0, must-revalidate
 
-/scripts/*
+/app/*
   Cache-Control: public, max-age=0, must-revalidate
 
-/*.webp
+/assets/images/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 
-/favicon.svg
+/assets/icons/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/assets/fonts/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800

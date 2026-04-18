@@ -1,9 +1,29 @@
+# macOS
 .DS_Store
 .DS_Store?
 ._*
-qrcode.png
-__pycache__/
-.shared/
+
+# Dependencies
 node_modules/
+
+# Local tool state
 .wrangler/
 .trae/
+.shared/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+tmp/
+
+# Python cache
+__pycache__/
+
+# Coverage output
+coverage/

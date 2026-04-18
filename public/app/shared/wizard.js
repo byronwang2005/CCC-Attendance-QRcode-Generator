@@ -9,7 +9,7 @@ import {
   TIME_LIMITS,
   TIME_MODES,
   UI_TIMING
-} from './config.js';
+} from '../config/app-config.js';
 
 export const AGENT_PROMPT = TEXT.agentPrompt;
 

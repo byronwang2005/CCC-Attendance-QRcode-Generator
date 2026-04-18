@@ -1,7 +1,8 @@
 import globals from 'globals';
 
-const browserFiles = ['public/scripts/**/*.js'];
+const browserFiles = ['public/app/**/*.js'];
 const workerFiles = ['functions/**/*.js'];
+const toolingFiles = ['scripts/**/*.js', 'shared/**/*.js', 'eslint.config.js'];
 
 export default [
   {
@@ -27,6 +28,19 @@ export default [
       sourceType: 'module',
       globals: {
         ...globals.worker
+      }
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+    }
+  },
+  {
+    files: toolingFiles,
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.node
       }
     },
     rules: {

@@ -1,7 +1,7 @@
 # CCC-Attendance for UNNC
 
 
-<img src="public/ccc.webp" alt="CCC" width="160"/>
+<img src="public/assets/images/ccc.webp" alt="CCC" width="160"/>
 
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fccc.byron.wang&label=site)](https://ccc.byron.wang)
 [![License](https://img.shields.io/github/license/byronwang2005/CCC-Attendance)](https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE)
@@ -13,31 +13,9 @@
 - 作者保留对非法使用本程序者追责的权利
 - 学校官方/外包平台可通过本repo联系我：若有侵权，我会立即处理
 
----
-
 ## 如何使用？
 
-**前往 [https://ccc.byron.wang](https://ccc.byron.wang)**
-
-### 方式一：Agent智能生成
-1. 点击「AI代理」标签
-2. 点击「复制」按钮
-3. 将提示词粘贴给您的AI Agent（如小龙虾）
-4. 根据Agent指引完成操作
-
-### 方式二：人类手动生成
-1. 点击「人类」标签
-2. 按照网页指引逐步完成操作
-
-#### 如何获取课程链接？
-1. 在手机浏览器（如Safari，**而非微信**）中打开：  
-   [https://ccc.nottingham.edu.cn/study/](https://ccc.nottingham.edu.cn/study/)
-2. 找到你要签到的课程，**长按“查看详情”按钮**
-3. 选择 **“复制链接”**
-4. 链接格式应类似：  
-   `https://ccc.nottingham.edu.cn/study/home/details?id=xxxx`
-
----
+**访问 [https://ccc.byron.wang/](https://ccc.byron.wang/)**
 
 ## 常见问题
 
@@ -58,7 +36,7 @@ A：请确认：
 
 项目页面正文使用 `HarmonyOS Sans SC` 字体。
 
-- 字体许可文件保留于 [public/fonts/HarmonyOS_Sans_SC/LICENSE.txt](public/fonts/HarmonyOS_Sans_SC/LICENSE.txt)
+- 字体许可文件保留于 [public/assets/fonts/HarmonyOS_Sans_SC/LICENSE.txt](public/assets/fonts/HarmonyOS_Sans_SC/LICENSE.txt)
 
 ---
 
