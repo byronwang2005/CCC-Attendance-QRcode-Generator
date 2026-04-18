@@ -822,9 +822,22 @@ select:focus {
 
 .site-footer {
   margin-top: 34px;
-  text-align: center;
+  display: grid;
+  justify-items: end;
   color: var(--text-soft);
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.site-footer p {
+  margin: 0;
+  width: auto;
+  max-width: 100%;
+  text-align: left;
+}
+
+.site-footer p + p {
+  margin-top: 2px;
 }
 
 .toast {
