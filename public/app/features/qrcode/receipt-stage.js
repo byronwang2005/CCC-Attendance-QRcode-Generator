@@ -74,18 +74,10 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     throw new Error('2D canvas is unavailable');
   }
 
-  const baseGradient = context.createLinearGradient(0, 0, 0, height);
-  baseGradient.addColorStop(0, '#ffffff');
-  baseGradient.addColorStop(0.45, '#ffffff');
-  baseGradient.addColorStop(1, '#fbfbfb');
-  context.fillStyle = baseGradient;
+  context.fillStyle = '#fffffc';
   context.fillRect(0, 0, width, height);
 
-  const sheenGradient = context.createLinearGradient(0, 0, width, height);
-  sheenGradient.addColorStop(0, 'rgba(255,255,255,0.42)');
-  sheenGradient.addColorStop(0.28, 'rgba(255,255,255,0.02)');
-  sheenGradient.addColorStop(1, 'rgba(210,210,210,0.05)');
-  context.fillStyle = sheenGradient;
+  context.fillStyle = 'rgba(255,255,252,0.12)';
   context.fillRect(0, 0, width, height);
 
   for (const pinLayout of PIN_LAYOUT) {
@@ -94,11 +86,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     context.save();
     context.translate(pinPoint.x, pinPoint.y + 4);
     context.scale(1.18, 0.72);
-    const contactGradient = context.createRadialGradient(0, -4, 5, 0, 0, 58);
-    contactGradient.addColorStop(0, 'rgba(26, 22, 18, 0.18)');
-    contactGradient.addColorStop(0.48, 'rgba(26, 22, 18, 0.08)');
-    contactGradient.addColorStop(1, 'rgba(26, 22, 18, 0)');
-    context.fillStyle = contactGradient;
+    context.fillStyle = 'rgba(26, 22, 18, 0.08)';
     context.beginPath();
     context.arc(0, 0, 58, 0, Math.PI * 2);
     context.fill();
