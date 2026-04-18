@@ -54,6 +54,12 @@ A：请确认：
 
 本项目采用 MIT 协议开源，详见 [LICENSE](LICENSE) 文件。
 
+### 字体许可
+
+项目页面正文使用 `HarmonyOS Sans SC` 字体。
+
+- 字体许可文件保留于 [public/fonts/HarmonyOS_Sans_SC/LICENSE.txt](public/fonts/HarmonyOS_Sans_SC/LICENSE.txt)
+
 ---
 
 **Made with ❤️ for UNNC students**  
