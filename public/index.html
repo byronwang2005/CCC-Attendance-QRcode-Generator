@@ -51,7 +51,6 @@
         <div class="panel-header">
           <p class="panel-kicker">Step 1</p>
           <h2>先告诉我，您是？</h2>
-          <p>先选择 Human / Agent，再粘贴课程详情链接。</p>
         </div>
 
         <div class="identity-buttons" role="tablist" aria-label="身份选择">
@@ -60,13 +59,36 @@
         </div>
 
         <div class="identity-content expandable-section" id="humanContent" hidden>
-          <ul class="guide-list">
-            <li>最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。</li>
-            <li>确认网络环境处于<code>eduroam</code>/<code>UNNC-Living</code>/<code>UNNC_IPSec VPN</code>之一。</li>
-            <li>用手机浏览器（如Safari）打开<a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。</li>
-            <li>找到要签到的课程，长按“查看详情”，选择“复制链接”。</li>
-            <li>把完整链接粘贴到下方输入框。</li>
-          </ul>
+    
+          <div class="guide-list" role="list" aria-label="人工签到指引">
+            <article class="guide-card" role="listitem">
+              <div class="guide-card-index">01</div>
+              <div class="guide-card-body">
+                <div class="guide-card-meta">准备条件</div>
+                <h3>先卡准签到时间</h3>
+                <p>最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。</p>
+              </div>
+            </article>
+
+            <article class="guide-card" role="listitem">
+              <div class="guide-card-index">02</div>
+              <div class="guide-card-body">
+                <div class="guide-card-meta">网络检查</div>
+                <h3>确认连接到校园网络</h3>
+                <p>网络环境需处于 <code>eduroam</code>、<code>UNNC-Living</code> 或 <code>UNNC_IPSec VPN</code> 之一。</p>
+              </div>
+            </article>
+
+            <article class="guide-card" role="listitem">
+              <div class="guide-card-index">03</div>
+              <div class="guide-card-body">
+                <div class="guide-card-meta">操作步骤</div>
+                <h3>在手机浏览器里复制课程详情链接</h3>
+                <p>用手机浏览器（如 Safari）打开 <a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。</p>
+                <p>找到要签到的课程，长按“查看详情”，选择“复制链接”，再把完整链接粘贴到下方输入框。</p>
+              </div>
+            </article>
+          </div>
         </div>
 
         <div class="identity-content expandable-section" id="agentContent" hidden>
@@ -83,7 +105,10 @@
             <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。</p>
           </div>
 
-          <textarea id="urlInput" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx" aria-label="课程详情链接输入框"></textarea>
+          <div class="course-link-input-wrap">
+            <textarea id="urlInput" placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx" aria-label="课程详情链接输入框"></textarea>
+            <button type="button" class="button-secondary paste-btn" id="pasteUrlBtn">粘贴</button>
+          </div>
           <p class="input-help">请直接粘贴完整链接，不要手动修改参数。</p>
         </div>
       </section>

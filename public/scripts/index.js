@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const agentContent = document.getElementById('agentContent');
   const courseLinkSection = document.getElementById('courseLinkSection');
   const urlInput = document.getElementById('urlInput');
+  const pasteUrlBtn = document.getElementById('pasteUrlBtn');
   const nextBtn = document.getElementById('nextBtn');
   initStepNavigation(1);
   let selectedIdentity = '';
@@ -187,6 +188,35 @@ document.addEventListener('DOMContentLoaded', () => {
   urlInput.addEventListener('input', () => {
     saveState({ url: urlInput.value.trim() });
     syncNextButtonState();
+  });
+
+  pasteUrlBtn?.addEventListener('click', async () => {
+    if (!navigator.clipboard?.readText) {
+      showToast('当前浏览器不支持剪贴板读取，请手动粘贴。', 'error');
+      return;
+    }
+
+    pasteUrlBtn.disabled = true;
+    pasteUrlBtn.classList.add('is-busy');
+
+    try {
+      const clipboardText = (await navigator.clipboard.readText()).trim();
+      if (!clipboardText) {
+        showToast('剪贴板为空。', 'error');
+        return;
+      }
+
+      urlInput.value = clipboardText;
+      saveState({ url: clipboardText });
+      syncNextButtonState();
+      urlInput.focus();
+      showToast('已粘贴链接。', 'success');
+    } catch {
+      showToast('无法读取剪贴板，请允许权限或手动粘贴。', 'error');
+    } finally {
+      pasteUrlBtn.disabled = false;
+      pasteUrlBtn.classList.remove('is-busy');
+    }
   });
 
   nextBtn.addEventListener('click', () => {
