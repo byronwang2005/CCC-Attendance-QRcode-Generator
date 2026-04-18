@@ -79,9 +79,3 @@ npm run lint
 - 页面可正常打开
 - 主流程可从步骤 1 走到步骤 3
 - `npm run lint` 已执行
-
-当前仓库存在一个已知 lint 基线问题：
-
-- `public/scripts/receipt-stage.js` 中有一个未使用变量，可能导致全量 `eslint .` 失败
-
-如果你的改动与该文件无关，请不要顺手混入无关修复，除非你明确要一并处理。

@@ -62,18 +62,6 @@ const loadImage = (src) => new Promise((resolve, reject) => {
   image.src = src;
 });
 
-const shortenUrl = (url) => {
-  if (!url) {
-    return '';
-  }
-
-  if (url.length <= 44) {
-    return url;
-  }
-
-  return `${url.slice(0, 41)}...`;
-};
-
 const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   const width = 1024;
   const height = 1820;
