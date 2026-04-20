@@ -5,7 +5,7 @@ const RECEIPT_HEIGHT = 2.34;
 const WAKEUP_VELOCITY_SQ = 0.0000032;
 const INTRO_DROP_DISTANCE = 1.34;
 const INTRO_DURATION_MS = 1080;
-const PIN_DROP_DISTANCE = 0.28;
+const PIN_INSERT_DISTANCE = 0.28;
 const PIN_ANIMATION_DURATION_MS = 220;
 const PIN_ANIMATION_STAGGER_MS = 90;
 const PIN_LAYOUT = Object.freeze([
@@ -13,13 +13,13 @@ const PIN_LAYOUT = Object.freeze([
     x: -RECEIPT_WIDTH * 0.41,
     y: RECEIPT_HEIGHT * 0.464,
     z: 0.036,
-    rotationZ: -0.16
+    rotationY: -0.16
   }),
   Object.freeze({
     x: RECEIPT_WIDTH * 0.41,
     y: RECEIPT_HEIGHT * 0.464,
     z: 0.036,
-    rotationZ: 0.16
+    rotationY: 0.16
   })
 ]);
 const PIN_CORE_RADIUS_X = 0.072;
@@ -74,51 +74,42 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     throw new Error('2D canvas is unavailable');
   }
 
-  context.fillStyle = '#fffffc';
+  context.fillStyle = '#ffffff';
   context.fillRect(0, 0, width, height);
 
-  context.fillStyle = 'rgba(255,255,252,0.12)';
+  context.fillStyle = 'rgba(255,255,255,0.3)';
   context.fillRect(0, 0, width, height);
 
   for (const pinLayout of PIN_LAYOUT) {
     const pinPoint = receiptPointToTexture(pinLayout.x, pinLayout.y, width, height);
 
-    context.save();
-    context.translate(pinPoint.x, pinPoint.y + 4);
-    context.scale(1.18, 0.72);
-    context.fillStyle = 'rgba(26, 22, 18, 0.08)';
+    context.fillStyle = 'rgba(86, 82, 76, 0.08)';
     context.beginPath();
-    context.arc(0, 0, 58, 0, Math.PI * 2);
-    context.fill();
-    context.restore();
-
-    context.fillStyle = 'rgba(38, 31, 26, 0.16)';
-    context.beginPath();
-    context.arc(pinPoint.x, pinPoint.y + 2, 7, 0, Math.PI * 2);
+    context.arc(pinPoint.x, pinPoint.y + 1, 5, 0, Math.PI * 2);
     context.fill();
   }
 
   for (let row = 0; row < height; row += 4) {
-    const alpha = 0.004 + ((row % 28) / 28) * 0.005;
-    context.fillStyle = `rgba(68, 68, 68, ${alpha.toFixed(3)})`;
+    const alpha = 0.001 + ((row % 28) / 28) * 0.0018;
+    context.fillStyle = `rgba(110, 110, 110, ${alpha.toFixed(3)})`;
     context.fillRect(0, row, width, 1);
   }
 
-  for (let index = 0; index < 3800; index += 1) {
+  for (let index = 0; index < 1800; index += 1) {
     const x = Math.random() * width;
     const y = Math.random() * height;
-    const radius = Math.random() * 1.6 + 0.3;
-    const alpha = Math.random() * 0.012;
-    context.fillStyle = `rgba(90, 90, 90, ${alpha.toFixed(3)})`;
+    const radius = Math.random() * 1.2 + 0.2;
+    const alpha = Math.random() * 0.005;
+    context.fillStyle = `rgba(132, 132, 132, ${alpha.toFixed(3)})`;
     context.fillRect(x, y, radius, radius);
   }
 
-  context.fillStyle = 'rgba(36, 30, 24, 0.86)';
+  context.fillStyle = 'rgba(30, 28, 26, 0.8)';
   context.textAlign = 'center';
   context.font = '700 50px "SF Mono", "Menlo", "PingFang SC", monospace';
   context.fillText('CCC ATTENDANCE', width / 2, 136);
 
-  context.strokeStyle = 'rgba(35, 28, 24, 0.18)';
+  context.strokeStyle = 'rgba(46, 42, 38, 0.1)';
   context.lineWidth = 3;
   context.setLineDash([10, 9]);
   context.beginPath();
@@ -139,13 +130,13 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   let currentY = 300;
 
   for (const [label, value] of lines) {
-    context.fillStyle = 'rgba(28, 24, 20, 0.72)';
+    context.fillStyle = 'rgba(46, 42, 38, 0.62)';
     context.fillText(label, 102, currentY);
     context.textAlign = 'right';
-    context.fillStyle = 'rgba(28, 24, 20, 0.94)';
+    context.fillStyle = 'rgba(28, 26, 24, 0.88)';
     context.fillText(value || '--', width - 102, currentY);
     context.textAlign = 'left';
-    context.strokeStyle = 'rgba(35, 28, 24, 0.12)';
+    context.strokeStyle = 'rgba(56, 50, 44, 0.06)';
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(100, currentY + 18);
@@ -160,7 +151,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
 
   context.fillStyle = 'rgba(255,255,255,0.92)';
   context.fillRect(qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
-  context.strokeStyle = 'rgba(18, 18, 18, 0.12)';
+  context.strokeStyle = 'rgba(18, 18, 18, 0.08)';
   context.lineWidth = 2;
   context.strokeRect(qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
 
@@ -168,7 +159,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   context.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
 
   context.setLineDash([12, 10]);
-  context.strokeStyle = 'rgba(35, 28, 24, 0.18)';
+  context.strokeStyle = 'rgba(46, 42, 38, 0.1)';
   context.lineWidth = 3;
   context.beginPath();
   context.moveTo(92, qrY + qrSize + 158);
@@ -177,7 +168,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   context.setLineDash([]);
 
   context.textAlign = 'left';
-  context.fillStyle = 'rgba(28, 24, 20, 0.66)';
+  context.fillStyle = 'rgba(48, 44, 40, 0.56)';
   context.font = '500 22px "PingFang SC", "Microsoft YaHei", sans-serif';
   context.fillText('1. 使用手机微信扫描二维码完成签到。', 102, qrY + qrSize + 224);
   context.fillText('2. 如果出现“答题”选项，请继续完成答题流程。', 102, qrY + qrSize + 266);
@@ -192,7 +183,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
 
   const bumpImageData = bumpContext.createImageData(256, 256);
   for (let index = 0; index < bumpImageData.data.length; index += 4) {
-    const base = 126 + Math.round((Math.random() - 0.5) * 26);
+    const base = 129 + Math.round((Math.random() - 0.5) * 8);
     bumpImageData.data[index] = base;
     bumpImageData.data[index + 1] = base;
     bumpImageData.data[index + 2] = base;
@@ -222,18 +213,18 @@ const createPushPin = (THREE) => {
   const pin = new THREE.Group();
 
   const headMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x10263b,
-    roughness: 0.34,
-    metalness: 0.08,
-    clearcoat: 0.44,
-    clearcoatRoughness: 0.16
+    color: 0x2bb3af,
+    roughness: 0.28,
+    metalness: 0.06,
+    clearcoat: 0.52,
+    clearcoatRoughness: 0.14
   });
   const headBaseMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x0b1b2a,
-    roughness: 0.4,
-    metalness: 0.12,
-    clearcoat: 0.28,
-    clearcoatRoughness: 0.22
+    color: 0x219892,
+    roughness: 0.34,
+    metalness: 0.1,
+    clearcoat: 0.34,
+    clearcoatRoughness: 0.2
   });
   const metalMaterial = new THREE.MeshStandardMaterial({
     color: 0xcbd2da,
@@ -251,35 +242,39 @@ const createPushPin = (THREE) => {
     headMaterial
   );
   head.scale.set(1, 0.52, 1);
-  head.position.y = 0.012;
+  head.position.z = 0.012;
   pin.add(head);
 
   const headBase = new THREE.Mesh(
     new THREE.CylinderGeometry(0.05, 0.054, 0.026, 28),
     headBaseMaterial
   );
-  headBase.position.y = -0.003;
+  headBase.rotation.x = Math.PI * 0.5;
+  headBase.position.z = -0.003;
   pin.add(headBase);
 
   const ferrule = new THREE.Mesh(
     new THREE.CylinderGeometry(0.019, 0.024, 0.024, 22),
     ferruleMaterial
   );
-  ferrule.position.y = -0.033;
+  ferrule.rotation.x = Math.PI * 0.5;
+  ferrule.position.z = -0.033;
   pin.add(ferrule);
 
   const needle = new THREE.Mesh(
     new THREE.CylinderGeometry(0.0054, 0.0032, 0.204, 16),
     metalMaterial
   );
-  needle.position.y = -0.145;
+  needle.rotation.x = Math.PI * 0.5;
+  needle.position.z = -0.145;
   pin.add(needle);
 
   const tip = new THREE.Mesh(
     new THREE.ConeGeometry(0.0048, 0.042, 16),
     metalMaterial
   );
-  tip.position.y = -0.268;
+  tip.rotation.x = -Math.PI * 0.5;
+  tip.position.z = -0.268;
   pin.add(tip);
 
   const highlight = new THREE.Mesh(
@@ -291,11 +286,12 @@ const createPushPin = (THREE) => {
       depthWrite: false
     })
   );
-  highlight.position.set(-0.014, 0.032, 0.025);
-  highlight.scale.set(1.16, 0.62, 0.92);
+  highlight.position.set(-0.014, 0.02, 0.036);
+  highlight.scale.set(1.12, 0.78, 0.78);
   pin.add(highlight);
 
-  pin.rotation.x = 0.3;
+  pin.scale.setScalar(0.7);
+  pin.rotation.x = -0.08;
   return pin;
 };
 
@@ -385,14 +381,14 @@ class ReceiptStage {
     this.camera.position.set(0, 0.08, 5.35);
     this.camera.lookAt(0, 0.16, 0);
 
-    const ambient = new THREE.HemisphereLight(0xffffff, 0xf4efe6, 1.24);
+    const ambient = new THREE.HemisphereLight(0xffffff, 0xf7f9fc, 1.32);
     this.scene.add(ambient);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.62);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.54);
     keyLight.position.set(1.8, 2.6, 2.5);
     this.scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xfffaf2, 0.38);
+    const fillLight = new THREE.DirectionalLight(0xfdfefe, 0.3);
     fillLight.position.set(-2.4, -0.4, 2.1);
     this.scene.add(fillLight);
 
@@ -415,12 +411,12 @@ class ReceiptStage {
     this.receiptMaterial = new THREE.MeshPhysicalMaterial({
       map: this.receiptTexture,
       bumpMap: this.receiptBumpMap,
-      bumpScale: 0.007,
+      bumpScale: 0.0042,
       color: 0xffffff,
-      roughness: 0.94,
+      roughness: 0.985,
       metalness: 0,
       clearcoat: 0.01,
-      reflectivity: 0.03,
+      reflectivity: 0.008,
       side: THREE.DoubleSide
     });
 
@@ -433,7 +429,7 @@ class ReceiptStage {
     this.pushPins = PIN_LAYOUT.map((pinLayout) => {
       const pin = createPushPin(THREE);
       pin.position.set(pinLayout.x, pinLayout.y, pinLayout.z);
-      pin.rotation.z = pinLayout.rotationZ;
+      pin.rotation.y = pinLayout.rotationY;
       return pin;
     });
 
@@ -827,8 +823,8 @@ class ReceiptStage {
     for (const pin of this.pushPins) {
       pin.visible = true;
       pin.position.copy(pin.userData.restPosition);
-      pin.position.y += PIN_DROP_DISTANCE;
-      pin.rotation.x = pin.userData.restRotationX - 0.22;
+      pin.position.z += PIN_INSERT_DISTANCE;
+      pin.rotation.x = pin.userData.restRotationX + 0.06;
     }
   }
 
@@ -863,8 +859,8 @@ class ReceiptStage {
       const bounce = Math.sin(progress * Math.PI * 3.4) * Math.pow(1 - progress, 1.8);
 
       pin.position.copy(pin.userData.restPosition);
-      pin.position.y += (1 - eased) * PIN_DROP_DISTANCE - bounce * 0.045;
-      pin.rotation.x = pin.userData.restRotationX - (1 - eased) * 0.22 + bounce * 0.045;
+      pin.position.z += (1 - eased) * PIN_INSERT_DISTANCE + bounce * 0.045;
+      pin.rotation.x = pin.userData.restRotationX + (1 - eased) * 0.06 - bounce * 0.02;
 
       if (progress >= 1) {
         finishedPins += 1;
@@ -988,6 +984,7 @@ class ReceiptStage {
         particle.position.lerp(particle.anchor, tetherStrength);
         particle.previous.lerp(particle.anchor, tetherStrength * 0.5);
       }
+
     }
   }
 
