@@ -43,9 +43,15 @@ export const initQrcodePage = () => {
 
     let currentReceiptMeta = null;
 
-    summaryIdentity.textContent = getIdentityLabel(state.identity);
-    summaryMode.textContent = getTimeModeLabel(state);
-    summaryUrl.textContent = state.url;
+    if (summaryIdentity) {
+      summaryIdentity.textContent = getIdentityLabel(state.identity);
+    }
+    if (summaryMode) {
+      summaryMode.textContent = getTimeModeLabel(state);
+    }
+    if (summaryUrl) {
+      summaryUrl.textContent = state.url;
+    }
 
     const destroyReceiptStage = () => {
       if (!receiptStage) {
@@ -81,8 +87,8 @@ export const initQrcodePage = () => {
         receiptStage = await createReceiptStage(qrcodeContainer, {
           imageUrl: src,
           generatedTime: receiptMeta?.generatedTime ?? '',
-          identityLabel: summaryIdentity.textContent,
-          modeLabel: summaryMode.textContent,
+          identityLabel: summaryIdentity?.textContent || getIdentityLabel(state.identity),
+          modeLabel: summaryMode?.textContent || getTimeModeLabel(state),
           scheduleId: urlValidation.scheduleId ?? ''
         });
       } catch (error) {

@@ -165,14 +165,16 @@ export const initStepNavigation = (currentStep) => {
   }
 
   const handleStepClick = (targetStep) => {
+    if (targetStep === currentStep) {
+      return;
+    }
+
     if (targetStep < currentStep) {
       window.location.href = STEP_PATHS[targetStep];
       return;
     }
 
-    if (targetStep > currentStep) {
-      showToast(TEXT.errors.completeCurrentStepFirst, 'error');
-    }
+    showToast(TEXT.errors.completeCurrentStepFirst, 'error');
   };
 
   cards.forEach((card) => {

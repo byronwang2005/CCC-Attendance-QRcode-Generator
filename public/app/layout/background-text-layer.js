@@ -5,7 +5,7 @@ import {
 } from 'https://cdn.jsdelivr.net/npm/@chenglou/pretext@0.0.5/dist/layout.js';
 
 const ROTATION_RADIANS = -18 * (Math.PI / 180);
-const FONT_FAMILY = '"HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
+const FONT_FAMILY = '"Source Han Sans CN"';
 const TEXT_VARIANTS = Object.freeze([
   '一个签到码，三步搞定',
   'One attendance code, done in three steps',
@@ -114,8 +114,8 @@ class BackgroundTextLayer {
   updateTypography() {
     const viewportShortEdge = Math.min(this.width, this.height);
     this.fontSize = clamp(Math.round(viewportShortEdge * 0.021), 12, 22);
-    this.lineHeight = Math.round(this.fontSize * 1.6);
-    this.font = `700 ${this.fontSize}px ${FONT_FAMILY}`;
+    this.lineHeight = Math.round(this.fontSize * 1.45);
+    this.font = `500 ${this.fontSize}px ${FONT_FAMILY}`;
     this.prepared = prepareWithSegments(this.textSource, this.font, { wordBreak: 'keep-all' });
   }
 
@@ -272,9 +272,9 @@ class BackgroundTextLayer {
 
   drawBackdrop(context) {
     const gradient = context.createLinearGradient(0, 0, this.width, this.height);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
-    gradient.addColorStop(0.42, 'rgba(255, 255, 255, 0.04)');
-    gradient.addColorStop(1, 'rgba(15, 36, 55, 0.03)');
+    gradient.addColorStop(0, 'rgba(245, 244, 237, 0.88)');
+    gradient.addColorStop(0.44, 'rgba(250, 249, 245, 0.54)');
+    gradient.addColorStop(1, 'rgba(232, 230, 220, 0.36)');
     context.fillStyle = gradient;
     context.fillRect(0, 0, this.width, this.height);
   }
@@ -307,7 +307,7 @@ class BackgroundTextLayer {
         }
 
         const line = materializeLineRange(this.prepared, range);
-        context.fillStyle = 'rgba(15, 36, 55, 0.088)';
+        context.fillStyle = 'rgba(27, 54, 93, 0.082)';
         context.fillText(line.text, segment.start, rowY);
       }
 
@@ -323,9 +323,9 @@ class BackgroundTextLayer {
         this.pointerCurrent.y,
         this.pointerCurrent.radius * 1.05
       );
-      highlight.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
-      highlight.addColorStop(0.56, 'rgba(255, 255, 255, 0.08)');
-      highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      highlight.addColorStop(0, 'rgba(250, 249, 245, 0.64)');
+      highlight.addColorStop(0.56, 'rgba(232, 230, 220, 0.22)');
+      highlight.addColorStop(1, 'rgba(232, 230, 220, 0)');
       context.fillStyle = highlight;
       context.beginPath();
       context.arc(this.pointerCurrent.x, this.pointerCurrent.y, this.pointerCurrent.radius * 1.05, 0, Math.PI * 2);

@@ -1,4 +1,4 @@
-# CCC-Attendance for UNNC
+# CCC Attendance
 
 
 <img src="public/assets/images/ccc.webp" alt="CCC" width="160"/>
@@ -9,15 +9,15 @@
 
 ---
 
-## 特别声明
+## 严正声明
 
-- 本程序作为开源娱乐项目，严禁用于中国文化课代签
+- 本程序是开源娱乐项目，严禁用于CCC代签
 - 作者保留对非法使用本程序者追责的权利
-- 学校官方/外包平台可通过本repo联系我：若有侵权，我会立即处理
+- 学校官方/外包平台可通过Issues联系作者：若有侵权，会立即处理
 
 ---
 
-## 如何使用？
+## 使用方法
 
 **访问 [https://ccc.byron.wang/](https://ccc.byron.wang/)**
 
@@ -33,18 +33,17 @@ A：请确认：
    - *也许这节课压根没有签到环节*
 
 ---
+## 贡献代码
+
+参考 [CONTRIBUTING](CONTRIBUTING.md)
+
+---
 
 ## 开源协议
 
 本项目采用 MIT 协议开源，详见 [LICENSE](LICENSE) 文件。
 
-### 字体许可
-
-项目页面正文使用 `HarmonyOS Sans SC` 字体。
-
-- 字体许可文件保留于 [public/assets/fonts/HarmonyOS_Sans_SC/LICENSE.txt](public/assets/fonts/HarmonyOS_Sans_SC/LICENSE.txt)
-
 ---
 
-**Made with ❤️ for UNNC students**  
+**Made with ❤️ for UNNCer**  
 By Byron | [GitHub](https://github.com/byronwang2005/CCC-Attendance)

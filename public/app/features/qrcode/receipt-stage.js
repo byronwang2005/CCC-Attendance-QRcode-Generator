@@ -1,7 +1,9 @@
 const THREE_MODULE_URL = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
 const FIXED_TIME_STEP = 1 / 60;
 const RECEIPT_WIDTH = 1.18;
-const RECEIPT_HEIGHT = 2.34;
+const RECEIPT_HEIGHT = 1.96;
+const RECEIPT_TEXTURE_WIDTH = 1024;
+const RECEIPT_TEXTURE_HEIGHT = 1520;
 const WAKEUP_VELOCITY_SQ = 0.0000032;
 const INTRO_DROP_DISTANCE = 1.34;
 const INTRO_DURATION_MS = 1080;
@@ -28,6 +30,7 @@ const PIN_TETHER_RADIUS_X = 0.152;
 const PIN_TETHER_RADIUS_Y = 0.138;
 const PIN_SURFACE_BULGE = 0.018;
 const PIN_SURFACE_DENT = 0.011;
+const RECEIPT_MONO_FONT = '"JetBrains Mono"';
 
 let threeModulePromise;
 
@@ -63,8 +66,9 @@ const loadImage = (src) => new Promise((resolve, reject) => {
 });
 
 const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
-  const width = 1024;
-  const height = 1820;
+  const width = RECEIPT_TEXTURE_WIDTH;
+  const height = RECEIPT_TEXTURE_HEIGHT;
+  const scaleY = height / 1820;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -74,16 +78,16 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     throw new Error('2D canvas is unavailable');
   }
 
-  context.fillStyle = '#ffffff';
+  context.fillStyle = '#faf9f5';
   context.fillRect(0, 0, width, height);
 
-  context.fillStyle = 'rgba(255,255,255,0.3)';
+  context.fillStyle = 'rgba(245, 244, 237, 0.72)';
   context.fillRect(0, 0, width, height);
 
   for (const pinLayout of PIN_LAYOUT) {
     const pinPoint = receiptPointToTexture(pinLayout.x, pinLayout.y, width, height);
 
-    context.fillStyle = 'rgba(86, 82, 76, 0.08)';
+    context.fillStyle = 'rgba(94, 93, 89, 0.12)';
     context.beginPath();
     context.arc(pinPoint.x, pinPoint.y + 1, 5, 0, Math.PI * 2);
     context.fill();
@@ -91,7 +95,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
 
   for (let row = 0; row < height; row += 4) {
     const alpha = 0.001 + ((row % 28) / 28) * 0.0018;
-    context.fillStyle = `rgba(110, 110, 110, ${alpha.toFixed(3)})`;
+    context.fillStyle = `rgba(176, 174, 165, ${alpha.toFixed(3)})`;
     context.fillRect(0, row, width, 1);
   }
 
@@ -100,21 +104,21 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     const y = Math.random() * height;
     const radius = Math.random() * 1.2 + 0.2;
     const alpha = Math.random() * 0.005;
-    context.fillStyle = `rgba(132, 132, 132, ${alpha.toFixed(3)})`;
+    context.fillStyle = `rgba(176, 174, 165, ${alpha.toFixed(3)})`;
     context.fillRect(x, y, radius, radius);
   }
 
-  context.fillStyle = 'rgba(30, 28, 26, 0.8)';
+  context.fillStyle = 'rgba(20, 20, 19, 0.84)';
   context.textAlign = 'center';
-  context.font = '700 50px "SF Mono", "Menlo", "PingFang SC", monospace';
-  context.fillText('CCC ATTENDANCE', width / 2, 136);
+  context.font = `400 50px ${RECEIPT_MONO_FONT}`;
+  context.fillText('CCC ATTENDANCE', width / 2, 136 * scaleY);
 
-  context.strokeStyle = 'rgba(46, 42, 38, 0.1)';
+  context.strokeStyle = 'rgba(224, 221, 210, 0.9)';
   context.lineWidth = 3;
   context.setLineDash([10, 9]);
   context.beginPath();
-  context.moveTo(92, 226);
-  context.lineTo(width - 92, 226);
+  context.moveTo(92, 226 * scaleY);
+  context.lineTo(width - 92, 226 * scaleY);
   context.stroke();
   context.setLineDash([]);
 
@@ -126,32 +130,32 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   ];
 
   context.textAlign = 'left';
-  context.font = '600 25px "SF Mono", "Menlo", "PingFang SC", monospace';
-  let currentY = 300;
+  context.font = `400 25px ${RECEIPT_MONO_FONT}`;
+  let currentY = 278 * scaleY;
 
   for (const [label, value] of lines) {
-    context.fillStyle = 'rgba(46, 42, 38, 0.62)';
+    context.fillStyle = 'rgba(135, 134, 127, 0.92)';
     context.fillText(label, 102, currentY);
     context.textAlign = 'right';
-    context.fillStyle = 'rgba(28, 26, 24, 0.88)';
+    context.fillStyle = 'rgba(20, 20, 19, 0.88)';
     context.fillText(value || '--', width - 102, currentY);
     context.textAlign = 'left';
-    context.strokeStyle = 'rgba(56, 50, 44, 0.06)';
+    context.strokeStyle = 'rgba(224, 221, 210, 0.9)';
     context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(100, currentY + 18);
-    context.lineTo(width - 100, currentY + 18);
+    context.moveTo(100, currentY + 18 * scaleY);
+    context.lineTo(width - 100, currentY + 18 * scaleY);
     context.stroke();
-    currentY += 82;
+    currentY += 70 * scaleY;
   }
 
   const qrSize = 472;
   const qrX = (width - qrSize) / 2;
-  const qrY = 656;
+  const qrY = 540 * scaleY;
 
-  context.fillStyle = 'rgba(255,255,255,0.92)';
+  context.fillStyle = 'rgba(250, 249, 245, 0.96)';
   context.fillRect(qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
-  context.strokeStyle = 'rgba(18, 18, 18, 0.08)';
+  context.strokeStyle = 'rgba(232, 229, 218, 0.96)';
   context.lineWidth = 2;
   context.strokeRect(qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
 
@@ -159,19 +163,13 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   context.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
 
   context.setLineDash([12, 10]);
-  context.strokeStyle = 'rgba(46, 42, 38, 0.1)';
+  context.strokeStyle = 'rgba(224, 221, 210, 0.9)';
   context.lineWidth = 3;
   context.beginPath();
-  context.moveTo(92, qrY + qrSize + 158);
-  context.lineTo(width - 92, qrY + qrSize + 158);
+  context.moveTo(92, qrY + qrSize + 104 * scaleY);
+  context.lineTo(width - 92, qrY + qrSize + 104 * scaleY);
   context.stroke();
   context.setLineDash([]);
-
-  context.textAlign = 'left';
-  context.fillStyle = 'rgba(48, 44, 40, 0.56)';
-  context.font = '500 22px "PingFang SC", "Microsoft YaHei", sans-serif';
-  context.fillText('1. 使用手机微信扫描二维码完成签到。', 102, qrY + qrSize + 224);
-  context.fillText('2. 如果出现“答题”选项，请继续完成答题流程。', 102, qrY + qrSize + 266);
 
   const bumpCanvas = document.createElement('canvas');
   bumpCanvas.width = 256;
@@ -213,26 +211,26 @@ const createPushPin = (THREE) => {
   const pin = new THREE.Group();
 
   const headMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x2bb3af,
+    color: 0x1B365D,
     roughness: 0.28,
     metalness: 0.06,
     clearcoat: 0.52,
     clearcoatRoughness: 0.14
   });
   const headBaseMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x219892,
+    color: 0x2D5A8A,
     roughness: 0.34,
     metalness: 0.1,
     clearcoat: 0.34,
     clearcoatRoughness: 0.2
   });
   const metalMaterial = new THREE.MeshStandardMaterial({
-    color: 0xcbd2da,
+    color: 0xb0aea5,
     roughness: 0.24,
     metalness: 0.92
   });
   const ferruleMaterial = new THREE.MeshStandardMaterial({
-    color: 0xaab1bb,
+    color: 0x87867f,
     roughness: 0.32,
     metalness: 0.88
   });
@@ -280,7 +278,7 @@ const createPushPin = (THREE) => {
   const highlight = new THREE.Mesh(
     new THREE.SphereGeometry(0.018, 14, 12),
     new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0xfaf9f5,
       transparent: true,
       opacity: 0.22,
       depthWrite: false
@@ -378,23 +376,23 @@ class ReceiptStage {
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(34, 1, 0.1, 20);
-    this.camera.position.set(0, 0.08, 5.35);
-    this.camera.lookAt(0, 0.16, 0);
+    this.camera.position.set(0, 0.02, 4.7);
+    this.camera.lookAt(0, 0.08, 0);
 
-    const ambient = new THREE.HemisphereLight(0xffffff, 0xf7f9fc, 1.32);
+    const ambient = new THREE.HemisphereLight(0xfaf9f5, 0xf5f4ed, 1.32);
     this.scene.add(ambient);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.54);
+    const keyLight = new THREE.DirectionalLight(0xfaf9f5, 1.54);
     keyLight.position.set(1.8, 2.6, 2.5);
     this.scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xfdfefe, 0.3);
+    const fillLight = new THREE.DirectionalLight(0xe8e6dc, 0.3);
     fillLight.position.set(-2.4, -0.4, 2.1);
     this.scene.add(fillLight);
 
     this.presentationGroup = new THREE.Group();
     this.presentationGroup.rotation.x = -0.08;
-    this.presentationGroup.position.y = 0.2;
+    this.presentationGroup.position.y = 0.35;
     this.scene.add(this.presentationGroup);
   }
 
@@ -412,7 +410,7 @@ class ReceiptStage {
       map: this.receiptTexture,
       bumpMap: this.receiptBumpMap,
       bumpScale: 0.0042,
-      color: 0xffffff,
+      color: 0xfaf9f5,
       roughness: 0.985,
       metalness: 0,
       clearcoat: 0.01,
@@ -624,9 +622,9 @@ class ReceiptStage {
     const aspect = width / height;
 
     this.camera.aspect = aspect;
-    this.camera.position.z = aspect < 0.72 ? 5.9 : (aspect < 1 ? 5.6 : 5.35);
-    this.camera.position.y = aspect < 0.72 ? 0.14 : 0.08;
-    this.camera.lookAt(0, aspect < 0.72 ? 0.22 : 0.16, 0);
+    this.camera.position.z = aspect < 0.72 ? 5.15 : (aspect < 1 ? 4.95 : 4.7);
+    this.camera.position.y = aspect < 0.72 ? 0.08 : 0.02;
+    this.camera.lookAt(0, aspect < 0.72 ? 0.14 : 0.08, 0);
     this.camera.updateProjectionMatrix();
     this.renderer.setPixelRatio(pixelRatio);
     this.renderer.setSize(width, height, false);
