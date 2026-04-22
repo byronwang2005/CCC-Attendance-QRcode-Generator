@@ -3,7 +3,6 @@ import {
   collectManualTime,
   fillManualTimeInputs,
   getIdentityLabel,
-  initHeaderTypewriter,
   initStepNavigation,
   loadState,
   readPageMessage,
@@ -56,7 +55,6 @@ const syncDayOptions = (yearElement, monthElement, dayElement) => {
 };
 
 export const initTimePage = () => {
-  initHeaderTypewriter();
   readPageMessage();
 
   const state = loadState();
@@ -83,8 +81,12 @@ export const initTimePage = () => {
   const minuteElement = document.getElementById('minute');
   initStepNavigation(2);
 
-  linkPreview.textContent = state.url;
-  identityPreview.textContent = getIdentityLabel(state.identity);
+  if (linkPreview) {
+    linkPreview.textContent = state.url;
+  }
+  if (identityPreview) {
+    identityPreview.textContent = getIdentityLabel(state.identity);
+  }
   populateSelect(yearElement, TIME_LIMITS.manualYearMin, TIME_LIMITS.manualYearMax);
   populateSelect(monthElement, 1, 12);
   populateSelect(hourElement, 0, 23, true);

@@ -1,7 +1,6 @@
 import {
   AGENT_PROMPT,
   bindCopyButton,
-  initHeaderTypewriter,
   initStepNavigation,
   loadState,
   readPageMessage,
@@ -12,7 +11,6 @@ import {
 import { APP_PATHS, IDENTITIES, TEXT } from '../config/app-config.js';
 
 export const initIndexPage = () => {
-  initHeaderTypewriter();
   readPageMessage();
 
   const state = loadState();
