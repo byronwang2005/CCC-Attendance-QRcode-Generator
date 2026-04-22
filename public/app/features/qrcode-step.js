@@ -4,7 +4,6 @@ import {
   formatDateTime,
   getIdentityLabel,
   getTimeModeLabel,
-  initHeaderTypewriter,
   initStepNavigation,
   loadState,
   parseErrorMessage,
@@ -21,7 +20,6 @@ export const initQrcodePage = () => {
   let currentImageUrl = '';
 
   try {
-    initHeaderTypewriter();
     readPageMessage();
 
     const state = loadState();

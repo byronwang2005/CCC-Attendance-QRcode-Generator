@@ -2,6 +2,7 @@ import { APP_PATHS, STEPS } from './config/app-config.js';
 import { initIndexPage } from './features/identity-step.js';
 import { initQrcodePage } from './features/qrcode-step.js';
 import { initTimePage } from './features/time-step.js';
+import { initBackgroundTextLayer } from './layout/background-text-layer.js';
 import { mountStepPage } from './layout/page-templates.js';
 
 const STEP_INITIALIZERS = Object.freeze({
@@ -37,5 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const step = getCurrentStep();
   syncCanonicalStepUrl(step);
   mountStepPage(step);
+  initBackgroundTextLayer();
   STEP_INITIALIZERS[step]();
 });

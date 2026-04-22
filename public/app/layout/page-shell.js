@@ -12,15 +12,6 @@ const FOOTER_HTML = `
   </footer>
 `;
 
-const HEADER_HTML = `
-  <header class="site-header">
-    <h1>
-      <img src="assets/images/ccc-small.webp" alt="CCC Logo" class="logo" loading="eager" fetchpriority="high" width="200" height="150" />
-      <span class="site-title-text" data-typewriter aria-label="一个签到码，三步搞定"></span>
-    </h1>
-  </header>
-`;
-
 const renderStepCard = (step) => {
   const classes = ['step-card'];
   if (step.state === 'active') {
@@ -55,15 +46,19 @@ export const renderPageShell = ({ root, steps, content, actions = '' }) => {
   }
 
   root.innerHTML = `
-    <div class="page-shell">
-      ${HEADER_HTML}
-      <main class="wizard-layout">
-        ${renderStepper(steps)}
-        ${content}
-        ${actions}
-      </main>
-      ${FOOTER_HTML}
-      <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+    <div class="app-stage">
+      <div class="app-background" aria-hidden="true" data-background-layer>
+        <canvas class="app-background__canvas" data-background-canvas></canvas>
+      </div>
+      <div class="page-shell">
+        <main class="wizard-layout">
+          ${renderStepper(steps)}
+          ${content}
+          ${actions}
+        </main>
+        ${FOOTER_HTML}
+        <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+      </div>
     </div>
   `;
 };
