@@ -99,6 +99,36 @@ body {
   min-height: 100vh;
 }
 
+.boot-loader {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 28px;
+  background: var(--parchment);
+}
+
+.boot-loader__panel {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  min-width: min(320px, 100%);
+  padding: 30px 28px;
+  color: var(--stone);
+  text-align: center;
+}
+
+.boot-loader__logo {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.boot-loader p {
+  margin: 0;
+  color: var(--olive);
+  font-size: 14px;
+}
+
 a {
   color: var(--brand-light);
   text-decoration: none;

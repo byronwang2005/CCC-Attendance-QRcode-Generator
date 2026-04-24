@@ -4,6 +4,7 @@ import { initQrcodePage } from './features/qrcode-step.js';
 import { initTimePage } from './features/time-step.js';
 import { initBackgroundTextLayer } from './layout/background-text-layer.js';
 import { mountStepPage } from './layout/page-templates.js';
+import { preloadAppAssets } from './shared/preload-assets.js';
 
 const STEP_INITIALIZERS = Object.freeze({
   [STEPS.index]: initIndexPage,
@@ -34,9 +35,28 @@ const syncCanonicalStepUrl = (step) => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+const mountBootLoader = () => {
+  const root = document.getElementById('app');
+  if (!root) {
+    return;
+  }
+
+  root.innerHTML = `
+    <section class="boot-loader" aria-label="正在加载">
+      <div class="boot-loader__panel">
+        <img src="assets/images/ccc-small.webp" alt="CCC" class="boot-loader__logo">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p>正在准备资产</p>
+      </div>
+    </section>
+  `;
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
   const step = getCurrentStep();
   syncCanonicalStepUrl(step);
+  mountBootLoader();
+  await preloadAppAssets();
   mountStepPage(step);
   initBackgroundTextLayer();
   STEP_INITIALIZERS[step]();
