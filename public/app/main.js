@@ -46,7 +46,7 @@ const mountBootLoader = () => {
       <div class="boot-loader__panel">
         <img src="assets/images/ccc-small.webp" alt="CCC" class="boot-loader__logo">
         <div class="loading-spinner" aria-hidden="true"></div>
-        <p>正在准备资产</p>
+        <p>准备中，马上就好</p>
       </div>
     </section>
   `;
