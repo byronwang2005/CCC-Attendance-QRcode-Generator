@@ -5,7 +5,7 @@ import {
 } from 'https://cdn.jsdelivr.net/npm/@chenglou/pretext@0.0.5/dist/layout.js';
 
 const ROTATION_RADIANS = -18 * (Math.PI / 180);
-const FONT_FAMILY = '"Source Han Sans CN"';
+const FONT_FAMILY = '"TsangerJinKai02", "Source Han Serif SC", "Noto Serif CJK SC", serif';
 const TEXT_VARIANTS = Object.freeze([
   '一个签到码，三步搞定',
   'One attendance code, done in three steps',
@@ -29,6 +29,13 @@ const createCursor = () => ({
 const lerp = (start, end, amount) => start + (end - start) * amount;
 
 const mediaMatches = (query) => window.matchMedia(query).matches;
+
+const withAlpha = (context, alpha, draw) => {
+  context.save();
+  context.globalAlpha = alpha;
+  draw();
+  context.restore();
+};
 
 const buildTextSource = () => {
   const sequence = [];
@@ -113,7 +120,7 @@ class BackgroundTextLayer {
 
   updateTypography() {
     const viewportShortEdge = Math.min(this.width, this.height);
-    this.fontSize = clamp(Math.round(viewportShortEdge * 0.032), 18, 34);
+    this.fontSize = viewportShortEdge <= 720 ? 18 : 34;
     this.lineHeight = Math.round(this.fontSize * 1.9);
     this.font = `500 ${this.fontSize}px ${FONT_FAMILY}`;
     this.prepared = prepareWithSegments(this.textSource, this.font, { wordBreak: 'keep-all' });
@@ -272,11 +279,13 @@ class BackgroundTextLayer {
 
   drawBackdrop(context) {
     const gradient = context.createLinearGradient(0, 0, this.width, this.height);
-    gradient.addColorStop(0, 'rgba(245, 244, 237, 0.94)');
-    gradient.addColorStop(0.44, 'rgba(250, 249, 245, 0.68)');
-    gradient.addColorStop(1, 'rgba(238, 242, 247, 0.34)');
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, this.width, this.height);
+    gradient.addColorStop(0, '#f5f4ed');
+    gradient.addColorStop(0.44, '#faf9f5');
+    gradient.addColorStop(1, '#EEF2F7');
+    withAlpha(context, 0.68, () => {
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, this.width, this.height);
+    });
   }
 
   drawTextPlane(context) {
@@ -307,8 +316,10 @@ class BackgroundTextLayer {
         }
 
         const line = materializeLineRange(this.prepared, range);
-        context.fillStyle = 'rgba(45, 90, 138, 0.064)';
-        context.fillText(line.text, segment.start, rowY);
+        withAlpha(context, 0.064, () => {
+          context.fillStyle = '#2D5A8A';
+          context.fillText(line.text, segment.start, rowY);
+        });
       }
 
     }
@@ -323,13 +334,15 @@ class BackgroundTextLayer {
         this.pointerCurrent.y,
         this.pointerCurrent.radius * 1.05
       );
-      highlight.addColorStop(0, 'rgba(250, 249, 245, 0.64)');
-      highlight.addColorStop(0.56, 'rgba(232, 230, 220, 0.22)');
-      highlight.addColorStop(1, 'rgba(232, 230, 220, 0)');
-      context.fillStyle = highlight;
-      context.beginPath();
-      context.arc(this.pointerCurrent.x, this.pointerCurrent.y, this.pointerCurrent.radius * 1.05, 0, Math.PI * 2);
-      context.fill();
+      highlight.addColorStop(0, '#faf9f5');
+      highlight.addColorStop(0.56, '#e8e6dc');
+      highlight.addColorStop(1, '#e8e6dc');
+      withAlpha(context, 0.44, () => {
+        context.fillStyle = highlight;
+        context.beginPath();
+        context.arc(this.pointerCurrent.x, this.pointerCurrent.y, this.pointerCurrent.radius * 1.05, 0, Math.PI * 2);
+        context.fill();
+      });
       context.restore();
     }
 

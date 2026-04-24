@@ -1,10 +1,13 @@
 const FOOTER_HTML = `
   <footer class="site-footer">
-    <p>
-      This software is open-sourced under the
-      <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>, with the source code available on
-      <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>.
-    </p>
+    <img src="assets/images/ccc-small.webp" class="site-footer__logo" alt="CCC">
+    <div class="site-footer__copy">
+      <p>
+        This software is open-sourced under the
+        <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>, with the source code available on
+        <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>.
+      </p>
+    </div>
   </footer>
 `;
 
@@ -48,11 +51,13 @@ export const renderPageShell = ({ root, steps, content, actions = '', currentSte
       </div>
       <div class="page-shell">
         <header class="masthead" aria-label="站点抬头">
-          <h1 class="masthead__title">CCC Attendance</h1>
-          <img src="assets/images/ccc-small.webp" class="masthead__logo" alt="Logo" aria-hidden="true">
+          <div class="masthead__copy">
+            <h1 class="masthead__title">CCC Attendance</h1>
+            <p class="masthead__summary">一个签到码，三步搞定</p>
+          </div>
+          ${renderStepper(steps)}
         </header>
         <main class="wizard-layout">
-          ${renderStepper(steps)}
           ${content}
           ${actions}
         </main>
