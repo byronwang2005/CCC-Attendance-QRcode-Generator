@@ -18,8 +18,6 @@
   --border-dark: #30302e;
   --ring-warm: #d1cfc5;
   --ring-deep: #c2c0b6;
-  --error: #b53333;
-  --focus: #3898ec;
   --tag-soft: #EEF2F7;
   --tag-mid: #E4ECF5;
   --tag-strong: #D0DCE9;
@@ -161,7 +159,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -889,8 +887,8 @@ input[type="number"] {
 }
 
 .toast.error {
-  background: var(--error);
-  border-color: var(--error);
+  background: var(--deep-dark);
+  border-color: var(--brand);
 }
 
 .toast.success {
