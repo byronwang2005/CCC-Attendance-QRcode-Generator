@@ -116,6 +116,7 @@ code {
   color: var(--dark-warm);
   font-family: var(--mono);
   font-size: 0.9em;
+  overflow-wrap: anywhere;
 }
 
 button,
@@ -307,7 +308,7 @@ select:focus-visible {
 
 .panel {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   padding: 28px;
   border: 1px solid var(--border-cream);
   border-radius: var(--radius-lg);
@@ -874,6 +875,14 @@ input[type="number"] {
 
   .panel {
     padding: 20px;
+  }
+
+  code {
+    display: inline;
+    padding: 1px 6px;
+    border-radius: 7px;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .panel::after {

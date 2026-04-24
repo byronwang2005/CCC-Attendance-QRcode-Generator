@@ -113,8 +113,8 @@ class BackgroundTextLayer {
 
   updateTypography() {
     const viewportShortEdge = Math.min(this.width, this.height);
-    this.fontSize = clamp(Math.round(viewportShortEdge * 0.021), 12, 22);
-    this.lineHeight = Math.round(this.fontSize * 1.45);
+    this.fontSize = clamp(Math.round(viewportShortEdge * 0.032), 18, 34);
+    this.lineHeight = Math.round(this.fontSize * 1.9);
     this.font = `500 ${this.fontSize}px ${FONT_FAMILY}`;
     this.prepared = prepareWithSegments(this.textSource, this.font, { wordBreak: 'keep-all' });
   }
@@ -272,9 +272,9 @@ class BackgroundTextLayer {
 
   drawBackdrop(context) {
     const gradient = context.createLinearGradient(0, 0, this.width, this.height);
-    gradient.addColorStop(0, 'rgba(245, 244, 237, 0.88)');
-    gradient.addColorStop(0.44, 'rgba(250, 249, 245, 0.54)');
-    gradient.addColorStop(1, 'rgba(232, 230, 220, 0.36)');
+    gradient.addColorStop(0, 'rgba(245, 244, 237, 0.94)');
+    gradient.addColorStop(0.44, 'rgba(250, 249, 245, 0.68)');
+    gradient.addColorStop(1, 'rgba(238, 242, 247, 0.34)');
     context.fillStyle = gradient;
     context.fillRect(0, 0, this.width, this.height);
   }
@@ -307,7 +307,7 @@ class BackgroundTextLayer {
         }
 
         const line = materializeLineRange(this.prepared, range);
-        context.fillStyle = 'rgba(27, 54, 93, 0.082)';
+        context.fillStyle = 'rgba(45, 90, 138, 0.064)';
         context.fillText(line.text, segment.start, rowY);
       }
 
