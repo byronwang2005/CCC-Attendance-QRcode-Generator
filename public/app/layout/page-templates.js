@@ -56,7 +56,7 @@ const INDEX_CONTENT = `
               <div class="guide-card-index">02</div>
               <div class="guide-card-body">
                 <h3>连接网络</h3>
-                <p>网络环境需处于 <code>eduroam</code>、<code>UNNC-Living</code> 或 <code>UNNC_IPSec VPN</code> 等校园网络之一。</p>
+                <p>网络环境需处于<code>eduroam</code>、<code>UNNC-Living</code>或<code>UNNC_IPSec VPN</code>等校园网络之一。</p>
               </div>
             </article>
 
@@ -64,7 +64,7 @@ const INDEX_CONTENT = `
               <div class="guide-card-index">03</div>
               <div class="guide-card-body">
                 <h3>复制链接</h3>
-                <p>用手机浏览器（如 Safari）打开 <a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。</p>
+                <p>用手机浏览器（如Safari）打开<a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。</p>
                 <p>找到要签到的课程，长按“查看详情”，选择“复制链接”，再把完整链接粘贴到下方输入框。</p>
               </div>
             </article>
@@ -81,7 +81,7 @@ const INDEX_CONTENT = `
 
         <div class="course-link-section expandable-section" id="courseLinkSection" hidden>
           <div class="course-link-header">
-            <h3>粘贴「课程详情」链接</h3>
+            <h3>然后粘贴在这里！</h3>
             <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。</p>
           </div>
 
