@@ -47,7 +47,7 @@ const INDEX_CONTENT = `
             <article class="guide-card" role="listitem">
               <div class="guide-card-index">01</div>
               <div class="guide-card-body">
-                <h3>先卡准签到时间</h3>
+                <h3>卡准时间</h3>
                 <p>最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。</p>
               </div>
             </article>
@@ -55,15 +55,15 @@ const INDEX_CONTENT = `
             <article class="guide-card" role="listitem">
               <div class="guide-card-index">02</div>
               <div class="guide-card-body">
-                <h3>确认连接到校园网络</h3>
-                <p>网络环境需处于 <code>eduroam</code>、<code>UNNC-Living</code> 或 <code>UNNC_IPSec VPN</code> 之一。</p>
+                <h3>连接网络</h3>
+                <p>网络环境需处于 <code>eduroam</code>、<code>UNNC-Living</code> 或 <code>UNNC_IPSec VPN</code> 等校园网络之一。</p>
               </div>
             </article>
 
             <article class="guide-card" role="listitem">
               <div class="guide-card-index">03</div>
               <div class="guide-card-body">
-                <h3>在手机浏览器里复制课程详情链接</h3>
+                <h3>复制链接</h3>
                 <p>用手机浏览器（如 Safari）打开 <a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。</p>
                 <p>找到要签到的课程，长按“查看详情”，选择“复制链接”，再把完整链接粘贴到下方输入框。</p>
               </div>
