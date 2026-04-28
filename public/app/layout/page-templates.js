@@ -93,11 +93,10 @@ const INDEX_CONTENT = `
               autocomplete="off"
               autocapitalize="off"
               spellcheck="false"
-              placeholder="https://ccc.nottingham.edu.cn/study/home/details?id=xxxx"
+              placeholder="https://ccc.nottingham.edu.cn/study/home/details?id="
               aria-label="课程详情链接输入框"
             />
           </div>
-          <p class="input-help">可以粘贴完整链接；没带 https:// 也可以。</p>
         </div>
       </section>
     `;
