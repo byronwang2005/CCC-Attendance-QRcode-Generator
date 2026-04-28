@@ -1,12 +1,9 @@
 import {
-  buildTimestamp,
   clearState,
-  formatDateTime,
   getIdentityLabel,
   getTimeModeLabel,
   initStepNavigation,
   loadState,
-  parseErrorMessage,
   readPageMessage,
   redirectTo,
   showToast,
@@ -15,7 +12,7 @@ import {
 import { APP_PATHS, QR_CODE, TEXT } from '../config/app-config.js';
 import { createReceiptStage } from './qrcode/receipt-stage.js';
 
-export const initQrcodePage = () => {
+export const initQrcodePage = ({ qrcode } = {}) => {
   let receiptStage = null;
   let currentImageUrl = '';
 
@@ -71,15 +68,6 @@ export const initQrcodePage = () => {
       `;
     };
 
-    const renderLoading = () => {
-      destroyReceiptStage();
-      qrcodeContainer.innerHTML = `
-        <div class="loading-state">
-          <div class="loading-spinner"></div>
-        </div>
-      `;
-    };
-
     const renderImage = async (src, receiptMeta) => {
       destroyReceiptStage();
 
@@ -102,66 +90,6 @@ export const initQrcodePage = () => {
       }
     };
 
-    const generateQRCode = async () => {
-      let timestamp;
-      const previousImageUrl = currentImageUrl;
-      const previousReceiptMeta = currentReceiptMeta ? { ...currentReceiptMeta } : null;
-
-      try {
-        timestamp = buildTimestamp(state);
-      } catch (error) {
-        redirectTo(APP_PATHS.time, error instanceof Error ? error.message : TEXT.errors.invalidManualTime);
-        return;
-      }
-
-      renderLoading();
-
-      try {
-        const response = await fetch(APP_PATHS.generateApi, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            url: state.url,
-            timestamp
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(parseErrorMessage(errorText));
-        }
-
-        const blob = await response.blob();
-        const nextImageUrl = URL.createObjectURL(blob);
-        currentImageUrl = nextImageUrl;
-        currentReceiptMeta = {
-          generatedTime: formatDateTime(timestamp)
-        };
-        await renderImage(currentImageUrl, currentReceiptMeta);
-
-        if (previousImageUrl) {
-          URL.revokeObjectURL(previousImageUrl);
-        }
-
-        showToast(TEXT.status.qrCodeGenerated);
-      } catch (error) {
-        const message = error instanceof Error && error.message === 'Failed to fetch'
-          ? TEXT.errors.networkError
-          : (error instanceof Error ? error.message : TEXT.errors.qrCodeGenerationFallback);
-        if (previousImageUrl) {
-          currentImageUrl = previousImageUrl;
-          currentReceiptMeta = previousReceiptMeta;
-          await renderImage(previousImageUrl, previousReceiptMeta);
-        } else {
-          currentReceiptMeta = null;
-          renderPlaceholder(TEXT.errors.qrCodeGenerationFailed);
-        }
-        showToast(`二维码生成失败：${message}`, 'error');
-      }
-    };
-
     backBtn.addEventListener('click', () => {
       window.location.href = APP_PATHS.time;
     });
@@ -178,8 +106,24 @@ export const initQrcodePage = () => {
       }
     });
 
-    renderLoading();
-    void generateQRCode();
+    if (qrcode?.redirectToTime) {
+      redirectTo(APP_PATHS.time, qrcode.message || TEXT.errors.invalidManualTime);
+      return;
+    }
+
+    if (qrcode?.imageUrl) {
+      currentImageUrl = qrcode.imageUrl;
+      currentReceiptMeta = qrcode.receiptMeta || null;
+      void renderImage(currentImageUrl, currentReceiptMeta).then(() => {
+        showToast(TEXT.status.qrCodeGenerated);
+      });
+      return;
+    }
+
+    renderPlaceholder(TEXT.errors.qrCodeGenerationFailed);
+    if (qrcode?.message) {
+      showToast(`二维码生成失败：${qrcode.message}`, 'error');
+    }
   } catch (error) {
     console.error('Failed to initialize QR code page:', error);
     const qrcodeContainer = document.getElementById('qrcode');

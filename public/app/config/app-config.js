@@ -84,7 +84,6 @@ export const TEXT = Object.freeze({
     copySuccess: '复制成功！',
     copied: '已复制!',
     qrCodeGenerated: '二维码已生成！如果有“答题”选项，请记得继续完成。',
-    generating: '生成中...',
     regenerate: '重新生成二维码',
     generate: '生成签到二维码'
   }),

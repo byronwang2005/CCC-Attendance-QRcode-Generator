@@ -27,6 +27,18 @@ const wait = (duration) => new Promise((resolve) => {
   window.setTimeout(resolve, duration);
 });
 
+const reportProgress = (onProgress, completed, total) => {
+  if (typeof onProgress !== 'function') {
+    return;
+  }
+
+  onProgress({
+    completed,
+    total,
+    percent: total > 0 ? Math.round((completed / total) * 100) : 100
+  });
+};
+
 const loadImage = (src) => new Promise((resolve, reject) => {
   const image = new Image();
   image.onload = async () => {
@@ -58,17 +70,39 @@ const loadFonts = async () => {
   await document.fonts.ready;
 };
 
-export const preloadAppAssets = async () => {
+export const preloadAppAssets = async ({ onProgress } = {}) => {
   const startedAt = window.performance.now();
+  const tasks = [
+    ...IMAGE_ASSETS.map((src) => () => loadImage(src)),
+    ...FILE_ASSETS.map((src) => () => loadFile(src)),
+    loadFonts
+  ];
+  const total = tasks.length;
+  let completed = 0;
+  const failures = [];
 
-  await Promise.all([
-    ...IMAGE_ASSETS.map(loadImage),
-    ...FILE_ASSETS.map(loadFile),
-    loadFonts()
-  ]);
+  reportProgress(onProgress, completed, total);
+
+  await Promise.all(tasks.map(async (task) => {
+    try {
+      await task();
+    } catch (error) {
+      failures.push(error);
+    } finally {
+      completed += 1;
+      reportProgress(onProgress, completed, total);
+    }
+  }));
 
   const elapsed = window.performance.now() - startedAt;
   if (elapsed < MINIMUM_LOADER_DURATION) {
     await wait(MINIMUM_LOADER_DURATION - elapsed);
   }
+
+  reportProgress(onProgress, total, total);
+
+  return {
+    ok: failures.length === 0,
+    failures
+  };
 };

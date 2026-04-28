@@ -89,22 +89,34 @@ const handleGenerateApi = async (request, response) => {
   }
 };
 
+const isPathInsidePublic = (candidatePath) => {
+  const relativePath = path.relative(publicDir, candidatePath);
+  return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
+};
+
 const resolveFilePath = (pathname) => {
   const normalizedPath = pathname === '/' ? '/index.html' : pathname;
-  const decodedPath = decodeURIComponent(normalizedPath);
-  const candidatePath = path.normalize(path.join(publicDir, decodedPath));
+  let decodedPath;
 
-  if (!candidatePath.startsWith(publicDir)) {
-    return null;
+  try {
+    decodedPath = decodeURIComponent(normalizedPath);
+  } catch {
+    return { statusCode: 400, message: 'Bad Request' };
   }
 
-  return candidatePath;
+  const candidatePath = path.normalize(path.join(publicDir, decodedPath));
+
+  if (!isPathInsidePublic(candidatePath)) {
+    return { statusCode: 403, message: 'Forbidden' };
+  }
+
+  return { filePath: candidatePath };
 };
 
 const serveStaticFile = async (pathname, response) => {
-  const filePath = resolveFilePath(pathname);
+  const { filePath, statusCode, message } = resolveFilePath(pathname);
   if (!filePath) {
-    sendText(response, 403, 'Forbidden');
+    sendText(response, statusCode, message);
     return;
   }
 
