@@ -1,7 +1,4 @@
 import { APP_PATHS, STEPS, TEXT } from './config/app-config.js';
-import { initIndexPage } from './features/identity-step.js';
-import { initQrcodePage } from './features/qrcode-step.js';
-import { initTimePage } from './features/time-step.js';
 import { initBackgroundTextLayer } from './layout/background-text-layer.js';
 import { mountStepPage } from './layout/page-templates.js';
 import { preloadAppAssets } from './shared/preload-assets.js';
@@ -13,10 +10,19 @@ import {
   validateCourseUrl
 } from './shared/wizard.js';
 
-const STEP_INITIALIZERS = Object.freeze({
-  [STEPS.index]: initIndexPage,
-  [STEPS.time]: initTimePage,
-  [STEPS.qrcode]: initQrcodePage
+const STEP_INITIALIZER_LOADERS = Object.freeze({
+  [STEPS.index]: async () => {
+    const module = await import('./features/identity-step.js');
+    return module.initIndexPage;
+  },
+  [STEPS.time]: async () => {
+    const module = await import('./features/time-step.js');
+    return module.initTimePage;
+  },
+  [STEPS.qrcode]: async () => {
+    const module = await import('./features/qrcode-step.js');
+    return module.initQrcodePage;
+  }
 });
 
 const normalizeStep = (value) => {
@@ -146,6 +152,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   syncCanonicalStepUrl(step);
   mountBootLoader();
   const isQrcodeStep = step === STEPS.qrcode;
+  const loadStepInitializer = STEP_INITIALIZER_LOADERS[step] ?? STEP_INITIALIZER_LOADERS[STEPS.index];
+  const stepInitializerPromise = loadStepInitializer();
   const preloadResult = await preloadAppAssets({
     onProgress: (progress) => {
       updateBootLoaderProgress({
@@ -159,7 +167,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const stepData = isQrcodeStep
     ? await prepareQrcodeStep(updateBootLoaderProgress)
     : null;
+  const initStep = await stepInitializerPromise;
   mountStepPage(step);
   initBackgroundTextLayer();
-  STEP_INITIALIZERS[step](stepData || undefined);
+  initStep(stepData || undefined);
 });

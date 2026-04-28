@@ -54,22 +54,6 @@
 }
 
 @font-face {
-  font-family: "Source Han Sans CN";
-  src: url("/assets/fonts/kami/SourceHanSansCN-Regular.otf") format("opentype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Source Han Sans CN";
-  src: url("/assets/fonts/kami/SourceHanSansCN-Medium.otf") format("opentype");
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-}
-
-@font-face {
   font-family: "JetBrains Mono";
   src: url("/assets/fonts/kami/JetBrainsMono.woff2") format("woff2");
   font-style: normal;
