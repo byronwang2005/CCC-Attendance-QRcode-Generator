@@ -40,11 +40,13 @@ A：请确认：
 ---
 ## 贡献代码
 
-参考 [CONTRIBUTING](CONTRIBUTING.md)
+参考[CONTRIBUTING](CONTRIBUTING.md)。
+
+---
 
 ## 开源协议
 
-本项目采用 MIT 协议开源，详见 [LICENSE](LICENSE) 文件。
+本项目采用MIT协议开源，详见[LICENSE](LICENSE)。
 
 ---
 
