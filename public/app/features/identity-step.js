@@ -205,7 +205,7 @@ export const initIndexPage = () => {
       return;
     }
 
-    saveState({ url, identity: selectedIdentity });
+    saveState({ url: validation.normalizedUrl, identity: selectedIdentity });
     window.location.href = APP_PATHS.time;
   });
 };

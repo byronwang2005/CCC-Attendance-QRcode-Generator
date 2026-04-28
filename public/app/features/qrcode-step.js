@@ -29,6 +29,7 @@ export const initQrcodePage = ({ qrcode } = {}) => {
       redirectTo(APP_PATHS.index, urlValidation.message);
       return;
     }
+    const courseUrl = urlValidation.normalizedUrl ?? state.url;
 
     const summaryIdentity = document.getElementById('summaryIdentity');
     const summaryMode = document.getElementById('summaryMode');
@@ -47,7 +48,7 @@ export const initQrcodePage = ({ qrcode } = {}) => {
       summaryMode.textContent = getTimeModeLabel(state);
     }
     if (summaryUrl) {
-      summaryUrl.textContent = state.url;
+      summaryUrl.textContent = courseUrl;
     }
 
     const destroyReceiptStage = () => {

@@ -530,7 +530,8 @@ select:focus-visible {
 }
 
 .agent-text {
-  color: var(--warm-silver);
+  color: var(--ivory);
+  font-weight: 500;
   word-break: break-word;
 }
 
@@ -873,7 +874,9 @@ input[type="number"] {
   border-radius: var(--radius-md);
   background: var(--deep-dark);
   color: var(--ivory);
+  line-height: 1.55;
   text-align: center;
+  white-space: pre-line;
   opacity: 0;
   transition: transform 0.28s ease, opacity 0.28s ease;
   z-index: 1000;

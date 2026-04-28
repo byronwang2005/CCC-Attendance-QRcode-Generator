@@ -67,6 +67,10 @@ export const initTimePage = () => {
     redirectTo(APP_PATHS.index, urlValidation.message);
     return;
   }
+  const courseUrl = urlValidation.normalizedUrl ?? state.url;
+  if (courseUrl !== state.url) {
+    saveState({ url: courseUrl });
+  }
 
   const linkPreview = document.getElementById('linkPreview');
   const identityPreview = document.getElementById('identityPreview');
@@ -82,7 +86,7 @@ export const initTimePage = () => {
   initStepNavigation(2);
 
   if (linkPreview) {
-    linkPreview.textContent = state.url;
+    linkPreview.textContent = courseUrl;
   }
   if (identityPreview) {
     identityPreview.textContent = getIdentityLabel(state.identity);

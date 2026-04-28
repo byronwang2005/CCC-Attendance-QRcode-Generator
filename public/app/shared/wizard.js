@@ -223,27 +223,75 @@ export const extractScheduleId = (inputUrl) => {
   return null;
 };
 
-export const validateCourseUrl = (inputUrl) => {
+export const normalizeCourseUrl = (inputUrl) => {
   const value = safeString(inputUrl);
   if (!value) {
-    return { valid: false, message: TEXT.errors.pasteCourseUrlFirst };
+    return '';
   }
 
+  if (/^[a-z][a-z\d+.-]*:/i.test(value)) {
+    return value;
+  }
+
+  return `https://${value}`;
+};
+
+const buildCourseUrlError = (messages) => {
+  if (messages.length <= 1) {
+    return messages[0] ?? TEXT.errors.invalidCourseUrl;
+  }
+
+  return [
+    '链接有这些问题：',
+    ...messages.map((message, index) => `${index + 1}. ${message}`)
+  ].join('\n');
+};
+
+export const validateCourseUrl = (inputUrl) => {
+  const value = normalizeCourseUrl(inputUrl);
+  if (!value) {
+    return {
+      valid: false,
+      messages: [TEXT.errors.pasteCourseUrlFirst],
+      message: TEXT.errors.pasteCourseUrlFirst
+    };
+  }
+
+  let parsed;
   try {
-    const parsed = new URL(value);
-    if (!NETWORK.supportedProtocols.includes(parsed.protocol)) {
-      return { valid: false, message: TEXT.errors.invalidCourseUrl };
-    }
+    parsed = new URL(value);
   } catch {
-    return { valid: false, message: TEXT.errors.invalidCourseUrl };
+    return {
+      valid: false,
+      messages: [TEXT.errors.invalidCourseUrl],
+      message: TEXT.errors.invalidCourseUrl
+    };
+  }
+
+  const messages = [];
+
+  if (!NETWORK.supportedProtocols.includes(parsed.protocol)) {
+    messages.push(TEXT.errors.unsupportedCourseUrlProtocol);
+  }
+
+  if (!NETWORK.expectedCourseHosts.includes(parsed.hostname.toLowerCase())) {
+    messages.push(TEXT.errors.invalidCourseUrlDomain);
+  }
+
+  if (!parsed.pathname.startsWith('/study/')) {
+    messages.push(TEXT.errors.invalidCourseUrlPath);
   }
 
   const scheduleId = extractScheduleId(value);
   if (!scheduleId) {
-    return { valid: false, message: TEXT.errors.invalidScheduleId };
+    messages.push(TEXT.errors.invalidScheduleId);
   }
 
-  return { valid: true, scheduleId };
+  if (messages.length) {
+    return { valid: false, messages, message: buildCourseUrlError(messages) };
+  }
+
+  return { valid: true, scheduleId, normalizedUrl: value };
 };
 
 const parseInteger = (value) => {

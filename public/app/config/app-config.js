@@ -56,7 +56,8 @@ export const MANUAL_TIME_FIELDS = Object.freeze([
 ]);
 
 export const NETWORK = Object.freeze({
-  supportedProtocols: Object.freeze(['http:', 'https:'])
+  supportedProtocols: Object.freeze(['http:', 'https:']),
+  expectedCourseHosts: Object.freeze(['ccc.nottingham.edu.cn'])
 });
 
 export const SCHEDULE_ID_PATTERNS = Object.freeze([
@@ -69,8 +70,11 @@ export const TEXT = Object.freeze({
   errors: Object.freeze({
     chooseIdentityFirst: '请先选择身份（人类或AI代理）',
     pasteCourseUrlFirst: '请先粘贴课程详情链接',
-    invalidCourseUrl: '链接格式不正确，请粘贴完整课程详情链接',
-    invalidScheduleId: '链接无效：未找到课程ID（id 或 scheduleId）',
+    invalidCourseUrl: '链接格式不正确，请检查是否复制了完整的课程详情链接',
+    unsupportedCourseUrlProtocol: '链接协议不支持，请使用 http 或 https 开头的链接',
+    invalidCourseUrlDomain: '这看起来不是 CCC 课程链接，请从 ccc.nottingham.edu.cn 的课程详情页复制',
+    invalidCourseUrlPath: '这不是课程学习页面链接，请复制 CCC 课程页里“查看详情”的链接',
+    invalidScheduleId: '链接里缺少课程ID。正确链接通常包含 ?id=xxxx 或 ?scheduleId=xxxx',
     completeCurrentStepFirst: '请先完成当前步骤',
     completeManualTime: '请完整填写手动时间',
     invalidManualTime: '手动时间格式错误，请检查年月日时分是否有效（含闰年）',

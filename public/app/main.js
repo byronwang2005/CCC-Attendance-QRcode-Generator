@@ -126,7 +126,7 @@ const prepareQrcodeStep = async (onProgress) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        url: state.url,
+        url: validation.normalizedUrl ?? state.url,
         timestamp
       })
     });
