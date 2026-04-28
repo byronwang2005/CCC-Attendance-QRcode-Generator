@@ -3,6 +3,10 @@ export const RESPONSE_HEADERS = Object.freeze({
   png: {
     'Content-Type': 'image/png',
     'Content-Disposition': 'attachment; filename="qrcode.png"'
+  },
+  svg: {
+    'Content-Type': 'image/svg+xml; charset=utf-8',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
   }
 });
 

@@ -12,7 +12,7 @@
   "devDependencies": {
     "eslint": "^9.23.0",
     "globals": "^16.0.0",
-    "wrangler": "^3.0.0"
+    "wrangler": "^4.85.0"
   },
   "dependencies": {
     "qr-image": "^3.2.0"

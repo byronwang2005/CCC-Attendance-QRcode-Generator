@@ -7,6 +7,9 @@
 [![License](https://img.shields.io/github/license/byronwang2005/CCC-Attendance)](https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/byronwang2005/CCC-Attendance?style=social)](https://github.com/byronwang2005/CCC-Attendance)
 
+![过去一天内每小时生成数量](https://ccc.byron.wang/api/stats.svg)
+![历史累计生成总量](https://ccc.byron.wang/api/stats-total.svg)
+
 ---
 
 ## 严正声明
@@ -36,8 +39,6 @@ A：请确认：
 ## 贡献代码
 
 参考 [CONTRIBUTING](CONTRIBUTING.md)
-
----
 
 ## 开源协议
 

@@ -1,6 +1,7 @@
 import qr from 'qr-image';
 import { buildAttendanceUrl, extractScheduleId } from '../../shared/attendance.js';
 import { ERROR_MESSAGES, RESPONSE_HEADERS } from '../lib/api-constants.js';
+import { recordQrGeneration } from '../lib/qr-stats.js';
 
 const jsonResponse = (payload, status) => new Response(JSON.stringify(payload), {
   status,
@@ -9,7 +10,7 @@ const jsonResponse = (payload, status) => new Response(JSON.stringify(payload), 
 
 export async function onRequestPost(context) {
   try {
-    const { request } = context;
+    const { request, env } = context;
     const formData = await request.json();
     const { url, timestamp } = formData;
 
@@ -29,6 +30,11 @@ export async function onRequestPost(context) {
     const attendanceUrl = buildAttendanceUrl({ scheduleId: sid, timestamp });
 
     const qrBuffer = qr.imageSync(attendanceUrl, { type: 'png', margin: 2, size: 10 });
+
+    const statsWrite = recordQrGeneration({ env, scheduleId: sid, timestamp }).catch(() => {});
+    if (context.waitUntil) {
+      context.waitUntil(statsWrite);
+    }
 
     return new Response(qrBuffer, {
       headers: RESPONSE_HEADERS.png
