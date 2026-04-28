@@ -112,6 +112,8 @@ const buildHourlySeries = (rows, hours) => {
   });
 };
 
+const chartFontFamily = "Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif";
+
 export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
   const width = 720;
   const height = 260;
@@ -133,30 +135,30 @@ export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
   const peak = Math.max(...series.map(point => point.count));
   const latest = series.at(-1)?.count ?? 0;
   const statusText = configured
-    ? `Last ${hours} hours, UTC+8. Total ${total}, peak ${peak}, latest ${latest}.`
-    : 'D1 binding QR_STATS_DB is not configured yet.';
+    ? `最近 ${hours} 小时，UTC+8。总计 ${total}，峰值 ${peak}，最新 ${latest}。`
+    : 'D1 绑定 QR_STATS_DB 尚未配置。';
   const yTicks = [0, Math.ceil(maxCount / 2), maxCount];
   const xTicks = [0, Math.floor((series.length - 1) / 2), series.length - 1]
     .filter((value, index, values) => values.indexOf(value) === index);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
-  <title id="title">CCC Attendance QR generation trend</title>
+  <title id="title">CCC Attendance 二维码生成趋势</title>
   <desc id="desc">${escapeXml(statusText)}</desc>
   <rect width="${width}" height="${height}" rx="8" fill="#f8fafc"/>
-  <text x="${padding.left}" y="24" fill="#0f172a" font-family="Arial, sans-serif" font-size="16" font-weight="700">QR generation trend</text>
-  <text x="${width - padding.right}" y="24" text-anchor="end" fill="#475569" font-family="Arial, sans-serif" font-size="12">${escapeXml(statusText)}</text>
+  <text x="${padding.left}" y="24" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">二维码生成趋势</text>
+  <text x="${width - padding.right}" y="24" text-anchor="end" fill="#475569" font-family="${chartFontFamily}" font-size="12">${escapeXml(statusText)}</text>
   <g stroke="#e2e8f0" stroke-width="1">
     ${yTicks.map(tick => `<line x1="${padding.left}" y1="${yScale(tick).toFixed(2)}" x2="${padding.left + plotWidth}" y2="${yScale(tick).toFixed(2)}"/>`).join('\n    ')}
   </g>
-  <g fill="#64748b" font-family="Arial, sans-serif" font-size="11">
+  <g fill="#64748b" font-family="${chartFontFamily}" font-size="11">
     ${yTicks.map(tick => `<text x="${padding.left - 10}" y="${(yScale(tick) + 4).toFixed(2)}" text-anchor="end">${tick}</text>`).join('\n    ')}
     ${xTicks.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 22}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
   </g>
   <path d="${areaPath}" fill="#38bdf8" opacity="0.16"/>
   <path d="${path}" fill="none" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <g fill="#0f766e" stroke="#f8fafc" stroke-width="2">
-    ${points.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="4"><title>${escapeXml(`${point.label}: ${point.count}`)}</title></circle>`).join('\n    ')}
+    ${points.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="4"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
   </g>
 </svg>`;
 };
@@ -212,30 +214,30 @@ export const renderQrCumulativeStatsSvg = ({ rows, configured }) => {
   const areaPath = `${path} L ${points.at(-1).x.toFixed(2)} ${padding.top + plotHeight} L ${padding.left} ${padding.top + plotHeight} Z`;
   const total = series.at(-1)?.count ?? 0;
   const statusText = configured
-    ? `Historical cumulative total: ${total}.`
-    : 'D1 binding QR_STATS_DB is not configured yet.';
+    ? `历史累计总量：${total}。`
+    : 'D1 绑定 QR_STATS_DB 尚未配置。';
   const yTicks = [0, Math.ceil(maxCount / 2), maxCount];
   const xTickIndexes = [0, Math.floor((series.length - 1) / 2), series.length - 1]
     .filter((value, index, values) => values.indexOf(value) === index);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
-  <title id="title">CCC Attendance cumulative QR generations</title>
+  <title id="title">CCC Attendance 历史累计生成总量</title>
   <desc id="desc">${escapeXml(statusText)}</desc>
   <rect width="${width}" height="${height}" rx="8" fill="#f8fafc"/>
-  <text x="${padding.left}" y="24" fill="#0f172a" font-family="Arial, sans-serif" font-size="16" font-weight="700">Cumulative QR generations</text>
-  <text x="${width - padding.right}" y="24" text-anchor="end" fill="#475569" font-family="Arial, sans-serif" font-size="12">${escapeXml(statusText)}</text>
+  <text x="${padding.left}" y="24" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">历史累计生成总量</text>
+  <text x="${width - padding.right}" y="24" text-anchor="end" fill="#475569" font-family="${chartFontFamily}" font-size="12">${escapeXml(statusText)}</text>
   <g stroke="#e2e8f0" stroke-width="1">
     ${yTicks.map(tick => `<line x1="${padding.left}" y1="${yScale(tick).toFixed(2)}" x2="${padding.left + plotWidth}" y2="${yScale(tick).toFixed(2)}"/>`).join('\n    ')}
   </g>
-  <g fill="#64748b" font-family="Arial, sans-serif" font-size="11">
+  <g fill="#64748b" font-family="${chartFontFamily}" font-size="11">
     ${yTicks.map(tick => `<text x="${padding.left - 10}" y="${(yScale(tick) + 4).toFixed(2)}" text-anchor="end">${tick}</text>`).join('\n    ')}
     ${xTickIndexes.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 22}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
   </g>
   <path d="${areaPath}" fill="#14b8a6" opacity="0.16"/>
   <path d="${path}" fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <g fill="#0284c7" stroke="#f8fafc" stroke-width="2">
-    ${points.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="4"><title>${escapeXml(`${point.label}: ${point.count}`)}</title></circle>`).join('\n    ')}
+    ${points.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="4"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
   </g>
 </svg>`;
 };
