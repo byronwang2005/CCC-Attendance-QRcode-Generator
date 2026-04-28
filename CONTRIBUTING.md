@@ -32,13 +32,45 @@ npm run lint
 
 ## Project Structure
 
-- `public/index.html`: 单页入口，通过 `?step=` 切换向导步骤
-- `public/styles.css`: 全局样式
-- `public/app/`: 前端应用代码
-- `functions/api/`: 服务端函数入口
-- `functions/lib/`: 服务端内部常量
-- `shared/`: 前后端共用规则
-- `scripts/dev/`: 本地开发辅助脚本
+当前项目按运行环境和职责分层：
+
+```text
+.
+├── public/                 # Cloudflare Pages 静态资源根目录
+│   ├── index.html          # 单页入口，通过 ?step= 切换向导步骤
+│   ├── styles.css          # 全局样式
+│   ├── _headers            # Pages 响应头配置
+│   ├── agent.md            # 给 AI 代理使用的公开说明
+│   ├── app/                # 浏览器端应用代码
+│   │   ├── main.js         # 前端启动入口、预加载和步骤挂载
+│   │   ├── config/         # 前端常量、路径、文案和配置
+│   │   ├── features/       # 各步骤功能模块
+│   │   │   └── qrcode/     # 二维码结果页的局部功能
+│   │   ├── layout/         # 页面骨架、模板和背景层
+│   │   └── shared/         # 前端共用工具、状态和预加载逻辑
+│   └── assets/             # 图片、图标、字体等静态资源
+├── functions/              # Cloudflare Pages Functions
+│   ├── api/                # HTTP API 和 SVG 统计接口入口
+│   └── lib/                # 服务端内部常量和统计工具
+├── shared/                 # 前后端共用规则
+├── migrations/             # Cloudflare D1 数据库迁移
+├── scripts/dev/            # 本地开发辅助脚本
+├── package.json            # npm 脚本和依赖
+├── eslint.config.js        # ESLint 配置
+└── wrangler.toml           # Cloudflare Pages/Workers 配置
+```
+
+新增文件请优先放在现有职责边界内：
+
+- 新的页面步骤逻辑放到 `public/app/features/`。
+- 新的前端共用工具放到 `public/app/shared/`，不要放进具体步骤模块。
+- 新的页面布局、模板或背景效果放到 `public/app/layout/`。
+- 新的路径、文案、限制值和配置常量放到 `public/app/config/app-config.js`。
+- 新的静态资源放到 `public/assets/` 下对应类型目录。
+- 新的 API 入口放到 `functions/api/`，只被服务端复用的逻辑放到 `functions/lib/`。
+- 前后端都要复用的纯规则放到 `shared/`。
+- 数据库结构调整必须新增 `migrations/` 文件，不要直接改旧迁移。
+- 本地开发专用脚本放到 `scripts/dev/`。
 
 ## Code Style
 

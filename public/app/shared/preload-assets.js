@@ -8,6 +8,10 @@ const FONT_ASSETS = Object.freeze([
   '400 1em "JetBrains Mono"'
 ]);
 
+const MODULE_ASSETS = Object.freeze([
+  'https://cdn.jsdelivr.net/npm/@chenglou/pretext@0.0.5/dist/layout.js'
+]);
+
 const MINIMUM_LOADER_DURATION = 180;
 
 const wait = (duration) => new Promise((resolve) => {
@@ -48,11 +52,16 @@ const loadFont = async (font) => {
   await document.fonts.load(font);
 };
 
+const loadModule = async (src) => {
+  await import(src);
+};
+
 export const preloadAppAssets = async ({ onProgress } = {}) => {
   const startedAt = window.performance.now();
   const tasks = [
     ...IMAGE_ASSETS.map((src) => () => loadImage(src)),
-    ...FONT_ASSETS.map((font) => () => loadFont(font))
+    ...FONT_ASSETS.map((font) => () => loadFont(font)),
+    ...MODULE_ASSETS.map((src) => () => loadModule(src))
   ];
   const total = tasks.length;
   let completed = 0;
