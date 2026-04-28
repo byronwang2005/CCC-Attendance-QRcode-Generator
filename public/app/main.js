@@ -1,5 +1,4 @@
 import { APP_PATHS, STEPS, TEXT } from './config/app-config.js';
-import { initBackgroundTextLayer } from './layout/background-text-layer.js';
 import { mountStepPage } from './layout/page-templates.js';
 import { preloadAppAssets } from './shared/preload-assets.js';
 import {
@@ -69,6 +68,10 @@ const mountBootLoader = () => {
     return;
   }
 
+  if (root.querySelector('.boot-loader')) {
+    return;
+  }
+
   root.innerHTML = `
     <section class="boot-loader" aria-label="正在加载">
       <div class="boot-loader__panel">
@@ -81,6 +84,15 @@ const mountBootLoader = () => {
       </div>
     </section>
   `;
+};
+
+const initBackgroundTextLayer = async () => {
+  try {
+    const module = await import('./layout/background-text-layer.js');
+    module.initBackgroundTextLayer();
+  } catch (error) {
+    console.warn('Failed to initialize background text layer:', error);
+  }
 };
 
 const prepareQrcodeStep = async (onProgress) => {
@@ -169,6 +181,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     : null;
   const initStep = await stepInitializerPromise;
   mountStepPage(step);
-  initBackgroundTextLayer();
+  void initBackgroundTextLayer();
   initStep(stepData || undefined);
 });
