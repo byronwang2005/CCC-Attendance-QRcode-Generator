@@ -115,9 +115,9 @@ const buildHourlySeries = (rows, hours) => {
 const chartFontFamily = "Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif";
 
 export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
-  const width = 720;
-  const height = 260;
-  const padding = { top: 40, right: 28, bottom: 50, left: 52 };
+  const width = 520;
+  const height = 228;
+  const padding = { top: 64, right: 24, bottom: 40, left: 42 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
   const series = buildHourlySeries(rows, hours);
@@ -135,30 +135,43 @@ export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
   const peak = Math.max(...series.map(point => point.count));
   const latest = series.at(-1)?.count ?? 0;
   const statusText = configured
-    ? `最近 ${hours} 小时，UTC+8。总计 ${total}，峰值 ${peak}，最新 ${latest}。`
+    ? `最近${hours}小时，UTC+8。总计${total}，峰值${peak}，最新${latest}`
     : 'D1 绑定 QR_STATS_DB 尚未配置。';
+  const summaryText = configured
+    ? `总计 ${total} · 峰值 ${peak} · 最新 ${latest}`
+    : '统计数据库未配置';
   const yTicks = [0, Math.ceil(maxCount / 2), maxCount];
   const xTicks = [0, Math.floor((series.length - 1) / 2), series.length - 1]
     .filter((value, index, values) => values.indexOf(value) === index);
+  const markerPoints = points.filter(point => point.count > 0);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
   <title id="title">CCC Attendance 二维码生成趋势</title>
   <desc id="desc">${escapeXml(statusText)}</desc>
-  <rect width="${width}" height="${height}" rx="8" fill="#f8fafc"/>
-  <text x="${padding.left}" y="24" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">二维码生成趋势</text>
-  <text x="${width - padding.right}" y="24" text-anchor="end" fill="#475569" font-family="${chartFontFamily}" font-size="12">${escapeXml(statusText)}</text>
-  <g stroke="#e2e8f0" stroke-width="1">
+  <defs>
+    <linearGradient id="hourlyFill" x1="0" y1="${padding.top}" x2="0" y2="${padding.top + plotHeight}" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0284c7" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0284c7" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="${padding.left}" y="25" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">二维码生成趋势</text>
+  <text x="${padding.left}" y="45" fill="#64748b" font-family="${chartFontFamily}" font-size="11">${escapeXml(`最近 ${hours} 小时 · UTC+8`)}</text>
+  <text x="${width - padding.right}" y="34" text-anchor="end" fill="#0369a1" font-family="${chartFontFamily}" font-size="12" font-weight="700">${escapeXml(summaryText)}</text>
+  <g stroke="#eef2f7" stroke-width="1">
     ${yTicks.map(tick => `<line x1="${padding.left}" y1="${yScale(tick).toFixed(2)}" x2="${padding.left + plotWidth}" y2="${yScale(tick).toFixed(2)}"/>`).join('\n    ')}
   </g>
-  <g fill="#64748b" font-family="${chartFontFamily}" font-size="11">
+  <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="${padding.left}" y1="${padding.top + plotHeight}" x2="${padding.left + plotWidth}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
+  <g fill="#64748b" font-family="${chartFontFamily}" font-size="10">
     ${yTicks.map(tick => `<text x="${padding.left - 10}" y="${(yScale(tick) + 4).toFixed(2)}" text-anchor="end">${tick}</text>`).join('\n    ')}
-    ${xTicks.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 22}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
+    ${xTicks.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 18}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
   </g>
-  <path d="${areaPath}" fill="#38bdf8" opacity="0.16"/>
-  <path d="${path}" fill="none" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <g fill="#0f766e" stroke="#f8fafc" stroke-width="2">
-    ${points.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="4"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
+  <path d="${areaPath}" fill="url(#hourlyFill)"/>
+  <path d="${path}" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#ffffff" stroke="#0284c7" stroke-width="2">
+    ${markerPoints.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="3"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
   </g>
 </svg>`;
 };
@@ -196,9 +209,9 @@ const buildCumulativeSeries = rows => {
 };
 
 export const renderQrCumulativeStatsSvg = ({ rows, configured }) => {
-  const width = 720;
-  const height = 260;
-  const padding = { top: 40, right: 28, bottom: 50, left: 52 };
+  const width = 520;
+  const height = 228;
+  const padding = { top: 64, right: 24, bottom: 40, left: 42 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
   const series = buildCumulativeSeries(rows);
@@ -214,30 +227,41 @@ export const renderQrCumulativeStatsSvg = ({ rows, configured }) => {
   const areaPath = `${path} L ${points.at(-1).x.toFixed(2)} ${padding.top + plotHeight} L ${padding.left} ${padding.top + plotHeight} Z`;
   const total = series.at(-1)?.count ?? 0;
   const statusText = configured
-    ? `历史累计总量：${total}。`
+    ? `历史累计总量：${total}`
     : 'D1 绑定 QR_STATS_DB 尚未配置。';
+  const summaryText = configured ? `累计 ${total} 次` : '统计数据库未配置';
   const yTicks = [0, Math.ceil(maxCount / 2), maxCount];
   const xTickIndexes = [0, Math.floor((series.length - 1) / 2), series.length - 1]
     .filter((value, index, values) => values.indexOf(value) === index);
+  const markerPoints = points.filter((point, index) => index === 0 || index === points.length - 1 || (series.length <= 18 && point.count > 0));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
   <title id="title">CCC Attendance 历史累计生成总量</title>
   <desc id="desc">${escapeXml(statusText)}</desc>
-  <rect width="${width}" height="${height}" rx="8" fill="#f8fafc"/>
-  <text x="${padding.left}" y="24" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">历史累计生成总量</text>
-  <text x="${width - padding.right}" y="24" text-anchor="end" fill="#475569" font-family="${chartFontFamily}" font-size="12">${escapeXml(statusText)}</text>
-  <g stroke="#e2e8f0" stroke-width="1">
+  <defs>
+    <linearGradient id="totalFill" x1="0" y1="${padding.top}" x2="0" y2="${padding.top + plotHeight}" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f766e" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0f766e" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="${padding.left}" y="25" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">历史累计生成总量</text>
+  <text x="${padding.left}" y="45" fill="#64748b" font-family="${chartFontFamily}" font-size="11">自 2026-04-28 起</text>
+  <text x="${width - padding.right}" y="34" text-anchor="end" fill="#0f766e" font-family="${chartFontFamily}" font-size="12" font-weight="700">${escapeXml(summaryText)}</text>
+  <g stroke="#eef2f7" stroke-width="1">
     ${yTicks.map(tick => `<line x1="${padding.left}" y1="${yScale(tick).toFixed(2)}" x2="${padding.left + plotWidth}" y2="${yScale(tick).toFixed(2)}"/>`).join('\n    ')}
   </g>
-  <g fill="#64748b" font-family="${chartFontFamily}" font-size="11">
+  <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="${padding.left}" y1="${padding.top + plotHeight}" x2="${padding.left + plotWidth}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
+  <g fill="#64748b" font-family="${chartFontFamily}" font-size="10">
     ${yTicks.map(tick => `<text x="${padding.left - 10}" y="${(yScale(tick) + 4).toFixed(2)}" text-anchor="end">${tick}</text>`).join('\n    ')}
-    ${xTickIndexes.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 22}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
+    ${xTickIndexes.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 18}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
   </g>
-  <path d="${areaPath}" fill="#14b8a6" opacity="0.16"/>
-  <path d="${path}" fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <g fill="#0284c7" stroke="#f8fafc" stroke-width="2">
-    ${points.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="4"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
+  <path d="${areaPath}" fill="url(#totalFill)"/>
+  <path d="${path}" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#ffffff" stroke="#0f766e" stroke-width="2">
+    ${markerPoints.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="3"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
   </g>
 </svg>`;
 };

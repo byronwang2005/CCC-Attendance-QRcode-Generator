@@ -7,8 +7,10 @@
 [![License](https://img.shields.io/github/license/byronwang2005/CCC-Attendance)](https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/byronwang2005/CCC-Attendance?style=social)](https://github.com/byronwang2005/CCC-Attendance)
 
-![过去一天内每小时生成数量](https://ccc.byron.wang/api/stats.svg)
-![历史累计生成总量](https://ccc.byron.wang/api/stats-total.svg)
+<p align="center">
+  <img src="https://ccc.byron.wang/api/stats.svg" alt="过去一天内每小时生成数量" width="49%" />
+  <img src="https://ccc.byron.wang/api/stats-total.svg" alt="历史累计生成总量" width="49%" />
+</p>
 
 ---
 
