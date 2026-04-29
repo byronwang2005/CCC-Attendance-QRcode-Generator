@@ -23,15 +23,6 @@
 
 **访问 [https://ccc.byron.wang/](https://ccc.byron.wang/)**
 
-## 常见问题
-
-**Q：签到失败？**  
-A：请确认：
-   - 你处于`eduroam`/`UNNC-Living`等校园网或IT-Service提供的`UNNC_IPSec VPN`环境
-   - 课程已经接近结束或结束不久
-   - 链接复制完整
-   - *也许这节课压根没有签到环节*
-
 ## 贡献代码
 
 参考[CONTRIBUTING](CONTRIBUTING.md)。
