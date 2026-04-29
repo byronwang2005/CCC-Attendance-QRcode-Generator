@@ -135,6 +135,54 @@ body {
   font-weight: 400;
 }
 
+.crawler-summary {
+  width: min(760px, calc(100% - 40px));
+  margin: -18vh auto 48px;
+  color: var(--olive);
+}
+
+.crawler-summary h1 {
+  margin: 0 0 14px;
+  color: var(--near-black);
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.18;
+}
+
+.crawler-summary p,
+.crawler-summary ol {
+  margin: 0 0 12px;
+}
+
+.crawler-summary ol {
+  padding-left: 1.25rem;
+}
+
+.noscript-panel,
+.not-found-page {
+  width: min(620px, calc(100% - 40px));
+  margin: 48px auto;
+  padding: 28px;
+  border: 1px solid var(--border-warm);
+  border-radius: var(--radius-md);
+  background: var(--ivory);
+  text-align: center;
+}
+
+.not-found-page {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  margin-top: 14vh;
+}
+
+.not-found-page__logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
 a {
   color: var(--brand-light);
   text-decoration: none;
