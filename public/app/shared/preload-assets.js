@@ -8,13 +8,17 @@ const FONT_ASSETS = Object.freeze([
   '400 1em "JetBrains Mono"'
 ]);
 
-const MINIMUM_LOADER_DURATION = 180;
+const INITIAL_PROGRESS = 0;
+const IDLE_PROGRESS_CAP = 78;
+const IDLE_PROGRESS_DURATION = 1600;
+const PROGRESS_TICK_INTERVAL = 80;
+const MINIMUM_LOADER_DURATION = 520;
 
 const wait = (duration) => new Promise((resolve) => {
   window.setTimeout(resolve, duration);
 });
 
-const reportProgress = (onProgress, completed, total) => {
+const reportProgress = (onProgress, completed, total, percent) => {
   if (typeof onProgress !== 'function') {
     return;
   }
@@ -22,7 +26,7 @@ const reportProgress = (onProgress, completed, total) => {
   onProgress({
     completed,
     total,
-    percent: total > 0 ? Math.round((completed / total) * 100) : 100
+    percent
   });
 };
 
@@ -56,9 +60,24 @@ export const preloadAppAssets = async ({ onProgress } = {}) => {
   ];
   const total = tasks.length;
   let completed = 0;
+  let displayedPercent = 0;
   const failures = [];
+  const emitProgress = (nextPercent) => {
+    displayedPercent = Math.max(displayedPercent, Math.round(nextPercent));
+    reportProgress(onProgress, completed, total, displayedPercent);
+  };
+  const progressTimer = window.setInterval(() => {
+    if (completed >= total) {
+      return;
+    }
 
-  reportProgress(onProgress, completed, total);
+    const elapsed = window.performance.now() - startedAt;
+    const progress = Math.min(elapsed / IDLE_PROGRESS_DURATION, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    emitProgress(INITIAL_PROGRESS + (IDLE_PROGRESS_CAP - INITIAL_PROGRESS) * eased);
+  }, PROGRESS_TICK_INTERVAL);
+
+  emitProgress(total > 0 ? INITIAL_PROGRESS : 100);
 
   await Promise.all(tasks.map(async (task) => {
     try {
@@ -67,16 +86,18 @@ export const preloadAppAssets = async ({ onProgress } = {}) => {
       failures.push(error);
     } finally {
       completed += 1;
-      reportProgress(onProgress, completed, total);
+      emitProgress(total > 0 ? INITIAL_PROGRESS + ((completed / total) * (100 - INITIAL_PROGRESS)) : 100);
     }
   }));
+
+  window.clearInterval(progressTimer);
 
   const elapsed = window.performance.now() - startedAt;
   if (elapsed < MINIMUM_LOADER_DURATION) {
     await wait(MINIMUM_LOADER_DURATION - elapsed);
   }
 
-  reportProgress(onProgress, total, total);
+  emitProgress(100);
 
   return {
     ok: failures.length === 0,

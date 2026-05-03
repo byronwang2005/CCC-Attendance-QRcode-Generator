@@ -25,6 +25,9 @@ const STEP_INITIALIZER_LOADERS = Object.freeze({
 });
 
 const MOBILE_BACKGROUND_QUERY = '(max-width: 720px), (pointer: coarse)';
+const QR_PRELOAD_PROGRESS_CAP = 72;
+const QR_GENERATING_PROGRESS = 84;
+const COMPLETION_HOLD_DURATION = 260;
 
 const normalizeStep = (value) => {
   const step = Number.parseInt(String(value ?? ''), 10);
@@ -48,6 +51,10 @@ const syncCanonicalStepUrl = (step) => {
     }
   }
 };
+
+const wait = (duration) => new Promise((resolve) => {
+  window.setTimeout(resolve, duration);
+});
 
 const updateBootLoaderProgress = ({ percent = 0 } = {}) => {
   const progressBar = document.querySelector('[data-boot-progress-bar]');
@@ -123,7 +130,7 @@ const prepareQrcodeStep = async (onProgress) => {
     };
   }
 
-  onProgress({ percent: 82 });
+  onProgress({ percent: QR_GENERATING_PROGRESS });
 
   try {
     const response = await fetch(APP_PATHS.generateApi, {
@@ -175,7 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const preloadResult = await preloadAppAssets({
     onProgress: (progress) => {
       updateBootLoaderProgress({
-        percent: isQrcodeStep ? Math.round(progress.percent * 0.72) : progress.percent
+        percent: isQrcodeStep ? Math.round(progress.percent * (QR_PRELOAD_PROGRESS_CAP / 100)) : progress.percent
       });
     }
   });
@@ -186,6 +193,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     ? await prepareQrcodeStep(updateBootLoaderProgress)
     : null;
   const initStep = await stepInitializerPromise;
+  updateBootLoaderProgress({ percent: 100 });
+  await wait(COMPLETION_HOLD_DURATION);
   mountStepPage(step);
   void initCursorLayer();
   initStep(stepData || undefined);
