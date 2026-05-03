@@ -27,10 +27,25 @@ ${SITEMAP_URLS.map(({ pathname, changefreq, priority }) => `  <url>
 </urlset>
 `;
 
+const sitemapResponse = (includeBody = true) => new Response(includeBody ? buildSitemap() : null, {
+  headers: {
+    'Content-Type': 'application/xml; charset=utf-8',
+    'Cache-Control': 'public, max-age=3600'
+  }
+});
+
 export function onRequestGet() {
-  return new Response(buildSitemap(), {
+  return sitemapResponse();
+}
+
+export function onRequestHead() {
+  return sitemapResponse(false);
+}
+
+export function onRequestOptions() {
+  return new Response(null, {
     headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
+      'Allow': 'GET, HEAD, OPTIONS',
       'Cache-Control': 'public, max-age=3600'
     }
   });
