@@ -13,6 +13,9 @@ const MODULE_ASSETS = Object.freeze([
 ]);
 
 const MINIMUM_LOADER_DURATION = 180;
+const MOBILE_BACKGROUND_QUERY = '(max-width: 720px), (pointer: coarse)';
+
+const shouldPreloadTextLayout = () => !window.matchMedia(MOBILE_BACKGROUND_QUERY).matches;
 
 const wait = (duration) => new Promise((resolve) => {
   window.setTimeout(resolve, duration);
@@ -58,10 +61,11 @@ const loadModule = async (src) => {
 
 export const preloadAppAssets = async ({ onProgress } = {}) => {
   const startedAt = window.performance.now();
+  const moduleAssets = shouldPreloadTextLayout() ? MODULE_ASSETS : [];
   const tasks = [
     ...IMAGE_ASSETS.map((src) => () => loadImage(src)),
     ...FONT_ASSETS.map((font) => () => loadFont(font)),
-    ...MODULE_ASSETS.map((src) => () => loadModule(src))
+    ...moduleAssets.map((src) => () => loadModule(src))
   ];
   const total = tasks.length;
   let completed = 0;

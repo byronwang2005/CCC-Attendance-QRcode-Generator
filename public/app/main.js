@@ -24,6 +24,8 @@ const STEP_INITIALIZER_LOADERS = Object.freeze({
   }
 });
 
+const MOBILE_BACKGROUND_QUERY = '(max-width: 720px), (pointer: coarse)';
+
 const normalizeStep = (value) => {
   const step = Number.parseInt(String(value ?? ''), 10);
   if (step === STEPS.time || step === STEPS.qrcode) {
@@ -87,6 +89,10 @@ const mountBootLoader = () => {
 };
 
 const initBackgroundTextLayer = async () => {
+  if (window.matchMedia(MOBILE_BACKGROUND_QUERY).matches) {
+    return;
+  }
+
   try {
     const module = await import('./layout/background-text-layer.js');
     module.initBackgroundTextLayer();
