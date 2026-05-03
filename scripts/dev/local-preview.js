@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import qr from 'qr-image';
+import { KNOWLEDGE_PAYLOAD } from '../../functions/api/knowledge.js';
+import { buildSitemap } from '../../functions/sitemap.xml.js';
 import { buildAttendanceUrl, extractScheduleId } from '../../shared/attendance.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,6 +21,7 @@ const MIME_TYPES = new Map([
   ['.js', 'text/javascript; charset=utf-8'],
   ['.json', 'application/json; charset=utf-8'],
   ['.md', 'text/markdown; charset=utf-8'],
+  ['.txt', 'text/markdown; charset=utf-8'],
   ['.png', 'image/png'],
   ['.svg', 'image/svg+xml'],
   ['.ttf', 'font/ttf'],
@@ -89,6 +92,44 @@ const handleGenerateApi = async (request, response) => {
   }
 };
 
+const handleKnowledgeApi = (request, response) => {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    response.setHeader('Allow', 'GET');
+    sendJson(response, 405, { error: '仅支持 GET 请求' });
+    return;
+  }
+
+  response.writeHead(200, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'public, max-age=3600'
+  });
+  if (request.method === 'HEAD') {
+    response.end();
+    return;
+  }
+
+  response.end(JSON.stringify(KNOWLEDGE_PAYLOAD, null, 2));
+};
+
+const handleSitemap = (request, response) => {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    response.setHeader('Allow', 'GET');
+    sendText(response, 405, 'Method Not Allowed');
+    return;
+  }
+
+  response.writeHead(200, {
+    'Content-Type': 'application/xml; charset=utf-8',
+    'Cache-Control': 'public, max-age=3600'
+  });
+  if (request.method === 'HEAD') {
+    response.end();
+    return;
+  }
+
+  response.end(buildSitemap());
+};
+
 const isPathInsidePublic = (candidatePath) => {
   const relativePath = path.relative(publicDir, candidatePath);
   return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
@@ -142,6 +183,16 @@ const server = createServer(async (request, response) => {
 
   if (requestUrl.pathname === '/api/generate') {
     await handleGenerateApi(request, response);
+    return;
+  }
+
+  if (requestUrl.pathname === '/api/knowledge') {
+    handleKnowledgeApi(request, response);
+    return;
+  }
+
+  if (requestUrl.pathname === '/sitemap.xml') {
+    handleSitemap(request, response);
     return;
   }
 

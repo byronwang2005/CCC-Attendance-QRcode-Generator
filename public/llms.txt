@@ -1,0 +1,54 @@
+# CCC Attendance
+
+> UNNC 中国文化课（CCC）签到二维码生成工具。面向宁波诺丁汉大学中国文化课学生，帮助用户根据课程详情链接生成可扫码的签到二维码。
+
+CCC Attendance is an open-source web tool for generating QR codes from UNNC CCC course detail links. It is designed for legitimate personal use, troubleshooting, and AI-assisted guidance.
+
+## Primary Links
+
+- Website: https://ccc.byron.wang/
+- Agent guide: https://ccc.byron.wang/agent.md
+- Full AI knowledge file: https://ccc.byron.wang/llms-full.txt
+- Machine-readable profile: https://ccc.byron.wang/api/knowledge
+- Source code: https://github.com/byronwang2005/CCC-Attendance
+- License: MIT
+
+## What This Project Does
+
+- Accepts a CCC course detail URL like `https://ccc.nottingham.edu.cn/study/home/details?id=xxxx`.
+- Extracts the course schedule ID from `id` or `scheduleId`.
+- Lets users confirm an attendance timestamp.
+- Generates a PNG QR code through `POST /api/generate`.
+- Provides an AI agent instruction file at `/agent.md`.
+
+## Audience
+
+- UNNC students who need to generate a CCC attendance QR code from their own course detail link.
+- AI agents assisting users with local, step-by-step QR code generation.
+- Developers reviewing or extending an open-source Cloudflare Pages implementation.
+
+## Important Boundaries
+
+- This is an open-source entertainment project.
+- It must not be used for unauthorized proxy attendance or academic misconduct.
+- Users must log in to the official CCC website themselves and use the required campus network or VPN.
+- If the course requires additional questions or checks, users must complete them themselves.
+
+## Recommended User Flow
+
+1. Connect to `eduroam`, `UNNC-Living`, or `UNNC_IPSec VPN`.
+2. Open `https://ccc.nottingham.edu.cn/study/` in Safari or Chrome, not WeChat's embedded browser.
+3. Copy the full course detail link.
+4. Paste it into CCC Attendance.
+5. Confirm the time and generate the QR code.
+
+## API Summary
+
+- `POST /api/generate`: accepts JSON `{ "url": "<course-detail-url>", "timestamp": <milliseconds> }` and returns a PNG QR code.
+- `GET /api/knowledge`: returns project metadata, links, FAQ, and crawler-friendly knowledge.
+- `GET /api/stats.svg`: returns recent QR generation trend SVG.
+- `GET /api/stats-total.svg`: returns cumulative generation SVG.
+
+## Search Keywords
+
+CCC Attendance, UNNC CCC, 宁波诺丁汉大学, 中国文化课, CCC 签到, 签到二维码, 二维码生成器, University of Nottingham Ningbo China, QR code attendance.

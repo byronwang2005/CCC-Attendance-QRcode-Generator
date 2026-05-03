@@ -135,6 +135,48 @@ body {
   font-weight: 400;
 }
 
+.seo-content {
+  width: min(760px, calc(100% - 40px));
+  margin: 48px auto 72px;
+  color: var(--stone);
+}
+
+.seo-content h1,
+.seo-content h2 {
+  color: var(--dark-warm);
+  line-height: 1.2;
+}
+
+.seo-content h1 {
+  margin: 0 0 18px;
+  font-size: 32px;
+}
+
+.seo-content h2 {
+  margin: 32px 0 12px;
+  font-size: 22px;
+}
+
+.seo-content p,
+.seo-content li,
+.seo-content dd {
+  font-size: 16px;
+}
+
+.seo-content a {
+  color: var(--brand);
+}
+
+.seo-content dt {
+  margin-top: 14px;
+  color: var(--dark-warm);
+  font-weight: 700;
+}
+
+.seo-content dd {
+  margin: 4px 0 0;
+}
+
 .noscript-panel,
 .not-found-page {
   width: min(620px, calc(100% - 40px));

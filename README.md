@@ -17,16 +17,16 @@
 
 - 本程序是开源娱乐项目，严禁用于CCC代签
 - 作者保留对非法使用本程序者追责的权利
-- 学校官方/外包平台可通过Issues联系作者：若有侵权，会立即处理
+- 欢迎在Issues留言：若本程序有侵权，作者会立即处理
 
 ## 使用方法
 
-**访问 [https://ccc.byron.wang/](https://ccc.byron.wang/)**
+访问[https://ccc.byron.wang/](https://ccc.byron.wang/)
 
 ## 贡献代码
 
-参考[CONTRIBUTING](CONTRIBUTING.md)。
+参考[CONTRIBUTING](CONTRIBUTING.md)
 
 ## 开源协议
 
-本项目采用MIT协议开源，详见[LICENSE](LICENSE)。
+本项目采用MIT协议开源，详见[LICENSE](LICENSE)

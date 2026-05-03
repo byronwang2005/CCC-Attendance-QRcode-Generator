@@ -15,3 +15,15 @@
 
 /assets/fonts/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/llms.txt
+  Content-Type: text/markdown; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/llms-full.txt
+  Content-Type: text/markdown; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/agent.md
+  Content-Type: text/markdown; charset=utf-8
+  Cache-Control: public, max-age=3600
