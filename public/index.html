@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="CCC Attendance是面向UNNC中国文化课（CCC）的签到二维码生成工具，支持粘贴课程详情链接、确认签到时间并生成可扫码二维码。" />
+  <meta name="description" content="CCC Attendance是一款实用的工具。" />
   <meta name="author" content="Byron" />
   <meta name="keywords" content="CCC Attendance, UNNC CCC, 中国文化课, CCC签到, 签到二维码, 二维码生成器, 宁波诺丁汉大学, University of Nottingham Ningbo China" />
   <meta name="generator" content="Kami" />
@@ -12,23 +12,26 @@
   <meta name="theme-color" content="#1B365D" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="CCC Attendance" />
-  <meta property="og:title" content="CCC Attendance - UNNC CCC签到二维码生成工具" />
-  <meta property="og:description" content="三步生成UNNC中国文化课签到二维码：粘贴课程详情链接、确认签到时间、生成二维码。" />
+  <meta property="og:title" content="CCC Attendance" />
+  <meta property="og:description" content="CCC Attendance是一款实用的工具。" />
   <meta property="og:url" content="https://ccc.byron.wang/" />
   <meta property="og:image" content="https://ccc.byron.wang/assets/images/ccc.webp" />
   <meta property="og:image:alt" content="CCC Attendance" />
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="CCC Attendance - UNNC CCC 签到二维码生成工具" />
-  <meta name="twitter:description" content="粘贴 CCC 课程详情链接，确认时间，并生成可扫码使用的签到二维码。" />
+  <meta name="twitter:title" content="CCC Attendance" />
+  <meta name="twitter:description" content="CCC Attendance是一款实用的工具。" />
   <meta name="twitter:image" content="https://ccc.byron.wang/assets/images/ccc.webp" />
   <meta name="google-site-verification" content="U4bSb-N5zdhCwRJQ-NH0Ika5n0cz3_UY_vPtSiVnuvA" />
   <link rel="canonical" href="https://ccc.byron.wang/" />
   <link rel="alternate" type="text/markdown" href="https://ccc.byron.wang/llms.txt" title="CCC Attendance AI overview" />
   <link rel="alternate" type="text/markdown" href="https://ccc.byron.wang/llms-full.txt" title="CCC Attendance full AI knowledge base" />
   <link rel="help" href="https://ccc.byron.wang/agent.md" />
-  <title>CCC Attendance - UNNC CCC签到二维码生成工具</title>
+  <title>CCC Attendance</title>
   <link rel="preload" href="assets/images/ccc-small.webp" as="image" type="image/webp" />
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="modulepreload" href="app/main.js" />
   <link rel="stylesheet" href="styles.css" />
   <script type="application/ld+json">
@@ -39,11 +42,10 @@
         "@type": ["WebApplication", "SoftwareApplication"],
         "@id": "https://ccc.byron.wang/#app",
         "name": "CCC Attendance",
-        "alternateName": ["UNNC CCC签到二维码生成工具", "CCC QR code attendance generator"],
         "url": "https://ccc.byron.wang/",
         "applicationCategory": "EducationApplication",
         "operatingSystem": "Any",
-        "description": "面向UNNC中国文化课的签到二维码生成工具，支持粘贴CCC课程详情链接、确认签到时间并生成二维码。",
+        "description": "CCC Attendance是一款实用的工具。",
         "inLanguage": ["zh-CN", "en"],
         "author": {
           "@type": "Person",
@@ -88,10 +90,10 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "CCC Attendance 是官方服务吗？",
+            "name": "CCC Attendance是官方服务吗？",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "不是。CCC Attendance是独立开源项目，不代表UNNC或CCC官方。"
+              "text": "不是。CCC Attendance是独立开源项目，不代表任何官方。"
             }
           },
           {
@@ -129,20 +131,20 @@
       </div>
     </section>
     <article class="seo-content" aria-labelledby="seo-title">
-      <h1 id="seo-title">CCC Attendance - UNNC CCC签到二维码生成工具</h1>
-      <p>CCC Attendance 是面向宁波诺丁汉大学中国文化课（UNNC CCC）的开源签到二维码生成工具。用户可以粘贴 CCC 课程详情链接，确认签到时间，并生成可扫码使用的二维码。</p>
-      <h2>三步生成签到二维码</h2>
+      <h1 id="seo-title">CCC Attendance</h1>
+      <p>CCC Attendance是一款实用的工具。</p>
+      <h2>一个二维码，三步搞定</h2>
       <ol>
         <li>连接 <code>eduroam</code>、<code>UNNC-Living</code> 或 <code>UNNC_IPSec VPN</code>。</li>
-        <li>在 Safari 或 Chrome 打开 CCC 课程页面，复制课程“查看详情”链接。</li>
+        <li>在Safari或Chrome打开CCC课程页面，复制课程“查看详情”链接。</li>
         <li>粘贴链接，确认时间，生成二维码并按课程要求扫码。</li>
       </ol>
-      <h2>AI 与开发者入口</h2>
-      <p>AI 代理可先读取 <a href="https://ccc.byron.wang/agent.md">Agent Guide</a>，搜索引擎和 AI 检索系统可读取 <a href="https://ccc.byron.wang/llms.txt">llms.txt</a>、<a href="https://ccc.byron.wang/llms-full.txt">llms-full.txt</a> 和 <a href="https://ccc.byron.wang/api/knowledge">JSON knowledge API</a>。</p>
+      <h2>AI与开发者入口</h2>
+      <p>AI代理可先读取 <a href="https://ccc.byron.wang/agent.md">Agent Guide</a>，搜索引擎和AI检索系统可读取 <a href="https://ccc.byron.wang/llms.txt">llms.txt</a>、<a href="https://ccc.byron.wang/llms-full.txt">llms-full.txt</a> 和 <a href="https://ccc.byron.wang/api/knowledge">JSON knowledge API</a>。</p>
       <h2>常见问题</h2>
       <dl>
-        <dt>CCC Attendance 是官方服务吗？</dt>
-        <dd>不是。它是独立开源项目，不代表 UNNC 或 CCC 官方。</dd>
+        <dt>CCC Attendance是官方服务吗？</dt>
+        <dd>不是。它是独立开源项目，不代表任何官方。</dd>
         <dt>链接需要什么格式？</dt>
         <dd>链接需要包含 <code>id</code> 或 <code>scheduleId</code> 参数。</dd>
         <dt>二维码生成成功但签到失败怎么办？</dt>
