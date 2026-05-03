@@ -46,8 +46,8 @@ export const renderPageShell = ({ root, steps, content, actions = '', currentSte
 
   root.innerHTML = `
     <div class="app-stage" data-step="${currentStep}">
-      <div class="app-background" aria-hidden="true" data-background-layer>
-        <canvas class="app-background__canvas" data-background-canvas></canvas>
+      <div class="cursor-layer" aria-hidden="true" data-cursor-layer>
+        <canvas class="cursor-layer__canvas" data-cursor-canvas></canvas>
       </div>
       <div class="page-shell">
         <header class="masthead" aria-label="站点抬头">

@@ -88,16 +88,16 @@ const mountBootLoader = () => {
   `;
 };
 
-const initBackgroundTextLayer = async () => {
+const initCursorLayer = async () => {
   if (window.matchMedia(MOBILE_BACKGROUND_QUERY).matches) {
     return;
   }
 
   try {
-    const module = await import('./layout/background-text-layer.js');
-    module.initBackgroundTextLayer();
+    const module = await import('./layout/cursor-layer.js');
+    module.initCursorLayer();
   } catch (error) {
-    console.warn('Failed to initialize background text layer:', error);
+    console.warn('Failed to initialize cursor layer:', error);
   }
 };
 
@@ -187,6 +187,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     : null;
   const initStep = await stepInitializerPromise;
   mountStepPage(step);
-  void initBackgroundTextLayer();
+  void initCursorLayer();
   initStep(stepData || undefined);
 });

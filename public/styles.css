@@ -201,7 +201,7 @@ select:focus-visible {
   min-height: 100vh;
 }
 
-.app-background {
+.cursor-layer {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -209,7 +209,7 @@ select:focus-visible {
   pointer-events: none;
 }
 
-.app-background__canvas {
+.cursor-layer__canvas {
   display: block;
   width: 100%;
   height: 100%;

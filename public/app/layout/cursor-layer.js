@@ -1,75 +1,21 @@
-import {
-  layoutNextLineRange,
-  materializeLineRange,
-  prepareWithSegments
-} from 'https://cdn.jsdelivr.net/npm/@chenglou/pretext@0.0.5/dist/layout.js';
-
 const ROTATION_RADIANS = -18 * (Math.PI / 180);
 const FONT_FAMILY = '"TsangerJinKai02", "Source Han Serif SC", "Noto Serif CJK SC", serif';
-const TEXT_VARIANTS = Object.freeze([
-  '一个签到码，三步搞定',
-  'One attendance code, done in three steps',
-  'رمز حضور واحد، وثلاث خطوات تكفي'
-]);
-
-const DEFAULT_CURSOR = Object.freeze({
-  segmentIndex: 0,
-  graphemeIndex: 0
-});
+const POINTER_TEXT = '一个签到码，三步搞定';
+const BORDER_WARM = '#e0ddd2';
 
 let activeLayer = null;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-const createCursor = () => ({
-  segmentIndex: DEFAULT_CURSOR.segmentIndex,
-  graphemeIndex: DEFAULT_CURSOR.graphemeIndex
-});
-
 const lerp = (start, end, amount) => start + (end - start) * amount;
 
 const mediaMatches = (query) => window.matchMedia(query).matches;
 
-const withAlpha = (context, alpha, draw) => {
-  context.save();
-  context.globalAlpha = alpha;
-  draw();
-  context.restore();
-};
-
-const buildTextSource = () => {
-  const sequence = [];
-  for (let index = 0; index < 260; index += 1) {
-    sequence.push(TEXT_VARIANTS[index % TEXT_VARIANTS.length]);
-  }
-  return sequence.join('    ·    ');
-};
-
-const getEllipseCut = (centerX, radiusX, centerY, radiusY, rowY, padding = 0) => {
-  if (radiusX <= 0 || radiusY <= 0) {
-    return null;
-  }
-
-  const dy = rowY - centerY;
-  if (Math.abs(dy) >= radiusY) {
-    return null;
-  }
-
-  const ratio = 1 - (dy * dy) / (radiusY * radiusY);
-  const dx = radiusX * Math.sqrt(Math.max(0, ratio));
-  return {
-    start: centerX - dx - padding,
-    end: centerX + dx + padding
-  };
-};
-
-class BackgroundTextLayer {
+class CursorLayer {
   constructor(container, canvas) {
     this.container = container;
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
-    this.prepared = null;
-    this.textSource = buildTextSource();
     this.lineHeight = 56;
     this.fontSize = 34;
     this.font = '';
@@ -123,7 +69,6 @@ class BackgroundTextLayer {
     this.fontSize = viewportShortEdge <= 720 ? 18 : 34;
     this.lineHeight = Math.round(this.fontSize * 1.9);
     this.font = `500 ${this.fontSize}px ${FONT_FAMILY}`;
-    this.prepared = prepareWithSegments(this.textSource, this.font, { wordBreak: 'keep-all' });
   }
 
   updateGeometry() {
@@ -159,6 +104,8 @@ class BackgroundTextLayer {
     this.pointerTarget.x = planePoint.x;
     this.pointerTarget.y = planePoint.y;
     this.pointerTarget.radius = clamp(Math.min(this.width, this.height) * 0.125, 92, 142);
+    this.pointerCurrent.x = planePoint.x;
+    this.pointerCurrent.y = planePoint.y;
     this.pointerActive = true;
     this.requestRender(true);
   }
@@ -187,8 +134,13 @@ class BackgroundTextLayer {
     }
 
     const smoothing = this.pointerActive ? 0.16 : 0.12;
-    this.pointerCurrent.x = lerp(this.pointerCurrent.x, this.pointerTarget.x, smoothing);
-    this.pointerCurrent.y = lerp(this.pointerCurrent.y, this.pointerTarget.y, smoothing);
+    if (this.pointerActive) {
+      this.pointerCurrent.x = this.pointerTarget.x;
+      this.pointerCurrent.y = this.pointerTarget.y;
+    } else {
+      this.pointerCurrent.x = lerp(this.pointerCurrent.x, this.pointerTarget.x, smoothing);
+      this.pointerCurrent.y = lerp(this.pointerCurrent.y, this.pointerTarget.y, smoothing);
+    }
     this.pointerCurrent.radius = lerp(this.pointerCurrent.radius, this.pointerTarget.radius, smoothing);
 
     this.render();
@@ -222,128 +174,52 @@ class BackgroundTextLayer {
     };
   }
 
-  nextRange(cursor, width) {
-    if (!this.prepared) {
-      return null;
-    }
-
-    let range = layoutNextLineRange(this.prepared, cursor, width);
-    if (!range) {
-      cursor.segmentIndex = DEFAULT_CURSOR.segmentIndex;
-      cursor.graphemeIndex = DEFAULT_CURSOR.graphemeIndex;
-      range = layoutNextLineRange(this.prepared, cursor, width);
-    }
-
-    if (!range) {
-      return null;
-    }
-
-    cursor.segmentIndex = range.end.segmentIndex;
-    cursor.graphemeIndex = range.end.graphemeIndex;
-    return range;
-  }
-
-  getAvailableSegments(rowY) {
-    const horizontalInset = this.fontSize * 1.8;
-    const minWidth = this.fontSize * 4.4;
-    const segments = [{
-      start: horizontalInset,
-      end: this.planeWidth - horizontalInset
-    }];
-
-    if (this.pointerCurrent.radius > 4) {
-      const pointerCut = getEllipseCut(
-        this.pointerCurrent.x,
-        this.pointerCurrent.radius,
-        this.pointerCurrent.y,
-        this.pointerCurrent.radius,
-        rowY,
-        this.fontSize * 0.6
-      );
-      if (pointerCut) {
-        return [
-          {
-            start: horizontalInset,
-            end: pointerCut.start
-          },
-          {
-            start: pointerCut.end,
-            end: this.planeWidth - horizontalInset
-          }
-        ].filter((segment) => (segment.end - segment.start) >= minWidth);
-      }
-    }
-
-    return segments.filter((segment) => (segment.end - segment.start) >= minWidth);
-  }
-
-  drawBackdrop(context) {
-    const gradient = context.createLinearGradient(0, 0, this.width, this.height);
-    gradient.addColorStop(0, '#f5f4ed');
-    gradient.addColorStop(0.44, '#faf9f5');
-    gradient.addColorStop(1, '#EEF2F7');
-    withAlpha(context, 0.68, () => {
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, this.width, this.height);
-    });
-  }
-
-  drawTextPlane(context) {
-    if (!this.prepared) {
-      return;
-    }
-
-    const cursor = createCursor();
+  drawPointerPlane(context) {
     context.save();
     context.translate(this.width * 0.5, this.height * 0.5);
     context.rotate(ROTATION_RADIANS);
     context.translate(-this.planeWidth * 0.5, -this.planeHeight * 0.5);
-    context.font = this.font;
-    context.textBaseline = 'middle';
+    this.drawPointerCircle(context);
+    context.restore();
+  }
 
-    for (let rowY = this.lineHeight; rowY < this.planeHeight - this.lineHeight * 0.4; rowY += this.lineHeight) {
-      const segments = this.getAvailableSegments(rowY);
-      if (!segments.length) {
-        continue;
-      }
-
-      for (let segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
-        const segment = segments[segmentIndex];
-        const width = segment.end - segment.start;
-        const range = this.nextRange(cursor, width);
-        if (!range) {
-          continue;
-        }
-
-        const line = materializeLineRange(this.prepared, range);
-        withAlpha(context, 0.064, () => {
-          context.fillStyle = '#2D5A8A';
-          context.fillText(line.text, segment.start, rowY);
-        });
-      }
-
+  drawPointerCircle(context) {
+    if (this.pointerCurrent.radius <= 6) {
+      return;
     }
 
-    if (this.pointerCurrent.radius > 6) {
-      context.save();
-      const highlight = context.createRadialGradient(
-        this.pointerCurrent.x,
-        this.pointerCurrent.y,
-        this.pointerCurrent.radius * 0.14,
-        this.pointerCurrent.x,
-        this.pointerCurrent.y,
-        this.pointerCurrent.radius * 1.05
-      );
-      highlight.addColorStop(0, '#faf9f5');
-      highlight.addColorStop(0.56, '#e8e6dc');
-      highlight.addColorStop(1, '#e8e6dc');
-      withAlpha(context, 0.44, () => {
-        context.fillStyle = highlight;
-        context.beginPath();
-        context.arc(this.pointerCurrent.x, this.pointerCurrent.y, this.pointerCurrent.radius * 1.05, 0, Math.PI * 2);
-        context.fill();
-      });
-      context.restore();
+    const { x, y, radius } = this.pointerCurrent;
+    const innerFontSize = Math.max(16, Math.round(this.fontSize * 0.72));
+    const innerLineHeight = Math.round(innerFontSize * 1.8);
+    const text = `${POINTER_TEXT}    ·    `;
+
+    context.save();
+    context.fillStyle = BORDER_WARM;
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fill();
+
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.clip();
+
+    context.font = `500 ${innerFontSize}px ${FONT_FAMILY}`;
+    context.textBaseline = 'middle';
+    context.fillStyle = '#faf9f5';
+    context.globalAlpha = 0.74;
+
+    const measuredWidth = context.measureText(text).width;
+    const stepWidth = Math.max(measuredWidth, radius * 1.6);
+    const startY = innerLineHeight;
+    const endY = this.planeHeight - innerLineHeight * 0.4;
+    const startX = this.fontSize * 1.8;
+    const endX = this.planeWidth - startX;
+
+    for (let rowY = startY, rowIndex = 0; rowY < endY; rowY += innerLineHeight, rowIndex += 1) {
+      const offset = rowIndex % 2 === 0 ? 0 : stepWidth * 0.42;
+      for (let rowX = startX - offset; rowX < endX + stepWidth; rowX += stepWidth) {
+        context.fillText(text, rowX, rowY);
+      }
     }
 
     context.restore();
@@ -357,8 +233,7 @@ class BackgroundTextLayer {
     this.context.setTransform(1, 0, 0, 1, 0, 0);
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.scale(this.devicePixelRatio, this.devicePixelRatio);
-    this.drawBackdrop(this.context);
-    this.drawTextPlane(this.context);
+    this.drawPointerPlane(this.context);
   }
 
   destroy() {
@@ -373,17 +248,17 @@ class BackgroundTextLayer {
   }
 }
 
-export const initBackgroundTextLayer = () => {
+export const initCursorLayer = () => {
   activeLayer?.destroy();
   activeLayer = null;
 
-  const container = document.querySelector('[data-background-layer]');
-  const canvas = document.querySelector('[data-background-canvas]');
+  const container = document.querySelector('[data-cursor-layer]');
+  const canvas = document.querySelector('[data-cursor-canvas]');
   if (!(container instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
     return null;
   }
 
-  activeLayer = new BackgroundTextLayer(container, canvas);
+  activeLayer = new CursorLayer(container, canvas);
   void activeLayer.init();
   return activeLayer;
 };
