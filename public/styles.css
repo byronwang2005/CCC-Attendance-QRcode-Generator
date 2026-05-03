@@ -401,13 +401,21 @@ select:focus-visible {
   margin-bottom: 12px;
 }
 
-.panel-header h2 {
+.panel-header h2,
+.panel-header h3 {
   margin: 0;
   color: var(--near-black);
   font-family: var(--serif);
-  font-size: 40px;
   font-weight: 500;
   line-height: 1.16;
+}
+
+.panel-header h2 {
+  font-size: 40px;
+}
+
+.panel-header h3 {
+  font-size: 28px;
 }
 
 .panel-kicker {
@@ -425,6 +433,13 @@ select:focus-visible {
 .panel-split {
   display: grid;
   gap: 12px;
+}
+
+.identity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
 }
 
 .identity-buttons {
@@ -452,6 +467,11 @@ select:focus-visible {
   font-size: 22px;
   font-weight: 500;
   line-height: 1.18;
+}
+
+.identity-header .identity-buttons {
+  width: min(360px, 46%);
+  flex: 0 1 360px;
 }
 
 .identity-btn.active {
@@ -949,6 +969,19 @@ input[type="number"] {
 
   .panel-header h2 {
     font-size: 28px;
+  }
+
+  .panel-header h3 {
+    font-size: 28px;
+  }
+
+  .identity-header {
+    display: grid;
+    gap: 12px;
+  }
+
+  .identity-header .identity-buttons {
+    width: 100%;
   }
 
   .page-shell {

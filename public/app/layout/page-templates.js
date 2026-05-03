@@ -33,13 +33,13 @@ const getRoot = () => document.getElementById('app');
 
 const INDEX_CONTENT = `
       <section class="panel panel-split">
-        <div class="panel-header">
-          <h2>先告诉我，您是？</h2>
-        </div>
+        <div class="panel-header identity-header">
+          <h3>先告诉我，您是？</h3>
 
-        <div class="identity-buttons" role="tablist" aria-label="身份选择">
-          <button type="button" class="identity-btn" data-identity="human">人类</button>
-          <button type="button" class="identity-btn" id="agentBtn" data-identity="agent">AI代理</button>
+          <div class="identity-buttons" role="tablist" aria-label="身份选择">
+            <button type="button" class="identity-btn" data-identity="human">人类</button>
+            <button type="button" class="identity-btn" id="agentBtn" data-identity="agent">AI代理</button>
+          </div>
         </div>
 
         <div class="identity-content expandable-section" id="humanContent" hidden>
