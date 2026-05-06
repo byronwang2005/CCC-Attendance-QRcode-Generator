@@ -21,10 +21,10 @@
   --tag-soft: #EEF2F7;
   --tag-mid: #E4ECF5;
   --tag-strong: #D0DCE9;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --radius-sm: 0;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
   --page-width: 1120px;
   --page-gap: 24px;
   --transition: 180ms ease;
@@ -113,9 +113,8 @@ body {
 
 .boot-loader__progress {
   width: min(220px, 100%);
-  height: 6px;
+  height: 4px;
   overflow: hidden;
-  border-radius: 999px;
   background: rgba(135, 134, 127, 0.2);
 }
 
@@ -123,7 +122,6 @@ body {
   display: block;
   width: 0;
   height: 100%;
-  border-radius: inherit;
   background: var(--brand);
   transition: width 0.18s ease;
 }
@@ -139,6 +137,10 @@ body {
   width: min(760px, calc(100% - 40px));
   margin: 48px auto 72px;
   color: var(--stone);
+}
+
+.js .seo-content {
+  display: none;
 }
 
 .seo-content h1,
@@ -212,7 +214,7 @@ a:hover {
 
 code {
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-cream);
   background: var(--ivory);
   color: var(--dark-warm);
@@ -328,20 +330,18 @@ select:focus-visible {
   align-items: start;
   padding: 13px 14px 14px;
   border: 1px solid var(--border-warm);
-  border-radius: var(--radius-md);
   background: var(--ivory);
-  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+  transition: border-color var(--transition), transform var(--transition), background var(--transition);
 }
 
 .step-card::before {
   content: "";
   position: absolute;
-  left: 14px;
-  right: 14px;
+  left: 0;
+  right: 0;
   top: 0;
   height: 3px;
   background: var(--warm-sand);
-  border-radius: 0 0 6px 6px;
 }
 
 .step-card strong,
@@ -367,7 +367,7 @@ select:focus-visible {
 
 .step-card.is-active {
   border-color: var(--brand);
-  box-shadow: 0 0 0 1px var(--ring-warm);
+  background: var(--ivory);
 }
 
 .step-card.is-active::before,
@@ -385,7 +385,7 @@ select:focus-visible {
 
 .step-card.is-clickable-back:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 0 1px var(--ring-warm);
+  border-color: var(--ring-deep);
 }
 
 .step-card.is-locked-step {
@@ -397,12 +397,11 @@ select:focus-visible {
   place-items: center;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
   border: 1px solid var(--border-warm);
   background: var(--parchment);
   color: var(--brand);
-  font-family: var(--serif);
-  font-size: 20px;
+  font-family: var(--mono);
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
 }
@@ -421,7 +420,6 @@ select:focus-visible {
   border: 1px solid var(--border-cream);
   border-radius: var(--radius-lg);
   background: var(--ivory);
-  box-shadow: 0 0 0 1px var(--ring-warm);
 }
 
 .panel::after {
@@ -478,16 +476,18 @@ select:focus-visible {
 }
 
 .identity-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  display: grid;
+  gap: 12px;
 }
 
 .identity-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
   gap: 12px;
+}
+
+.identity-buttons > .identity-btn {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .identity-btn,
@@ -512,14 +512,14 @@ select:focus-visible {
 }
 
 .identity-header .identity-buttons {
-  width: min(360px, 46%);
-  flex: 0 1 360px;
+  width: 100%;
+  justify-self: stretch;
 }
 
 .identity-btn.active {
   border-color: var(--brand);
-  background: var(--tag-soft);
-  box-shadow: 0 0 0 1px var(--ring-warm);
+  background: var(--ivory);
+  box-shadow: inset 0 -3px 0 var(--brand);
 }
 
 .identity-btn:hover,
@@ -569,12 +569,11 @@ select:focus-visible {
   place-items: center;
   width: 56px;
   height: 56px;
-  border-radius: 50%;
   border: 1px solid var(--border-warm);
   background: var(--parchment);
   color: var(--brand);
-  font-family: var(--serif);
-  font-size: 22px;
+  font-family: var(--mono);
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -603,9 +602,10 @@ select:focus-visible {
   gap: 12px;
   align-items: start;
   padding: 18px;
-  border: 1px solid var(--border-dark);
+  border: 1px solid var(--border-warm);
+  border-left: 4px solid var(--brand);
   border-radius: var(--radius-md);
-  background: var(--deep-dark);
+  background: var(--parchment);
 }
 
 .agent-text,
@@ -616,7 +616,7 @@ select:focus-visible {
 }
 
 .agent-text {
-  color: var(--ivory);
+  color: var(--dark-warm);
   font-weight: 500;
   word-break: break-word;
 }
@@ -654,15 +654,15 @@ select:focus-visible {
 .course-link-input-wrap {
   display: block;
   padding: 18px 20px;
-  border: 1px solid var(--border-dark);
+  border: 1px solid var(--border-warm);
+  border-left: 4px solid var(--brand);
   border-radius: var(--radius-lg);
-  background: var(--dark-surface);
-  box-shadow: 0 0 0 1px var(--ring-deep);
+  background: var(--parchment);
 }
 
 .course-link-input-wrap:focus-within {
-  border-color: var(--ring-warm);
-  box-shadow: 0 0 0 2px var(--ring-warm);
+  border-color: var(--brand);
+  box-shadow: inset 0 -2px 0 var(--brand);
 }
 
 .copy-btn,
@@ -708,7 +708,10 @@ select:focus-visible {
 .button-secondary:disabled,
 .copy-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  border-color: var(--border-warm);
+  background: transparent;
+  color: var(--stone);
+  opacity: 1;
   transform: none;
 }
 
@@ -730,7 +733,7 @@ input[type="number"] {
   border: none;
   border-radius: 0;
   background: transparent;
-  color: var(--ivory);
+  color: var(--near-black);
   line-height: 28px;
   white-space: nowrap;
   overflow: hidden;
@@ -738,7 +741,7 @@ input[type="number"] {
 }
 
 #urlInput::placeholder {
-  color: var(--warm-silver);
+  color: var(--stone);
 }
 
 #urlInput:focus,
@@ -817,7 +820,6 @@ input[type="number"] {
   border-radius: var(--radius-md);
   background: var(--parchment);
   cursor: pointer;
-  box-shadow: 0 0 0 1px var(--ring-warm);
 }
 
 .choice-card input {
@@ -995,6 +997,17 @@ input[type="number"] {
     align-items: start;
   }
 
+  .identity-header {
+    display: grid;
+    gap: 12px;
+  }
+
+  .identity-header .identity-buttons {
+    width: 100%;
+    flex: none;
+    justify-self: stretch;
+  }
+
   .time-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1017,17 +1030,9 @@ input[type="number"] {
     font-size: 28px;
   }
 
-  .identity-header {
-    display: grid;
-    gap: 12px;
-  }
-
-  .identity-header .identity-buttons {
-    width: 100%;
-  }
-
   .page-shell {
-    width: min(100% - 20px, var(--page-width));
+    width: auto;
+    margin: 0 10px;
     padding: 20px 0 28px;
   }
 
@@ -1048,11 +1053,19 @@ input[type="number"] {
     right: 20px;
   }
 
-  .identity-buttons,
   .stepper,
   .course-link-input-wrap,
   .agent-command {
     grid-template-columns: 1fr;
+  }
+
+  .identity-buttons {
+    gap: 10px;
+  }
+
+  .identity-btn {
+    padding: 10px 12px;
+    font-size: 20px;
   }
 
   .site-footer {

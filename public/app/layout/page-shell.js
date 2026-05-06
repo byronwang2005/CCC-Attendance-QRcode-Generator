@@ -21,10 +21,11 @@ const renderStepCard = (step) => {
   }
 
   const ariaCurrent = step.state === 'active' ? ' aria-current="step"' : '';
+  const stepLabel = String(step.number).padStart(2, '0');
 
   return `
     <article class="${classes.join(' ')}" data-step="${step.number}"${ariaCurrent}>
-      <span class="step-number">${step.number}</span>
+      <span class="step-number">${stepLabel}</span>
       <div>
         <strong>${step.title}</strong>
         <small>${step.description}</small>
