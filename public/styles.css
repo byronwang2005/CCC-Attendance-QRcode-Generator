@@ -709,7 +709,7 @@ select:focus-visible {
 .copy-btn:disabled {
   cursor: not-allowed;
   border-color: var(--border-warm);
-  background: transparent;
+  background: var(--ivory);
   color: var(--stone);
   opacity: 1;
   transform: none;
@@ -820,6 +820,12 @@ input[type="number"] {
   border-radius: var(--radius-md);
   background: var(--parchment);
   cursor: pointer;
+}
+
+.choice-card.is-selected {
+  border-color: var(--brand);
+  background: var(--ivory);
+  box-shadow: inset 0 -3px 0 var(--brand);
 }
 
 .choice-card input {

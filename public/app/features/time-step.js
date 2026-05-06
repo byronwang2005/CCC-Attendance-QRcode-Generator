@@ -76,6 +76,7 @@ export const initTimePage = () => {
   const identityPreview = document.getElementById('identityPreview');
   const manualTime = document.getElementById('manualTime');
   const modeInputs = Array.from(document.querySelectorAll('input[name="mode"]'));
+  const modeCards = Array.from(document.querySelectorAll('.choice-card'));
   const backBtn = document.getElementById('backBtn');
   const nextBtn = document.getElementById('nextBtn');
   const yearElement = document.getElementById('year');
@@ -84,6 +85,7 @@ export const initTimePage = () => {
   const hourElement = document.getElementById('hour');
   const minuteElement = document.getElementById('minute');
   initStepNavigation(2);
+  let modeTransitionId = 0;
 
   if (linkPreview) {
     linkPreview.textContent = courseUrl;
@@ -99,9 +101,94 @@ export const initTimePage = () => {
   fillManualTimeInputs(state.manualTime);
   syncDayOptions(yearElement, monthElement, dayElement);
 
-  const applyMode = (mode) => {
+  const transitionSection = (element, shouldShow, { animate = true } = {}) => {
+    if (!element) {
+      return Promise.resolve();
+    }
+
+    if (!animate) {
+      element.hidden = !shouldShow;
+      element.classList.toggle('is-expanded', shouldShow);
+      element.style.height = '';
+      return Promise.resolve();
+    }
+
+    if (shouldShow) {
+      if (!element.hidden && element.classList.contains('is-expanded')) {
+        element.style.height = '';
+        return Promise.resolve();
+      }
+
+      element.hidden = false;
+      element.style.height = '0px';
+      element.classList.remove('is-expanded');
+
+      return new Promise((resolve) => {
+        window.requestAnimationFrame(() => {
+          const targetHeight = element.scrollHeight;
+          element.style.height = `${targetHeight}px`;
+          element.classList.add('is-expanded');
+
+          const handleExpandEnd = (event) => {
+            if (event.propertyName !== 'height') {
+              return;
+            }
+
+            element.style.height = '';
+            element.removeEventListener('transitionend', handleExpandEnd);
+            resolve();
+          };
+
+          element.addEventListener('transitionend', handleExpandEnd);
+        });
+      });
+    }
+
+    if (element.hidden) {
+      return Promise.resolve();
+    }
+
+    element.style.height = `${element.scrollHeight}px`;
+    element.classList.add('is-expanded');
+
+    return new Promise((resolve) => {
+      window.requestAnimationFrame(() => {
+        element.style.height = '0px';
+        element.classList.remove('is-expanded');
+      });
+
+      const handleCollapseEnd = (event) => {
+        if (event.propertyName !== 'height') {
+          return;
+        }
+
+        element.hidden = true;
+        element.classList.remove('is-expanded');
+        element.style.height = '';
+        element.removeEventListener('transitionend', handleCollapseEnd);
+        resolve();
+      };
+
+      element.addEventListener('transitionend', handleCollapseEnd);
+    });
+  };
+
+  const syncModeCards = (mode) => {
+    modeCards.forEach((card) => {
+      const input = card.querySelector('input[name="mode"]');
+      card.classList.toggle('is-selected', input?.value === mode);
+    });
+  };
+
+  const applyMode = async (mode, { animate = true } = {}) => {
     const nextMode = mode === TIME_MODES.manual ? TIME_MODES.manual : TIME_MODES.auto;
-    manualTime.hidden = nextMode !== TIME_MODES.manual;
+    const transitionId = modeTransitionId + 1;
+    modeTransitionId = transitionId;
+    syncModeCards(nextMode);
+    await transitionSection(manualTime, nextMode === TIME_MODES.manual, { animate });
+    if (modeTransitionId !== transitionId) {
+      return;
+    }
   };
 
   const collectState = () => ({
@@ -109,15 +196,17 @@ export const initTimePage = () => {
     manualTime: collectManualTime()
   });
 
+  const initialMode = state.timeMode === TIME_MODES.manual ? TIME_MODES.manual : TIME_MODES.auto;
+
   modeInputs.forEach((input) => {
-    input.checked = input.value === state.timeMode;
+    input.checked = input.value === initialMode;
     input.addEventListener('change', () => {
-      applyMode(input.value);
+      void applyMode(input.value);
       saveState(collectState());
     });
   });
 
-  applyMode(state.timeMode);
+  void applyMode(initialMode, { animate: false });
 
   MANUAL_TIME_FIELDS.map((field) => document.getElementById(field)).forEach((element) => {
     if (!element) {

@@ -130,7 +130,7 @@ const TIME_CONTENT = `
           </label>
         </div>
 
-        <div id="manualTime" class="time-grid" hidden>
+        <div id="manualTime" class="time-grid expandable-section" hidden>
           <div>
             <label for="year">年</label>
             <select id="year"></select>
