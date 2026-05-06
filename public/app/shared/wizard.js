@@ -112,24 +112,57 @@ export const clearState = () => {
   }
 };
 
+const escapeHtml = (value) => String(value)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;');
+
+const hideToast = (toast) => {
+  toast.classList.remove('show');
+  toast.hidden = true;
+  toast.innerHTML = '';
+};
+
 export const showToast = (message, type = 'success') => {
+  if (type === 'success') {
+    return;
+  }
+
   const toast = document.getElementById('toast');
   if (!toast) {
     return;
   }
 
-  toast.textContent = message;
-  toast.className = `toast ${type} show`;
-
   if (toast.dataset.timerId) {
     window.clearTimeout(Number(toast.dataset.timerId));
+    delete toast.dataset.timerId;
   }
 
-  const timerId = window.setTimeout(() => {
-    toast.classList.remove('show');
-  }, UI_TIMING.toastDurationMs);
+  toast.className = `toast ${type}`;
+  toast.hidden = false;
+  toast.innerHTML = `
+    <div class="toast__window">
+      <button type="button" class="toast__close" aria-label="关闭提示">×</button>
+      <div class="toast__label">提示</div>
+      <div class="toast__message">${escapeHtml(message)}</div>
+    </div>
+  `;
 
-  toast.dataset.timerId = String(timerId);
+  const closeButton = toast.querySelector('.toast__close');
+  closeButton?.addEventListener('click', () => hideToast(toast));
+
+  toast.addEventListener('click', (event) => {
+    if (event.target === toast) {
+      hideToast(toast);
+    }
+  }, { once: true });
+
+  window.requestAnimationFrame(() => {
+    toast.classList.add('show');
+    closeButton?.focus();
+  });
 };
 
 export const readPageMessage = () => {

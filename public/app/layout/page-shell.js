@@ -63,7 +63,7 @@ export const renderPageShell = ({ root, steps, content, actions = '', currentSte
           ${actions}
         </main>
         ${FOOTER_HTML}
-        <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+        <div id="toast" class="toast" role="alertdialog" aria-live="assertive" aria-modal="true" hidden></div>
       </div>
     </div>
   `;
