@@ -86,6 +86,7 @@ export const initTimePage = () => {
   const minuteElement = document.getElementById('minute');
   initStepNavigation(2);
   let modeTransitionId = 0;
+  let modeScrollY = null;
 
   if (linkPreview) {
     linkPreview.textContent = courseUrl;
@@ -125,9 +126,11 @@ export const initTimePage = () => {
 
       return new Promise((resolve) => {
         window.requestAnimationFrame(() => {
-          const targetHeight = element.scrollHeight;
-          element.style.height = `${targetHeight}px`;
-          element.classList.add('is-expanded');
+          window.requestAnimationFrame(() => {
+            element.classList.add('is-expanded');
+            const targetHeight = element.scrollHeight;
+            element.style.height = `${targetHeight}px`;
+          });
 
           const handleExpandEnd = (event) => {
             if (event.propertyName !== 'height') {
@@ -153,8 +156,10 @@ export const initTimePage = () => {
 
     return new Promise((resolve) => {
       window.requestAnimationFrame(() => {
-        element.style.height = '0px';
-        element.classList.remove('is-expanded');
+        window.requestAnimationFrame(() => {
+          element.style.height = '0px';
+          element.classList.remove('is-expanded');
+        });
       });
 
       const handleCollapseEnd = (event) => {
@@ -176,16 +181,29 @@ export const initTimePage = () => {
   const syncModeCards = (mode) => {
     modeCards.forEach((card) => {
       const input = card.querySelector('input[name="mode"]');
+      if (input) {
+        input.checked = input.value === mode;
+      }
       card.classList.toggle('is-selected', input?.value === mode);
     });
   };
 
-  const applyMode = async (mode, { animate = true } = {}) => {
+  const restoreScrollPosition = (scrollY) => {
+    if (!Number.isFinite(scrollY)) {
+      return;
+    }
+
+    window.scrollTo(window.scrollX, scrollY);
+  };
+
+  const applyMode = async (mode, { animate = true, preserveScrollY = null } = {}) => {
     const nextMode = mode === TIME_MODES.manual ? TIME_MODES.manual : TIME_MODES.auto;
     const transitionId = modeTransitionId + 1;
     modeTransitionId = transitionId;
     syncModeCards(nextMode);
+    restoreScrollPosition(preserveScrollY);
     await transitionSection(manualTime, nextMode === TIME_MODES.manual, { animate });
+    restoreScrollPosition(preserveScrollY);
     if (modeTransitionId !== transitionId) {
       return;
     }
@@ -201,8 +219,35 @@ export const initTimePage = () => {
   modeInputs.forEach((input) => {
     input.checked = input.value === initialMode;
     input.addEventListener('change', () => {
-      void applyMode(input.value);
+      const preserveScrollY = modeScrollY ?? window.scrollY;
+      modeScrollY = null;
+      void applyMode(input.value, { preserveScrollY });
       saveState(collectState());
+    });
+  });
+
+  modeCards.forEach((card) => {
+    card.addEventListener('click', (event) => {
+      const input = card.querySelector('input[name="mode"]');
+      if (!input) {
+        return;
+      }
+
+      event.preventDefault();
+      const preserveScrollY = modeScrollY ?? window.scrollY;
+      modeScrollY = null;
+      void applyMode(input.value, { preserveScrollY });
+      saveState(collectState());
+    });
+
+    card.addEventListener('pointerdown', () => {
+      modeScrollY = window.scrollY;
+    }, { passive: true });
+
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        modeScrollY = window.scrollY;
+      }
     });
   });
 

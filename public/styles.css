@@ -538,7 +538,8 @@ select:focus-visible {
   overflow: clip;
   opacity: 0;
   transform: translateY(-8px);
-  transition: height 0.28s ease, opacity 0.22s ease, transform 0.28s ease;
+  transition: height 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: height, opacity, transform;
 }
 
 .expandable-section.is-expanded {
@@ -831,6 +832,7 @@ input[type="number"] {
 .choice-card input {
   margin-top: 5px;
   accent-color: var(--brand);
+  pointer-events: none;
 }
 
 .choice-card strong,
@@ -860,6 +862,17 @@ input[type="number"] {
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid var(--border-soft);
+  overflow-anchor: none;
+}
+
+.time-grid.expandable-section {
+  transition: height 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), margin-top 0.32s cubic-bezier(0.22, 1, 0.36, 1), padding-top 0.32s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease;
+}
+
+.time-grid.expandable-section:not(.is-expanded) {
+  margin-top: 0;
+  padding-top: 0;
+  border-top-color: transparent;
 }
 
 .time-grid[hidden] {
@@ -981,46 +994,48 @@ input[type="number"] {
 }
 
 .toast__window {
-  position: relative;
   width: min(420px, 100%);
-  padding: 22px 24px 24px;
+  padding: 0;
   border: 1px solid var(--brand);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--ivory);
   color: var(--near-black);
-  box-shadow: 0 18px 50px rgba(20, 20, 19, 0.18);
+  box-shadow: 0 0 0 1px var(--border-warm);
+}
+
+.toast__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 14px 12px 18px;
+  border-bottom: 1px solid var(--border-warm);
 }
 
 .toast__close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border: 1px solid var(--border-warm);
+  border: 1px solid var(--brand);
   border-radius: var(--radius-sm);
-  background: var(--parchment);
+  background: var(--ivory);
   color: var(--brand);
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
 }
 
 .toast__label {
-  width: fit-content;
-  margin-bottom: 12px;
-  padding-bottom: 4px;
-  border-bottom: 3px solid var(--brand);
   color: var(--brand);
   font-family: var(--mono);
   font-size: 12px;
+  letter-spacing: 0.08em;
 }
 
 .toast__message {
-  padding-right: 28px;
+  padding: 22px 24px 24px;
   color: var(--dark-warm);
   font-size: 18px;
   line-height: 1.55;

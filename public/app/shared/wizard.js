@@ -144,8 +144,10 @@ export const showToast = (message, type = 'success') => {
   toast.hidden = false;
   toast.innerHTML = `
     <div class="toast__window">
-      <button type="button" class="toast__close" aria-label="关闭提示">×</button>
-      <div class="toast__label">提示</div>
+      <div class="toast__header">
+        <div class="toast__label">提示</div>
+        <button type="button" class="toast__close" aria-label="关闭提示">×</button>
+      </div>
       <div class="toast__message">${escapeHtml(message)}</div>
     </div>
   `;
