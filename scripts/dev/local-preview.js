@@ -165,7 +165,10 @@ const serveStaticFile = async (pathname, response) => {
     const file = await readFile(filePath);
     const extension = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES.get(extension) || 'application/octet-stream';
-    response.writeHead(200, { 'Content-Type': contentType });
+    response.writeHead(200, {
+      'Content-Type': contentType,
+      'Content-Length': file.byteLength
+    });
     response.end(file);
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
