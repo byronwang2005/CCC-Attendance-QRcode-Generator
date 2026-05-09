@@ -1,32 +1,5 @@
 const ASSET_LOADERS = Object.freeze([
   {
-    type: 'image',
-    url: 'assets/images/ccc-small.webp',
-    bytes: 1346292
-  },
-  {
-    type: 'font',
-    url: '/assets/fonts/kami/TsangerJinKai02-W04.ttf',
-    bytes: 18948244,
-    family: 'TsangerJinKai02',
-    descriptors: {
-      style: 'normal',
-      weight: '400'
-    },
-    fallback: '400 1em "TsangerJinKai02"'
-  },
-  {
-    type: 'font',
-    url: '/assets/fonts/kami/TsangerJinKai02-W05.ttf',
-    bytes: 18953516,
-    family: 'TsangerJinKai02',
-    descriptors: {
-      style: 'normal',
-      weight: '500'
-    },
-    fallback: '500 1em "TsangerJinKai02"'
-  },
-  {
     type: 'font',
     url: '/assets/fonts/kami/JetBrainsMono.woff2',
     bytes: 55672,
@@ -36,6 +9,22 @@ const ASSET_LOADERS = Object.freeze([
       weight: '400'
     },
     fallback: '400 1em "JetBrains Mono"'
+  },
+  {
+    type: 'font',
+    url: '/assets/fonts/kami/TsangerJinKai02-subset.woff2',
+    bytes: 79692,
+    family: 'TsangerJinKai02',
+    descriptors: {
+      style: 'normal',
+      weight: '400'
+    },
+    fallback: '400 1em "TsangerJinKai02"'
+  },
+  {
+    type: 'image',
+    url: 'assets/images/ccc-small.webp',
+    bytes: 502822
   }
 ]);
 

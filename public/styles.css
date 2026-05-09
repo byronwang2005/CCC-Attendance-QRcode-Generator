@@ -39,17 +39,9 @@
 
 @font-face {
   font-family: "TsangerJinKai02";
-  src: url("/assets/fonts/kami/TsangerJinKai02-W04.ttf") format("truetype");
+  src: url("/assets/fonts/kami/TsangerJinKai02-subset.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "TsangerJinKai02";
-  src: url("/assets/fonts/kami/TsangerJinKai02-W05.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 500;
   font-display: swap;
 }
 
