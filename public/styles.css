@@ -274,7 +274,6 @@ select:focus-visible {
   gap: 28px;
   margin-bottom: 26px;
   padding-bottom: 18px;
-  border-bottom: 1px solid var(--border-warm);
 }
 
 .masthead__copy {
