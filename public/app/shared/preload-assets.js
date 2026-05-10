@@ -1,7 +1,7 @@
 const ASSET_LOADERS = Object.freeze([
   {
     type: 'font',
-    url: '/assets/fonts/kami/JetBrainsMono.woff2',
+    url: '/assets/fonts/JetBrainsMono.woff2',
     bytes: 55672,
     family: 'JetBrains Mono',
     descriptors: {
@@ -12,8 +12,8 @@ const ASSET_LOADERS = Object.freeze([
   },
   {
     type: 'font',
-    url: '/assets/fonts/kami/TsangerJinKai02-subset.woff2',
-    bytes: 79692,
+    url: '/assets/fonts/TsangerJinKai02-subset.woff2',
+    bytes: 91716,
     family: 'TsangerJinKai02',
     descriptors: {
       style: 'normal',

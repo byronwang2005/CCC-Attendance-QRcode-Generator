@@ -39,7 +39,7 @@
 
 @font-face {
   font-family: "TsangerJinKai02";
-  src: url("/assets/fonts/kami/TsangerJinKai02-subset.woff2") format("woff2");
+  src: url("/assets/fonts/TsangerJinKai02-subset.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -47,7 +47,7 @@
 
 @font-face {
   font-family: "JetBrains Mono";
-  src: url("/assets/fonts/kami/JetBrainsMono.woff2") format("woff2");
+  src: url("/assets/fonts/JetBrainsMono.woff2") format("woff2");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -836,7 +836,7 @@ input[type="number"] {
 .choice-card strong {
   color: var(--near-black);
   font-family: var(--serif);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 500;
   line-height: 1.18;
 }
@@ -848,28 +848,22 @@ input[type="number"] {
   line-height: 1.45;
 }
 
+.time-grid-shell {
+  overflow-anchor: none;
+}
+
+.time-grid-shell[hidden] {
+  display: none;
+}
+
 .time-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border-soft);
-  overflow-anchor: none;
-}
-
-.time-grid.expandable-section {
-  transition: height 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), margin-top 0.32s cubic-bezier(0.22, 1, 0.36, 1), padding-top 0.32s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease;
-}
-
-.time-grid.expandable-section:not(.is-expanded) {
   margin-top: 0;
-  padding-top: 0;
-  border-top-color: transparent;
-}
-
-.time-grid[hidden] {
-  display: none;
+  padding-top: 37px;
+  background-image: linear-gradient(to bottom, transparent 18px, var(--border-soft) 18px, var(--border-soft) 19px, transparent 19px);
+  background-repeat: no-repeat;
 }
 
 .actions {

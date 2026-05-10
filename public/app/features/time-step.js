@@ -128,7 +128,10 @@ export const initTimePage = () => {
         window.requestAnimationFrame(() => {
           window.requestAnimationFrame(() => {
             element.classList.add('is-expanded');
-            const targetHeight = element.scrollHeight;
+            element.style.height = '';
+            const targetHeight = element.getBoundingClientRect().height;
+            element.style.height = '0px';
+            void element.offsetHeight;
             element.style.height = `${targetHeight}px`;
           });
 

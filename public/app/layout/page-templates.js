@@ -110,7 +110,7 @@ const INDEX_ACTIONS = `
 const TIME_CONTENT = `
       <section class="panel">
         <div class="panel-header">
-          <h2>选择时间模式</h2>
+          <h3>选个模式叭！</h3>
         </div>
 
         <div class="radio-grid" role="radiogroup" aria-label="时间模式选择">
@@ -130,26 +130,28 @@ const TIME_CONTENT = `
           </label>
         </div>
 
-        <div id="manualTime" class="time-grid expandable-section" hidden>
-          <div>
-            <label for="year">年</label>
-            <select id="year"></select>
-          </div>
-          <div>
-            <label for="month">月</label>
-            <select id="month"></select>
-          </div>
-          <div>
-            <label for="day">日</label>
-            <select id="day"></select>
-          </div>
-          <div>
-            <label for="hour">时</label>
-            <select id="hour"></select>
-          </div>
-          <div>
-            <label for="minute">分</label>
-            <select id="minute"></select>
+        <div id="manualTime" class="time-grid-shell expandable-section" hidden>
+          <div class="time-grid">
+            <div>
+              <label for="year">年</label>
+              <select id="year"></select>
+            </div>
+            <div>
+              <label for="month">月</label>
+              <select id="month"></select>
+            </div>
+            <div>
+              <label for="day">日</label>
+              <select id="day"></select>
+            </div>
+            <div>
+              <label for="hour">时</label>
+              <select id="hour"></select>
+            </div>
+            <div>
+              <label for="minute">分</label>
+              <select id="minute"></select>
+            </div>
           </div>
         </div>
       </section>
