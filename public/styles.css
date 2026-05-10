@@ -468,7 +468,9 @@ select:focus-visible {
 
 .identity-header {
   display: grid;
-  gap: 12px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
 }
 
 .identity-buttons {
@@ -477,8 +479,8 @@ select:focus-visible {
 }
 
 .identity-buttons > .identity-btn {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 0 0 126px;
+  width: 126px;
 }
 
 .identity-btn,
@@ -503,8 +505,8 @@ select:focus-visible {
 }
 
 .identity-header .identity-buttons {
-  width: 100%;
-  justify-self: stretch;
+  width: auto;
+  justify-self: end;
 }
 
 .identity-btn.active {
@@ -1054,6 +1056,7 @@ input[type="number"] {
 
   .identity-header {
     display: grid;
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
@@ -1061,6 +1064,12 @@ input[type="number"] {
     width: 100%;
     flex: none;
     justify-self: stretch;
+  }
+
+  .identity-buttons > .identity-btn {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
   }
 
   .time-grid {
