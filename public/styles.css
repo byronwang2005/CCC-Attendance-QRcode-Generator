@@ -297,7 +297,7 @@ select:focus-visible {
   margin: 0;
   color: var(--near-black);
   font-family: var(--serif);
-  font-size: 56px;
+  font-size: 48px;
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: 0;
@@ -450,11 +450,11 @@ select:focus-visible {
 }
 
 .panel-header h2 {
-  font-size: 40px;
+  font-size: 32px;
 }
 
 .panel-header h3 {
-  font-size: 28px;
+  font-size: 24px;
 }
 
 .panel-kicker {
@@ -1123,13 +1123,13 @@ input[type="number"] {
   }
 
   .time-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 720px) {
   .masthead__title {
-    font-size: 40px;
+    font-size: 36px;
   }
 
   .masthead__summary {
@@ -1137,11 +1137,11 @@ input[type="number"] {
   }
 
   .panel-header h2 {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .panel-header h3 {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .page-shell {
