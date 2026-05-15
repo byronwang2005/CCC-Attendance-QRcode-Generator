@@ -20,12 +20,13 @@ const parseInteger = (value) => {
   return Number.parseInt(String(value), 10);
 };
 
-const getDaysInMonth = (year, month) => {
-  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
-    return 31;
-  }
-  return new Date(year, month, 0).getDate();
-};
+const pad = (value) => String(value).padStart(2, '0');
+
+const formatDateValue = (date) => [
+  date.getFullYear(),
+  pad(date.getMonth() + 1),
+  pad(date.getDate())
+].join('-');
 
 const populateSelect = (element, start, end, padToTwoDigits = false) => {
   if (!element) {
@@ -41,17 +42,91 @@ const populateSelect = (element, start, end, padToTwoDigits = false) => {
   }
 };
 
-const syncDayOptions = (yearElement, monthElement, dayElement) => {
-  if (!yearElement || !monthElement || !dayElement) {
+const populateDateOptions = (dateElement, windowStart, windowEnd) => {
+  if (!dateElement) {
     return;
   }
 
-  const year = parseInteger(yearElement.value);
-  const month = parseInteger(monthElement.value);
-  const previousDay = parseInteger(dayElement.value);
-  const maxDay = getDaysInMonth(year, month);
-  populateSelect(dayElement, 1, maxDay);
-  dayElement.value = String(Math.min(Number.isNaN(previousDay) ? 1 : previousDay, maxDay));
+  const previousDate = dateElement.value;
+  const endDateValue = formatDateValue(windowEnd);
+  const options = [];
+  const cursor = new Date(windowStart.getFullYear(), windowStart.getMonth(), windowStart.getDate());
+
+  while (formatDateValue(cursor) <= endDateValue) {
+    const value = formatDateValue(cursor);
+    let label = value;
+    if (value === formatDateValue(windowStart)) {
+      label = `${value} 今天`;
+    } else {
+      const tomorrow = new Date(windowStart.getFullYear(), windowStart.getMonth(), windowStart.getDate() + 1);
+      if (value === formatDateValue(tomorrow)) {
+        label = `${value} 明天`;
+      }
+    }
+    options.push({ value, label });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  dateElement.innerHTML = '';
+  options.forEach((item) => {
+    const option = document.createElement('option');
+    option.value = item.value;
+    option.textContent = item.label;
+    dateElement.appendChild(option);
+  });
+
+  dateElement.value = options.some((item) => item.value === previousDate)
+    ? previousDate
+    : options[0]?.value ?? '';
+};
+
+const getDateBounds = (dateValue, windowStart, windowEnd) => {
+  const dayStart = new Date(`${dateValue}T00:00:00`);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  return {
+    min: new Date(Math.max(dayStart.getTime(), windowStart.getTime())),
+    max: new Date(Math.min(dayEnd.getTime(), windowEnd.getTime()))
+  };
+};
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const createSelectableWindow = () => {
+  const now = new Date();
+  const windowEnd = new Date(now.getTime() + TIME_LIMITS.manualWindowMs);
+  const windowStart = new Date(now);
+
+  if (windowStart.getSeconds() > 0 || windowStart.getMilliseconds() > 0) {
+    windowStart.setMinutes(windowStart.getMinutes() + 1, 0, 0);
+  }
+  windowEnd.setSeconds(0, 0);
+
+  return { windowStart, windowEnd };
+};
+
+const syncTimeOptions = (dateElement, hourElement, minuteElement, windowStart, windowEnd) => {
+  if (!dateElement || !hourElement || !minuteElement || !dateElement.value) {
+    return;
+  }
+
+  const previousHour = parseInteger(hourElement.value);
+  const previousMinute = parseInteger(minuteElement.value);
+  const { min, max } = getDateBounds(dateElement.value, windowStart, windowEnd);
+  const minHour = min.getHours();
+  const maxHour = max.getHours();
+  const nextHour = clamp(Number.isNaN(previousHour) ? minHour : previousHour, minHour, maxHour);
+
+  populateSelect(hourElement, minHour, maxHour, true);
+  hourElement.value = String(nextHour);
+
+  const minMinute = nextHour === minHour ? min.getMinutes() : 0;
+  const maxMinute = nextHour === maxHour ? max.getMinutes() : 59;
+  const nextMinute = clamp(Number.isNaN(previousMinute) ? minMinute : previousMinute, minMinute, maxMinute);
+
+  populateSelect(minuteElement, minMinute, maxMinute, true);
+  minuteElement.value = String(nextMinute);
 };
 
 export const initTimePage = () => {
@@ -79,11 +154,10 @@ export const initTimePage = () => {
   const modeCards = Array.from(document.querySelectorAll('.choice-card'));
   const backBtn = document.getElementById('backBtn');
   const nextBtn = document.getElementById('nextBtn');
-  const yearElement = document.getElementById('year');
-  const monthElement = document.getElementById('month');
-  const dayElement = document.getElementById('day');
+  const dateElement = document.getElementById('date');
   const hourElement = document.getElementById('hour');
   const minuteElement = document.getElementById('minute');
+  const { windowStart: manualWindowStart, windowEnd: manualWindowEnd } = createSelectableWindow();
   initStepNavigation(2);
   let modeTransitionId = 0;
   let modeScrollY = null;
@@ -94,13 +168,12 @@ export const initTimePage = () => {
   if (identityPreview) {
     identityPreview.textContent = getIdentityLabel(state.identity);
   }
-  populateSelect(yearElement, TIME_LIMITS.manualYearMin, TIME_LIMITS.manualYearMax);
-  populateSelect(monthElement, 1, 12);
-  populateSelect(hourElement, 0, 23, true);
-  populateSelect(minuteElement, 0, 59, true);
-  syncDayOptions(yearElement, monthElement, dayElement);
+  populateDateOptions(dateElement, manualWindowStart, manualWindowEnd);
   fillManualTimeInputs(state.manualTime);
-  syncDayOptions(yearElement, monthElement, dayElement);
+  if (dateElement && !dateElement.value) {
+    dateElement.value = formatDateValue(manualWindowStart);
+  }
+  syncTimeOptions(dateElement, hourElement, minuteElement, manualWindowStart, manualWindowEnd);
 
   const transitionSection = (element, shouldShow, { animate = true } = {}) => {
     if (!element) {
@@ -262,8 +335,8 @@ export const initTimePage = () => {
     }
 
     element.addEventListener('change', () => {
-      if (element.id === 'year' || element.id === 'month') {
-        syncDayOptions(yearElement, monthElement, dayElement);
+      if (element.id === 'date' || element.id === 'hour') {
+        syncTimeOptions(dateElement, hourElement, minuteElement, manualWindowStart, manualWindowEnd);
       }
       saveState(collectState());
     });
@@ -282,7 +355,7 @@ export const initTimePage = () => {
     } catch (error) {
       showToast(error instanceof Error ? error.message : TEXT.errors.invalidManualTime, 'error');
       if (nextState.timeMode === TIME_MODES.manual) {
-        const firstManualInput = document.getElementById('year');
+        const firstManualInput = document.getElementById('date');
         if (firstManualInput) {
           firstManualInput.focus();
         }

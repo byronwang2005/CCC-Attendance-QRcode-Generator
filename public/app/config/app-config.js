@@ -31,8 +31,7 @@ export const QR_CODE = Object.freeze({
 });
 
 export const TIME_LIMITS = Object.freeze({
-  manualYearMin: 2025,
-  manualYearMax: 2050,
+  manualWindowMs: 7 * 24 * 60 * 60 * 1000,
   autoOffsetMs: 60 * 1000
 });
 
@@ -48,9 +47,7 @@ export const STEP_PATHS = Object.freeze({
 });
 
 export const MANUAL_TIME_FIELDS = Object.freeze([
-  'year',
-  'month',
-  'day',
+  'date',
   'hour',
   'minute'
 ]);
@@ -77,7 +74,8 @@ export const TEXT = Object.freeze({
     invalidScheduleId: '链接里缺少课程ID。正确链接通常包含 ?id=xxxx 或 ?scheduleId=xxxx',
     completeCurrentStepFirst: '请先完成当前步骤',
     completeManualTime: '请完整填写手动时间',
-    invalidManualTime: '手动时间格式错误，请检查年月日时分是否有效（含闰年）',
+    invalidManualTime: '手动时间格式错误，请检查日期和时间是否有效',
+    manualTimeOutOfRange: '手动时间只能选择当前时间到未来 7 天内',
     noQrCodeToDownload: '当前还没有可下载的二维码',
     qrCodeGenerationFallback: '生成失败，请稍后重试',
     qrCodeGenerationFailed: '二维码生成失败，请检查链接或时间设置',

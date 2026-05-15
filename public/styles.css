@@ -897,6 +897,8 @@ input[type="number"] {
 
 .time-grid-shell {
   overflow-anchor: none;
+  margin-top: 0;
+  padding: 37px 4px 4px;
 }
 
 .time-grid-shell[hidden] {
@@ -906,10 +908,9 @@ input[type="number"] {
 .time-grid {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: minmax(220px, 1.45fr) repeat(2, minmax(96px, 0.55fr));
   gap: 12px;
   margin-top: 0;
-  padding-top: 37px;
 }
 
 .time-grid::before {
@@ -917,7 +918,7 @@ input[type="number"] {
   position: absolute;
   left: 0;
   right: 0;
-  top: 18px;
+  top: -19px;
   height: 1px;
   background: var(--border-soft);
 }
@@ -1124,6 +1125,10 @@ input[type="number"] {
 
   .time-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .time-grid > div:first-child {
+    grid-column: 1 / -1;
   }
 }
 

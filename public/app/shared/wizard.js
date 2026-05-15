@@ -13,14 +13,21 @@ import {
 
 export const AGENT_PROMPT = TEXT.agentPrompt;
 
+const pad = (value) => String(value).padStart(2, '0');
+
+const formatDateValue = (date) => [
+  date.getFullYear(),
+  pad(date.getMonth() + 1),
+  pad(date.getDate())
+].join('-');
+
 const createDefaultManualTime = () => {
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const year = Math.max(TIME_LIMITS.manualYearMin, Math.min(TIME_LIMITS.manualYearMax, currentYear));
+  if (now.getSeconds() > 0 || now.getMilliseconds() > 0) {
+    now.setMinutes(now.getMinutes() + 1, 0, 0);
+  }
   return {
-    year: String(year),
-    month: String(now.getMonth() + 1),
-    day: String(now.getDate()),
+    date: formatDateValue(now),
     hour: String(now.getHours()),
     minute: String(now.getMinutes())
   };
@@ -54,6 +61,27 @@ const safeString = (value, fallback = '') => {
   return fallback;
 };
 
+const normalizeManualDate = (manualTime, fallback) => {
+  const directDate = safeString(manualTime.date);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(directDate)) {
+    return directDate;
+  }
+
+  const year = parseInteger(manualTime.year);
+  const month = parseInteger(manualTime.month);
+  const day = parseInteger(manualTime.day);
+  if ([year, month, day].some(Number.isNaN)) {
+    return fallback;
+  }
+
+  const migratedDate = new Date(year, month - 1, day);
+  const isValid = migratedDate.getFullYear() === year
+    && migratedDate.getMonth() === month - 1
+    && migratedDate.getDate() === day;
+
+  return isValid ? formatDateValue(migratedDate) : fallback;
+};
+
 const sanitizeState = (candidate) => {
   const defaults = createDefaultState();
   const manualTime = candidate && typeof candidate === 'object' && candidate.manualTime && typeof candidate.manualTime === 'object'
@@ -65,9 +93,7 @@ const sanitizeState = (candidate) => {
     url: safeString(candidate && candidate.url),
     timeMode: normalizeTimeMode(candidate && candidate.timeMode),
     manualTime: {
-      year: safeString(manualTime.year, defaults.manualTime.year),
-      month: safeString(manualTime.month, defaults.manualTime.month),
-      day: safeString(manualTime.day, defaults.manualTime.day),
+      date: normalizeManualDate(manualTime, defaults.manualTime.date),
       hour: safeString(manualTime.hour, defaults.manualTime.hour),
       minute: safeString(manualTime.minute, defaults.manualTime.minute)
     }
@@ -341,19 +367,15 @@ export const buildTimestamp = (state) => {
     return Date.now() + TIME_LIMITS.autoOffsetMs;
   }
 
-  const year = parseInteger(state.manualTime.year);
-  const month = parseInteger(state.manualTime.month);
-  const day = parseInteger(state.manualTime.day);
+  const dateParts = safeString(state.manualTime.date).split('-').map(parseInteger);
   const hour = parseInteger(state.manualTime.hour);
   const minute = parseInteger(state.manualTime.minute);
 
-  if ([year, month, day, hour, minute].some(Number.isNaN)) {
+  if (dateParts.length !== 3 || [...dateParts, hour, minute].some(Number.isNaN)) {
     throw new Error(TEXT.errors.completeManualTime);
   }
 
-  if (year < TIME_LIMITS.manualYearMin || year > TIME_LIMITS.manualYearMax) {
-    throw new Error(`手动年份仅支持 ${TIME_LIMITS.manualYearMin}-${TIME_LIMITS.manualYearMax}`);
-  }
+  const [year, month, day] = dateParts;
 
   const date = new Date(year, month - 1, day, hour, minute);
   const isValid = date.getFullYear() === year
@@ -366,12 +388,17 @@ export const buildTimestamp = (state) => {
     throw new Error(TEXT.errors.invalidManualTime);
   }
 
-  return date.getTime();
+  const timestamp = date.getTime();
+  const now = Date.now();
+  if (timestamp < now || timestamp > now + TIME_LIMITS.manualWindowMs) {
+    throw new Error(TEXT.errors.manualTimeOutOfRange);
+  }
+
+  return timestamp;
 };
 
 export const formatDateTime = (timestamp) => {
   const date = new Date(timestamp);
-  const pad = (value) => String(value).padStart(2, '0');
 
   return [
     `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,

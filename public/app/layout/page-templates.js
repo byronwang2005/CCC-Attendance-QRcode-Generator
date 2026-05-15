@@ -133,16 +133,8 @@ const TIME_CONTENT = `
         <div id="manualTime" class="time-grid-shell expandable-section" hidden>
           <div class="time-grid">
             <div>
-              <label for="year">年</label>
-              <select id="year"></select>
-            </div>
-            <div>
-              <label for="month">月</label>
-              <select id="month"></select>
-            </div>
-            <div>
-              <label for="day">日</label>
-              <select id="day"></select>
+              <label for="date">日期</label>
+              <select id="date"></select>
             </div>
             <div>
               <label for="hour">时</label>
