@@ -9,11 +9,11 @@
   --near-black: #141413;
   --dark-warm: #3d3d3a;
   --charcoal: #4d4c48;
-  --olive: #5e5d59;
-  --stone: #87867f;
+  --olive: #504e49;
+  --stone: #6b6a64;
   --warm-silver: #b0aea5;
-  --border-cream: #e8e5da;
-  --border-warm: #e0ddd2;
+  --border-cream: #e8e6dc;
+  --border-warm: #e8e6dc;
   --border-soft: #e5e3d8;
   --border-dark: #30302e;
   --ring-warm: #d1cfc5;
@@ -299,7 +299,7 @@ select:focus-visible {
   font-family: var(--serif);
   font-size: 56px;
   font-weight: 500;
-  line-height: 1.05;
+  line-height: 1.12;
   letter-spacing: 0;
 }
 
@@ -669,6 +669,10 @@ select:focus-visible {
 
 .copy-btn,
 .button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: 52px;
   padding: 12px 18px;
   border: 1px solid var(--border-warm);
@@ -689,6 +693,10 @@ select:focus-visible {
 }
 
 .button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: 56px;
   padding: 14px 26px;
   border: 1px solid var(--brand);
@@ -699,6 +707,37 @@ select:focus-visible {
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.08em;
+}
+
+.copy-btn::before,
+.button-secondary::before,
+.button-primary::after {
+  font-family: var(--mono);
+  font-size: 0.95em;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.copy-btn::before {
+  content: "";
+  display: block;
+  width: 0.78em;
+  height: 0.9em;
+  border: 1px solid currentColor;
+  box-shadow: 0.22em -0.22em 0 -1px currentColor;
+}
+
+.button-primary::after {
+  content: "→";
+}
+
+#backBtn::before {
+  content: "←";
+}
+
+#restartBtn::before {
+  content: "↻";
 }
 
 .button-secondary {
@@ -865,13 +904,22 @@ input[type="number"] {
 }
 
 .time-grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   margin-top: 0;
   padding-top: 37px;
-  background-image: linear-gradient(to bottom, transparent 18px, var(--border-soft) 18px, var(--border-soft) 19px, transparent 19px);
-  background-repeat: no-repeat;
+}
+
+.time-grid::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18px;
+  height: 1px;
+  background: var(--border-soft);
 }
 
 .actions {
@@ -971,7 +1019,7 @@ input[type="number"] {
   display: grid;
   place-items: center;
   padding: 20px;
-  background: #c7c6bd;
+  background: var(--warm-sand);
   white-space: pre-line;
   opacity: 0;
   pointer-events: none;
@@ -991,7 +1039,7 @@ input[type="number"] {
 .toast__window {
   width: min(420px, 100%);
   padding: 0;
-  border: 1px solid var(--brand);
+  border: 1px solid var(--border-warm);
   border-radius: var(--radius-md);
   background: var(--ivory);
   color: var(--near-black);
@@ -1037,7 +1085,7 @@ input[type="number"] {
 }
 
 .toast.error {
-  background: #c7c6bd;
+  background: var(--warm-sand);
 }
 
 .toast.success {

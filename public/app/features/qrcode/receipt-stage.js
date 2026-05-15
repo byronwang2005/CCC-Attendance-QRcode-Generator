@@ -40,25 +40,32 @@ const receiptPointToTexture = (x, y, width, height) => ({
   x: (x / RECEIPT_WIDTH + 0.5) * width,
   y: (0.5 - y / RECEIPT_HEIGHT) * height
 });
-const withAlpha = (context, alpha, draw) => {
-  context.save();
-  context.globalAlpha = alpha;
+
+const parseHexColor = (color) => {
+  const normalized = color.replace('#', '');
+  return [
+    Number.parseInt(normalized.slice(0, 2), 16),
+    Number.parseInt(normalized.slice(2, 4), 16),
+    Number.parseInt(normalized.slice(4, 6), 16)
+  ];
+};
+
+const blendHexColor = (color, baseColor, alpha) => {
+  const source = parseHexColor(color);
+  const base = parseHexColor(baseColor);
+  const channel = (index) => Math.round(source[index] * alpha + base[index] * (1 - alpha));
+
+  return `#${[0, 1, 2].map((index) => channel(index).toString(16).padStart(2, '0')).join('')}`;
+};
+
+const fillRectBlend = (context, color, baseColor, alpha, x, y, width, height) => {
+  context.fillStyle = blendHexColor(color, baseColor, alpha);
+  context.fillRect(x, y, width, height);
+};
+
+const strokeBlend = (context, color, baseColor, alpha, draw) => {
+  context.strokeStyle = blendHexColor(color, baseColor, alpha);
   draw();
-  context.restore();
-};
-
-const fillRectWithAlpha = (context, color, alpha, x, y, width, height) => {
-  withAlpha(context, alpha, () => {
-    context.fillStyle = color;
-    context.fillRect(x, y, width, height);
-  });
-};
-
-const strokeWithAlpha = (context, color, alpha, draw) => {
-  withAlpha(context, alpha, () => {
-    context.strokeStyle = color;
-    draw();
-  });
 };
 
 const loadThreeModule = async () => {
@@ -98,25 +105,29 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     throw new Error('2D canvas is unavailable');
   }
 
-  context.fillStyle = '#faf9f5';
+  const receiptBase = '#faf9f5';
+  const receiptPaper = blendHexColor('#f5f4ed', receiptBase, 0.72);
+  const ruleColor = blendHexColor('#e0ddd2', receiptPaper, 0.9);
+  const borderColor = blendHexColor('#e8e6dc', receiptPaper, 0.96);
+
+  context.fillStyle = receiptBase;
   context.fillRect(0, 0, width, height);
 
-  fillRectWithAlpha(context, '#f5f4ed', 0.72, 0, 0, width, height);
+  context.fillStyle = receiptPaper;
+  context.fillRect(0, 0, width, height);
 
   for (const pinLayout of PIN_LAYOUT) {
     const pinPoint = receiptPointToTexture(pinLayout.x, pinLayout.y, width, height);
 
-    withAlpha(context, 0.12, () => {
-      context.fillStyle = '#5e5d59';
-      context.beginPath();
-      context.arc(pinPoint.x, pinPoint.y + 1, 5, 0, Math.PI * 2);
-      context.fill();
-    });
+    context.fillStyle = blendHexColor('#504e49', receiptPaper, 0.12);
+    context.beginPath();
+    context.arc(pinPoint.x, pinPoint.y + 1, 5, 0, Math.PI * 2);
+    context.fill();
   }
 
   for (let row = 0; row < height; row += 4) {
     const alpha = 0.001 + ((row % 28) / 28) * 0.0018;
-    fillRectWithAlpha(context, '#b0aea5', alpha, 0, row, width, 1);
+    fillRectBlend(context, '#b0aea5', receiptPaper, alpha, 0, row, width, 1);
   }
 
   for (let index = 0; index < 1800; index += 1) {
@@ -124,19 +135,17 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     const y = Math.random() * height;
     const radius = Math.random() * 1.2 + 0.2;
     const alpha = Math.random() * 0.005;
-    fillRectWithAlpha(context, '#b0aea5', alpha, x, y, radius, radius);
+    fillRectBlend(context, '#b0aea5', receiptPaper, alpha, x, y, radius, radius);
   }
 
   context.textAlign = 'center';
   context.font = `400 50px ${RECEIPT_MONO_FONT}`;
-  withAlpha(context, 0.84, () => {
-    context.fillStyle = '#141413';
-    context.fillText('CCC ATTENDANCE', width / 2, 136 * scaleY);
-  });
+  context.fillStyle = blendHexColor('#141413', receiptPaper, 0.84);
+  context.fillText('CCC ATTENDANCE', width / 2, 136 * scaleY);
 
   context.lineWidth = 3;
   context.setLineDash([10, 9]);
-  strokeWithAlpha(context, '#e0ddd2', 0.9, () => {
+  strokeBlend(context, ruleColor, receiptPaper, 1, () => {
     context.beginPath();
     context.moveTo(92, 226 * scaleY);
     context.lineTo(width - 92, 226 * scaleY);
@@ -156,18 +165,14 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   let currentY = 278 * scaleY;
 
   for (const [label, value] of lines) {
-    withAlpha(context, 0.92, () => {
-      context.fillStyle = '#87867f';
-      context.fillText(label, 102, currentY);
-    });
+    context.fillStyle = blendHexColor('#6b6a64', receiptPaper, 0.92);
+    context.fillText(label, 102, currentY);
     context.textAlign = 'right';
-    withAlpha(context, 0.88, () => {
-      context.fillStyle = '#141413';
-      context.fillText(value || '--', width - 102, currentY);
-    });
+    context.fillStyle = blendHexColor('#141413', receiptPaper, 0.88);
+    context.fillText(value || '--', width - 102, currentY);
     context.textAlign = 'left';
     context.lineWidth = 1;
-    strokeWithAlpha(context, '#e0ddd2', 0.9, () => {
+    strokeBlend(context, ruleColor, receiptPaper, 1, () => {
       context.beginPath();
       context.moveTo(100, currentY + 18 * scaleY);
       context.lineTo(width - 100, currentY + 18 * scaleY);
@@ -180,9 +185,9 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   const qrX = (width - qrSize) / 2;
   const qrY = 540 * scaleY;
 
-  fillRectWithAlpha(context, '#faf9f5', 0.96, qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
+  fillRectBlend(context, receiptBase, receiptPaper, 0.96, qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
   context.lineWidth = 2;
-  strokeWithAlpha(context, '#e8e5da', 0.96, () => {
+  strokeBlend(context, borderColor, receiptPaper, 1, () => {
     context.strokeRect(qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
   });
 
@@ -191,7 +196,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
 
   context.setLineDash([12, 10]);
   context.lineWidth = 3;
-  strokeWithAlpha(context, '#e0ddd2', 0.9, () => {
+  strokeBlend(context, ruleColor, receiptPaper, 1, () => {
     context.beginPath();
     context.moveTo(92, qrY + qrSize + 104 * scaleY);
     context.lineTo(width - 92, qrY + qrSize + 104 * scaleY);
