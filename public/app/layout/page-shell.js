@@ -3,9 +3,7 @@ const FOOTER_HTML = `
     <img src="assets/images/ccc-small.webp" class="site-footer__logo" alt="CCC">
     <div class="site-footer__copy">
       <p>
-        This software is open-sourced under the
-        <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>, with the source code available on
-        <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>.
+        本项目以<a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>开源，源代码见<a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>。
       </p>
     </div>
   </footer>

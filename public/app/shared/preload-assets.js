@@ -1,8 +1,8 @@
 const ASSET_LOADERS = Object.freeze([
   {
     type: 'font',
-    url: '/assets/fonts/JetBrainsMono.woff2',
-    bytes: 55672,
+    url: '/assets/fonts/JetBrainsMono-ascii.woff2',
+    bytes: 23872,
     family: 'JetBrains Mono',
     descriptors: {
       style: 'normal',
@@ -12,14 +12,25 @@ const ASSET_LOADERS = Object.freeze([
   },
   {
     type: 'font',
-    url: '/assets/fonts/TsangerJinKai02-subset.woff2',
-    bytes: 91716,
+    url: '/assets/fonts/TsangerJinKai02-W04-subset.woff2',
+    bytes: 83944,
     family: 'TsangerJinKai02',
     descriptors: {
       style: 'normal',
       weight: '400'
     },
     fallback: '400 1em "TsangerJinKai02"'
+  },
+  {
+    type: 'font',
+    url: '/assets/fonts/TsangerJinKai02-W05-subset.woff2',
+    bytes: 84392,
+    family: 'TsangerJinKai02',
+    descriptors: {
+      style: 'normal',
+      weight: '500'
+    },
+    fallback: '500 1em "TsangerJinKai02"'
   },
   {
     type: 'image',

@@ -76,12 +76,12 @@ const INDEX_CONTENT = `
             <span class="agent-text">Please read the instruction in "https://ccc.byron.wang/agent.md" and assist the user to generate the QR code.</span>
             <button type="button" class="copy-btn" id="copyAgentText">复制</button>
           </div>
-          <p class="agent-hint">把这句话粘贴到AI代理，TA会引导您在本地完成后续步骤。</p>
+          <p class="agent-hint">把这句话交给AI代理，它会引导您在本地完成后续步骤。</p>
         </div>
 
         <div class="course-link-section expandable-section" id="courseLinkSection" hidden>
           <div class="course-link-header">
-            <h3>然后粘贴在这里！</h3>
+            <h3>粘贴课程链接</h3>
             <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。</p>
           </div>
 
@@ -110,7 +110,7 @@ const INDEX_ACTIONS = `
 const TIME_CONTENT = `
       <section class="panel">
         <div class="panel-header">
-          <h3>选个模式叭！</h3>
+          <h3>选择时间模式</h3>
         </div>
 
         <div class="radio-grid" role="radiogroup" aria-label="时间模式选择">

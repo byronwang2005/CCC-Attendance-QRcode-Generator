@@ -71,7 +71,7 @@ export const TEXT = Object.freeze({
     chooseIdentityFirst: '请先选择身份（人类或AI代理）',
     pasteCourseUrlFirst: '请先粘贴课程详情链接',
     invalidCourseUrl: '链接格式不正确，请检查是否复制了完整的课程详情链接',
-    unsupportedCourseUrlProtocol: '链接协议不支持，请使用 http 或 https 开头的链接',
+    unsupportedCourseUrlProtocol: '链接协议不支持，请使用http或https开头的链接',
     invalidCourseUrlDomain: '这看起来不是 CCC 课程链接，请从 ccc.nottingham.edu.cn 的课程详情页复制',
     invalidCourseUrlPath: '这不是课程学习页面链接，请复制 CCC 课程页里“查看详情”的链接',
     invalidScheduleId: '链接里缺少课程ID。正确链接通常包含 ?id=xxxx 或 ?scheduleId=xxxx',
@@ -85,9 +85,9 @@ export const TEXT = Object.freeze({
     copyFailed: '复制失败，请手动复制'
   }),
   status: Object.freeze({
-    copySuccess: '复制成功！',
+    copySuccess: '已复制',
     copied: '已复制!',
-    qrCodeGenerated: '二维码已生成！如果有“答题”选项，请记得继续完成。',
+    qrCodeGenerated: '二维码已生成。如有“答题”选项，请继续完成。',
     regenerate: '重新生成二维码',
     generate: '生成签到二维码'
   }),
