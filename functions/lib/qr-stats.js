@@ -112,7 +112,18 @@ const buildHourlySeries = (rows, hours) => {
   });
 };
 
-const chartFontFamily = "Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif";
+const chartFontFamily = "'TsangerJinKai02', 'Source Han Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'STSong', Georgia, serif";
+const chartColors = Object.freeze({
+  brand: '#1B365D',
+  brandFill: '#D0DCE9',
+  parchment: '#f5f4ed',
+  ivory: '#faf9f5',
+  nearBlack: '#141413',
+  olive: '#504e49',
+  stone: '#6b6a64',
+  border: '#e8e6dc',
+  borderSoft: '#e5e3d8'
+});
 
 export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
   const width = 520;
@@ -151,26 +162,26 @@ export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
   <desc id="desc">${escapeXml(statusText)}</desc>
   <defs>
     <linearGradient id="hourlyFill" x1="0" y1="${padding.top}" x2="0" y2="${padding.top + plotHeight}" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0284c7" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#0284c7" stop-opacity="0"/>
+      <stop offset="0" stop-color="${chartColors.brandFill}"/>
+      <stop offset="1" stop-color="${chartColors.parchment}"/>
     </linearGradient>
   </defs>
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
-  <text x="${padding.left}" y="25" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">二维码生成趋势</text>
-  <text x="${padding.left}" y="45" fill="#64748b" font-family="${chartFontFamily}" font-size="11">${escapeXml(`最近 ${hours} 小时 · UTC+8`)}</text>
-  <text x="${width - padding.right}" y="34" text-anchor="end" fill="#0369a1" font-family="${chartFontFamily}" font-size="12" font-weight="700">${escapeXml(summaryText)}</text>
-  <g stroke="#eef2f7" stroke-width="1">
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="${chartColors.ivory}" stroke="${chartColors.border}"/>
+  <text x="${padding.left}" y="25" fill="${chartColors.nearBlack}" font-family="${chartFontFamily}" font-size="16" font-weight="500">二维码生成趋势</text>
+  <text x="${padding.left}" y="45" fill="${chartColors.stone}" font-family="${chartFontFamily}" font-size="11">${escapeXml(`最近 ${hours} 小时 · UTC+8`)}</text>
+  <text x="${width - padding.right}" y="34" text-anchor="end" fill="${chartColors.brand}" font-family="${chartFontFamily}" font-size="12" font-weight="500">${escapeXml(summaryText)}</text>
+  <g stroke="${chartColors.borderSoft}" stroke-width="1">
     ${yTicks.map(tick => `<line x1="${padding.left}" y1="${yScale(tick).toFixed(2)}" x2="${padding.left + plotWidth}" y2="${yScale(tick).toFixed(2)}"/>`).join('\n    ')}
   </g>
-  <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
-  <line x1="${padding.left}" y1="${padding.top + plotHeight}" x2="${padding.left + plotWidth}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
-  <g fill="#64748b" font-family="${chartFontFamily}" font-size="10">
+  <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + plotHeight}" stroke="${chartColors.border}" stroke-width="1"/>
+  <line x1="${padding.left}" y1="${padding.top + plotHeight}" x2="${padding.left + plotWidth}" y2="${padding.top + plotHeight}" stroke="${chartColors.border}" stroke-width="1"/>
+  <g fill="${chartColors.stone}" font-family="${chartFontFamily}" font-size="10">
     ${yTicks.map(tick => `<text x="${padding.left - 10}" y="${(yScale(tick) + 4).toFixed(2)}" text-anchor="end">${tick}</text>`).join('\n    ')}
     ${xTicks.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 18}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
   </g>
   <path d="${areaPath}" fill="url(#hourlyFill)"/>
-  <path d="${path}" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <g fill="#ffffff" stroke="#0284c7" stroke-width="2">
+  <path d="${path}" fill="none" stroke="${chartColors.brand}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="${chartColors.ivory}" stroke="${chartColors.brand}" stroke-width="2">
     ${markerPoints.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="3"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
   </g>
 </svg>`;
@@ -241,26 +252,26 @@ export const renderQrCumulativeStatsSvg = ({ rows, configured }) => {
   <desc id="desc">${escapeXml(statusText)}</desc>
   <defs>
     <linearGradient id="totalFill" x1="0" y1="${padding.top}" x2="0" y2="${padding.top + plotHeight}" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#0f766e" stop-opacity="0.18"/>
-      <stop offset="1" stop-color="#0f766e" stop-opacity="0"/>
+      <stop offset="0" stop-color="${chartColors.brandFill}"/>
+      <stop offset="1" stop-color="${chartColors.parchment}"/>
     </linearGradient>
   </defs>
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
-  <text x="${padding.left}" y="25" fill="#0f172a" font-family="${chartFontFamily}" font-size="16" font-weight="700">历史累计生成总量</text>
-  <text x="${padding.left}" y="45" fill="#64748b" font-family="${chartFontFamily}" font-size="11">自 2026-04-28 起</text>
-  <text x="${width - padding.right}" y="34" text-anchor="end" fill="#0f766e" font-family="${chartFontFamily}" font-size="12" font-weight="700">${escapeXml(summaryText)}</text>
-  <g stroke="#eef2f7" stroke-width="1">
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="${chartColors.ivory}" stroke="${chartColors.border}"/>
+  <text x="${padding.left}" y="25" fill="${chartColors.nearBlack}" font-family="${chartFontFamily}" font-size="16" font-weight="500">历史累计生成总量</text>
+  <text x="${padding.left}" y="45" fill="${chartColors.stone}" font-family="${chartFontFamily}" font-size="11">自 2026-04-28 起</text>
+  <text x="${width - padding.right}" y="34" text-anchor="end" fill="${chartColors.brand}" font-family="${chartFontFamily}" font-size="12" font-weight="500">${escapeXml(summaryText)}</text>
+  <g stroke="${chartColors.borderSoft}" stroke-width="1">
     ${yTicks.map(tick => `<line x1="${padding.left}" y1="${yScale(tick).toFixed(2)}" x2="${padding.left + plotWidth}" y2="${yScale(tick).toFixed(2)}"/>`).join('\n    ')}
   </g>
-  <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
-  <line x1="${padding.left}" y1="${padding.top + plotHeight}" x2="${padding.left + plotWidth}" y2="${padding.top + plotHeight}" stroke="#e5e7eb" stroke-width="1"/>
-  <g fill="#64748b" font-family="${chartFontFamily}" font-size="10">
+  <line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${padding.top + plotHeight}" stroke="${chartColors.border}" stroke-width="1"/>
+  <line x1="${padding.left}" y1="${padding.top + plotHeight}" x2="${padding.left + plotWidth}" y2="${padding.top + plotHeight}" stroke="${chartColors.border}" stroke-width="1"/>
+  <g fill="${chartColors.stone}" font-family="${chartFontFamily}" font-size="10">
     ${yTicks.map(tick => `<text x="${padding.left - 10}" y="${(yScale(tick) + 4).toFixed(2)}" text-anchor="end">${tick}</text>`).join('\n    ')}
     ${xTickIndexes.map(index => `<text x="${points[index].x.toFixed(2)}" y="${height - 18}" text-anchor="${index === 0 ? 'start' : index === series.length - 1 ? 'end' : 'middle'}">${escapeXml(points[index].label)}</text>`).join('\n    ')}
   </g>
   <path d="${areaPath}" fill="url(#totalFill)"/>
-  <path d="${path}" fill="none" stroke="#0f766e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <g fill="#ffffff" stroke="#0f766e" stroke-width="2">
+  <path d="${path}" fill="none" stroke="${chartColors.brand}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="${chartColors.ivory}" stroke="${chartColors.brand}" stroke-width="2">
     ${markerPoints.map(point => `<circle cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="3"><title>${escapeXml(`${point.label}：${point.count} 次`)}</title></circle>`).join('\n    ')}
   </g>
 </svg>`;
