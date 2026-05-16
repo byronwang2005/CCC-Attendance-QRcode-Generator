@@ -469,6 +469,15 @@ select:focus-visible {
   line-height: 1.5;
 }
 
+.panel-current-time {
+  margin: 8px 0 0;
+  color: var(--brand);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
 .panel-split {
   display: grid;
   gap: 12px;
@@ -898,7 +907,6 @@ input[type="number"] {
 .time-grid-shell {
   overflow-anchor: none;
   margin-top: 0;
-  padding: 37px 4px 4px;
 }
 
 .time-grid-shell[hidden] {
@@ -911,6 +919,7 @@ input[type="number"] {
   grid-template-columns: minmax(220px, 1.45fr) repeat(2, minmax(96px, 0.55fr));
   gap: 12px;
   margin-top: 0;
+  padding: 37px 4px 4px;
 }
 
 .time-grid::before {

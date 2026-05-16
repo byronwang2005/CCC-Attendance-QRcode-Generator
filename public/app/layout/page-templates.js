@@ -111,6 +111,7 @@ const TIME_CONTENT = `
       <section class="panel">
         <div class="panel-header">
           <h3>选择时间模式</h3>
+          <p class="panel-current-time" data-current-time></p>
         </div>
 
         <div class="radio-grid" role="radiogroup" aria-label="时间模式选择">

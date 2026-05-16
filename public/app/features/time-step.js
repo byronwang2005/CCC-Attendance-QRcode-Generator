@@ -28,6 +28,12 @@ const formatDateValue = (date) => [
   pad(date.getDate())
 ].join('-');
 
+const WEEKDAY_LABELS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+const formatDateLabel = (date) => `${formatDateValue(date)} ${WEEKDAY_LABELS[date.getDay()]}`;
+
+const formatCurrentTime = (date) => `${formatDateValue(date)} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
 const populateSelect = (element, start, end, padToTwoDigits = false) => {
   if (!element) {
     return;
@@ -54,13 +60,13 @@ const populateDateOptions = (dateElement, windowStart, windowEnd) => {
 
   while (formatDateValue(cursor) <= endDateValue) {
     const value = formatDateValue(cursor);
-    let label = value;
+    let label = formatDateLabel(cursor);
     if (value === formatDateValue(windowStart)) {
-      label = `${value} 今天`;
+      label = `${label}（今天）`;
     } else {
       const tomorrow = new Date(windowStart.getFullYear(), windowStart.getMonth(), windowStart.getDate() + 1);
       if (value === formatDateValue(tomorrow)) {
-        label = `${value} 明天`;
+        label = `${label}（明天）`;
       }
     }
     options.push({ value, label });
@@ -152,6 +158,7 @@ export const initTimePage = () => {
   const manualTime = document.getElementById('manualTime');
   const modeInputs = Array.from(document.querySelectorAll('input[name="mode"]'));
   const modeCards = Array.from(document.querySelectorAll('.choice-card'));
+  const currentTimeElements = Array.from(document.querySelectorAll('[data-current-time]'));
   const backBtn = document.getElementById('backBtn');
   const nextBtn = document.getElementById('nextBtn');
   const dateElement = document.getElementById('date');
@@ -161,6 +168,7 @@ export const initTimePage = () => {
   initStepNavigation(2);
   let modeTransitionId = 0;
   let modeScrollY = null;
+  const sectionTransitions = new WeakMap();
 
   if (linkPreview) {
     linkPreview.textContent = courseUrl;
@@ -175,10 +183,25 @@ export const initTimePage = () => {
   }
   syncTimeOptions(dateElement, hourElement, minuteElement, manualWindowStart, manualWindowEnd);
 
+  const updateCurrentTimeLabels = () => {
+    const label = `当前时间 ${formatCurrentTime(new Date())}`;
+    currentTimeElements.forEach((element) => {
+      element.textContent = label;
+    });
+  };
+
+  updateCurrentTimeLabels();
+  const currentTimeInterval = window.setInterval(updateCurrentTimeLabels, 1000);
+  window.addEventListener('beforeunload', () => {
+    window.clearInterval(currentTimeInterval);
+  }, { once: true });
+
   const transitionSection = (element, shouldShow, { animate = true } = {}) => {
     if (!element) {
       return Promise.resolve();
     }
+
+    sectionTransitions.get(element)?.cancel();
 
     if (!animate) {
       element.hidden = !shouldShow;
@@ -187,70 +210,122 @@ export const initTimePage = () => {
       return Promise.resolve();
     }
 
+    let timeoutId = 0;
+    let cleanup = () => {};
+    let resolveTransition = () => {};
+    const transition = {
+      cancel() {
+        window.clearTimeout(timeoutId);
+        cleanup();
+        if (sectionTransitions.get(element) === transition) {
+          sectionTransitions.delete(element);
+        }
+        resolveTransition();
+      }
+    };
+    const isCurrentTransition = () => sectionTransitions.get(element) === transition;
+    sectionTransitions.set(element, transition);
+
+    const completeTransition = (resolve) => {
+      if (!isCurrentTransition()) {
+        return;
+      }
+      window.clearTimeout(timeoutId);
+      cleanup();
+      sectionTransitions.delete(element);
+      resolve();
+    };
+
+    const getRenderedHeight = () => {
+      const styles = window.getComputedStyle(element);
+      const marginTop = Number.parseFloat(styles.marginTop) || 0;
+      const marginBottom = Number.parseFloat(styles.marginBottom) || 0;
+      return Math.max(element.scrollHeight, element.getBoundingClientRect().height) + marginTop + marginBottom;
+    };
+
     if (shouldShow) {
       if (!element.hidden && element.classList.contains('is-expanded')) {
         element.style.height = '';
+        sectionTransitions.delete(element);
         return Promise.resolve();
       }
 
       element.hidden = false;
+      const targetHeight = getRenderedHeight();
       element.style.height = '0px';
       element.classList.remove('is-expanded');
 
       return new Promise((resolve) => {
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            element.classList.add('is-expanded');
-            element.style.height = '';
-            const targetHeight = element.getBoundingClientRect().height;
-            element.style.height = '0px';
-            void element.offsetHeight;
-            element.style.height = `${targetHeight}px`;
-          });
+        resolveTransition = resolve;
 
-          const handleExpandEnd = (event) => {
-            if (event.propertyName !== 'height') {
+        const handleExpandEnd = (event) => {
+          if (event.target !== element || event.propertyName !== 'height') {
+            return;
+          }
+
+          element.style.height = '';
+          completeTransition(resolve);
+        };
+
+        cleanup = () => {
+          element.removeEventListener('transitionend', handleExpandEnd);
+        };
+        element.addEventListener('transitionend', handleExpandEnd);
+        timeoutId = window.setTimeout(() => {
+          element.style.height = '';
+          completeTransition(resolve);
+        }, 420);
+
+        window.requestAnimationFrame(() => {
+          if (!isCurrentTransition()) {
+            return;
+          }
+
+          window.requestAnimationFrame(() => {
+            if (!isCurrentTransition()) {
               return;
             }
 
-            element.style.height = '';
-            element.removeEventListener('transitionend', handleExpandEnd);
-            resolve();
-          };
-
-          element.addEventListener('transitionend', handleExpandEnd);
+            element.classList.add('is-expanded');
+            element.style.height = `${targetHeight}px`;
+          });
         });
       });
     }
 
     if (element.hidden) {
+      sectionTransitions.delete(element);
       return Promise.resolve();
     }
 
-    element.style.height = `${element.scrollHeight}px`;
+    element.style.height = '';
     element.classList.add('is-expanded');
+    const startHeight = getRenderedHeight();
+    element.style.height = `${startHeight}px`;
+    void element.offsetHeight;
 
     return new Promise((resolve) => {
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-          element.style.height = '0px';
-          element.classList.remove('is-expanded');
-        });
-      });
+      resolveTransition = resolve;
 
-      const handleCollapseEnd = (event) => {
-        if (event.propertyName !== 'height') {
+      window.requestAnimationFrame(() => {
+        if (!isCurrentTransition()) {
           return;
         }
 
-        element.hidden = true;
-        element.classList.remove('is-expanded');
-        element.style.height = '';
-        element.removeEventListener('transitionend', handleCollapseEnd);
-        resolve();
-      };
+        window.requestAnimationFrame(() => {
+          if (!isCurrentTransition()) {
+            return;
+          }
 
-      element.addEventListener('transitionend', handleCollapseEnd);
+          element.style.height = '0px';
+          element.classList.remove('is-expanded');
+          timeoutId = window.setTimeout(() => {
+            element.hidden = true;
+            element.style.height = '';
+            completeTransition(resolve);
+          }, 360);
+        });
+      });
     });
   };
 
