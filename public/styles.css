@@ -561,15 +561,15 @@ select:focus-visible {
 
 .guide-list {
   display: grid;
-  gap: 16px;
+  gap: 8px;
 }
 
 .guide-card {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
   align-items: start;
-  padding: 18px 0;
+  padding: 12px 0;
   border-top: 1px solid var(--border-soft);
 }
 
@@ -580,23 +580,22 @@ select:focus-visible {
 .guide-card-index {
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--border-warm);
   background: var(--parchment);
   color: var(--brand);
   font-family: var(--mono);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .guide-card-body h3 {
-  margin: 0 0 8px;
+  margin: 0 0 5px;
   color: var(--near-black);
-  font-family: var(--serif);
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.2;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .guide-card-body p {
@@ -1229,7 +1228,7 @@ input[type="number"] {
 
   .guide-card-body h3 {
     margin-bottom: 5px;
-    font-size: 21px;
+    font-size: 16px;
   }
 
   .guide-card-body p {
