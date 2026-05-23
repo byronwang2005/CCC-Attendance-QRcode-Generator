@@ -441,20 +441,22 @@ select:focus-visible {
 }
 
 .panel-header h2,
-.panel-header h3 {
+.panel-header h3,
+.course-link-header h3 {
   margin: 0;
   color: var(--near-black);
   font-family: var(--serif);
   font-weight: 500;
-  line-height: 1.16;
+  line-height: 1.18;
 }
 
 .panel-header h2 {
   font-size: 32px;
 }
 
-.panel-header h3 {
-  font-size: 24px;
+.panel-header h3,
+.course-link-header h3 {
+  font-size: 28px;
 }
 
 .panel-kicker {
@@ -648,17 +650,8 @@ select:focus-visible {
   margin-bottom: 12px;
 }
 
-.course-link-header h3 {
-  margin: 0 0 6px;
-  color: var(--near-black);
-  font-family: var(--serif);
-  font-size: 28px;
-  font-weight: 500;
-  line-height: 1.18;
-}
-
 .course-link-header p {
-  margin: 0;
+  margin: 6px 0 0;
   color: var(--olive);
 }
 
@@ -1154,8 +1147,9 @@ input[type="number"] {
     font-size: 26px;
   }
 
-  .panel-header h3 {
-    font-size: 24px;
+  .panel-header h3,
+  .course-link-header h3 {
+    font-size: 28px;
   }
 
   .page-shell {
