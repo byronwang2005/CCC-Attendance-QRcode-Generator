@@ -64,8 +64,28 @@ const INDEX_CONTENT = `
               <div class="guide-card-index">03</div>
               <div class="guide-card-body">
                 <h3>复制链接</h3>
-                <p>用手机浏览器（如Safari）打开<a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。</p>
-                <p>找到要签到的课程，长按“查看详情”，选择“复制链接”，再把完整链接粘贴到下方输入框。</p>
+                <p>用手机浏览器（如Safari）打开<a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>，不要用微信内置浏览器。找到要签到的课程，长按“查看详情”，选择“复制链接”。</p>
+              </div>
+            </article>
+
+            <article class="guide-card" role="listitem">
+              <div class="guide-card-index">04</div>
+              <div class="guide-card-body">
+                <h3>粘贴链接</h3>
+                <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。把完整链接粘贴到下方输入框。</p>
+
+                <div class="course-link-input-wrap">
+                  <input
+                    id="urlInput"
+                    type="text"
+                    inputmode="url"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    placeholder="https://ccc.nottingham.edu.cn/study/home/details?id="
+                    aria-label="课程详情链接输入框"
+                  />
+                </div>
               </div>
             </article>
           </div>
@@ -77,26 +97,6 @@ const INDEX_CONTENT = `
             <button type="button" class="copy-btn" id="copyAgentText">复制</button>
           </div>
           <p class="agent-hint">把这句话交给AI代理，它会引导您在本地完成后续步骤。</p>
-        </div>
-
-        <div class="course-link-section expandable-section" id="courseLinkSection" hidden>
-          <div class="course-link-header">
-            <h3>粘贴课程链接</h3>
-            <p>链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。</p>
-          </div>
-
-          <div class="course-link-input-wrap">
-            <input
-              id="urlInput"
-              type="text"
-              inputmode="url"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-              placeholder="https://ccc.nottingham.edu.cn/study/home/details?id="
-              aria-label="课程详情链接输入框"
-            />
-          </div>
         </div>
       </section>
     `;

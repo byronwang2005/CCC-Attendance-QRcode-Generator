@@ -17,7 +17,6 @@ export const initIndexPage = () => {
   const identityButtons = Array.from(document.querySelectorAll('.identity-btn'));
   const humanContent = document.getElementById('humanContent');
   const agentContent = document.getElementById('agentContent');
-  const courseLinkSection = document.getElementById('courseLinkSection');
   const urlInput = document.getElementById('urlInput');
   const nextBtn = document.getElementById('nextBtn');
   initStepNavigation(1);
@@ -96,11 +95,11 @@ export const initIndexPage = () => {
     });
   };
 
-  const getVisibleSections = () => [humanContent, agentContent, courseLinkSection].filter((section) => section && !section.hidden);
+  const getVisibleSections = () => [humanContent, agentContent].filter((section) => section && !section.hidden);
 
   const getTargetSections = (identity) => {
     if (identity === IDENTITIES.human) {
-      return [humanContent, courseLinkSection];
+      return [humanContent];
     }
 
     if (identity === IDENTITIES.agent) {
@@ -129,8 +128,7 @@ export const initIndexPage = () => {
     if (!animate) {
       await Promise.all([
         transitionSection(humanContent, targetSections.includes(humanContent), { animate: false }),
-        transitionSection(agentContent, targetSections.includes(agentContent), { animate: false }),
-        transitionSection(courseLinkSection, targetSections.includes(courseLinkSection), { animate: false })
+        transitionSection(agentContent, targetSections.includes(agentContent), { animate: false })
       ]);
       return;
     }
@@ -145,13 +143,11 @@ export const initIndexPage = () => {
       return;
     }
 
-    for (const section of targetSections) {
-      if (identityTransitionId !== transitionId) {
-        return;
-      }
-
-      await transitionSection(section, true, { animate: true });
+    if (identityTransitionId !== transitionId) {
+      return;
     }
+
+    await Promise.all(targetSections.map((section) => transitionSection(section, true, { animate: true })));
   };
 
   const setNextButtonDisabled = (isDisabled) => {

@@ -639,23 +639,9 @@ select:focus-visible {
   font-size: 14px;
 }
 
-.course-link-section {
-  margin-top: 4px;
-  padding-top: 22px;
-  border-top: 1px solid var(--border-soft);
-}
-
-.course-link-header {
-  margin-bottom: 12px;
-}
-
-.course-link-header p {
-  margin: 6px 0 0;
-  color: var(--olive);
-}
-
 .course-link-input-wrap {
   display: block;
+  margin-top: 12px;
   padding: 18px 20px;
   border: 1px solid var(--border-warm);
   border-left: 4px solid var(--brand);
