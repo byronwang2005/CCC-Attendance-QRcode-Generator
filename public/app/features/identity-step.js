@@ -9,6 +9,7 @@ import {
   validateCourseUrl
 } from '../shared/wizard.js';
 import { APP_PATHS, IDENTITIES, TEXT } from '../config/app-config.js';
+import { transitionExpandableSection } from '../shared/expandable-section.js';
 
 export const initIndexPage = () => {
   readPageMessage();
@@ -22,78 +23,6 @@ export const initIndexPage = () => {
   initStepNavigation(1);
   let selectedIdentity = '';
   let identityTransitionId = 0;
-
-  const transitionSection = (element, shouldShow, { animate = true } = {}) => {
-    if (!element) {
-      return Promise.resolve();
-    }
-
-    if (!animate) {
-      element.hidden = !shouldShow;
-      element.classList.toggle('is-expanded', shouldShow);
-      element.style.height = '';
-      return Promise.resolve();
-    }
-
-    if (shouldShow) {
-      if (!element.hidden && element.classList.contains('is-expanded')) {
-        element.style.height = '';
-        return Promise.resolve();
-      }
-
-      element.hidden = false;
-      element.style.height = '0px';
-      element.classList.remove('is-expanded');
-
-      return new Promise((resolve) => {
-        window.requestAnimationFrame(() => {
-          const targetHeight = element.scrollHeight;
-          element.style.height = `${targetHeight}px`;
-          element.classList.add('is-expanded');
-
-          const handleExpandEnd = (event) => {
-            if (event.propertyName !== 'height') {
-              return;
-            }
-
-            element.style.height = '';
-            element.removeEventListener('transitionend', handleExpandEnd);
-            resolve();
-          };
-
-          element.addEventListener('transitionend', handleExpandEnd);
-        });
-      });
-    }
-
-    if (element.hidden) {
-      return Promise.resolve();
-    }
-
-    element.style.height = `${element.scrollHeight}px`;
-    element.classList.add('is-expanded');
-
-    return new Promise((resolve) => {
-      window.requestAnimationFrame(() => {
-        element.style.height = '0px';
-        element.classList.remove('is-expanded');
-      });
-
-      const handleCollapseEnd = (event) => {
-        if (event.propertyName !== 'height') {
-          return;
-        }
-
-        element.hidden = true;
-        element.classList.remove('is-expanded');
-        element.style.height = '';
-        element.removeEventListener('transitionend', handleCollapseEnd);
-        resolve();
-      };
-
-      element.addEventListener('transitionend', handleCollapseEnd);
-    });
-  };
 
   const getVisibleSections = () => [humanContent, agentContent].filter((section) => section && !section.hidden);
 
@@ -127,8 +56,8 @@ export const initIndexPage = () => {
 
     if (!animate) {
       await Promise.all([
-        transitionSection(humanContent, targetSections.includes(humanContent), { animate: false }),
-        transitionSection(agentContent, targetSections.includes(agentContent), { animate: false })
+        transitionExpandableSection(humanContent, targetSections.includes(humanContent), { animate: false }),
+        transitionExpandableSection(agentContent, targetSections.includes(agentContent), { animate: false })
       ]);
       return;
     }
@@ -136,7 +65,7 @@ export const initIndexPage = () => {
     await Promise.all(
       visibleSections
         .filter((section) => !targetSections.includes(section))
-        .map((section) => transitionSection(section, false, { animate: true }))
+        .map((section) => transitionExpandableSection(section, false, { animate: true }))
     );
 
     if (identityTransitionId !== transitionId) {
@@ -147,7 +76,7 @@ export const initIndexPage = () => {
       return;
     }
 
-    await Promise.all(targetSections.map((section) => transitionSection(section, true, { animate: true })));
+    await Promise.all(targetSections.map((section) => transitionExpandableSection(section, true, { animate: true })));
   };
 
   const setNextButtonDisabled = (isDisabled) => {

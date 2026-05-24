@@ -550,7 +550,6 @@ select:focus-visible {
   overflow: clip;
   opacity: 0;
   transform: translateY(-8px);
-  transition: height 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: height, opacity, transform;
 }
 
