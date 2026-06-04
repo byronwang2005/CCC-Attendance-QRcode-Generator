@@ -727,7 +727,9 @@ select:focus-visible {
 }
 
 .button-secondary {
+  border-color: var(--ring-warm);
   background: var(--warm-sand);
+  color: var(--dark-warm);
 }
 
 .button-primary:disabled,
@@ -735,9 +737,9 @@ select:focus-visible {
 .button-secondary:disabled,
 .copy-btn:disabled {
   cursor: not-allowed;
-  border-color: var(--border-warm);
-  background: var(--ivory);
-  color: var(--stone);
+  border-color: var(--border-soft);
+  background: color-mix(in srgb, var(--ivory) 72%, var(--parchment));
+  color: var(--warm-silver);
   opacity: 1;
   transform: none;
 }
