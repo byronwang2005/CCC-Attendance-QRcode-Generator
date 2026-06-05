@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/assets/images/ccc.webp" alt="CCC" width="120" />
+  <img src="public/assets/images/ccc.webp" alt="CCC" width="120" height="103" style="object-fit: contain;" />
   <h1>CCC Attendance</h1>
   <p><b>一个签到码，三步搞定</b></p>
   <a href="https://ccc.byron.wang"><img src="https://img.shields.io/website?url=https%3A%2F%2Fccc.byron.wang&label=site&style=flat-square" alt="Website"></a>

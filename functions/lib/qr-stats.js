@@ -124,6 +124,8 @@ const chartColors = Object.freeze({
   border: '#e8e6dc',
   borderSoft: '#e5e3d8'
 });
+const smallLogoHref = 'https://ccc.byron.wang/assets/images/ccc-small.webp';
+const renderSmallLogo = () => `<image href="${smallLogoHref}" xlink:href="${smallLogoHref}" x="14" y="11" width="24" height="21" preserveAspectRatio="xMidYMid meet"/>`;
 
 export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
   const width = 520;
@@ -157,7 +159,7 @@ export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
   const markerPoints = points.filter(point => point.count > 0);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
   <title id="title">CCC Attendance 二维码生成趋势</title>
   <desc id="desc">${escapeXml(statusText)}</desc>
   <defs>
@@ -166,7 +168,8 @@ export const renderQrStatsSvg = ({ rows, configured, hours = 24 }) => {
       <stop offset="1" stop-color="${chartColors.parchment}"/>
     </linearGradient>
   </defs>
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="${chartColors.ivory}" stroke="${chartColors.border}"/>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" fill="${chartColors.ivory}" stroke="${chartColors.border}"/>
+  ${renderSmallLogo()}
   <text x="${padding.left}" y="25" fill="${chartColors.nearBlack}" font-family="${chartFontFamily}" font-size="16" font-weight="500">二维码生成趋势</text>
   <text x="${padding.left}" y="45" fill="${chartColors.stone}" font-family="${chartFontFamily}" font-size="11">${escapeXml(`最近 ${hours} 小时 · UTC+8`)}</text>
   <text x="${width - padding.right}" y="34" text-anchor="end" fill="${chartColors.brand}" font-family="${chartFontFamily}" font-size="12" font-weight="500">${escapeXml(summaryText)}</text>
@@ -247,7 +250,7 @@ export const renderQrCumulativeStatsSvg = ({ rows, configured }) => {
   const markerPoints = points.filter((point, index) => index === 0 || index === points.length - 1 || (series.length <= 18 && point.count > 0));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title desc">
   <title id="title">CCC Attendance 历史累计生成总量</title>
   <desc id="desc">${escapeXml(statusText)}</desc>
   <defs>
@@ -256,7 +259,8 @@ export const renderQrCumulativeStatsSvg = ({ rows, configured }) => {
       <stop offset="1" stop-color="${chartColors.parchment}"/>
     </linearGradient>
   </defs>
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="8" fill="${chartColors.ivory}" stroke="${chartColors.border}"/>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" fill="${chartColors.ivory}" stroke="${chartColors.border}"/>
+  ${renderSmallLogo()}
   <text x="${padding.left}" y="25" fill="${chartColors.nearBlack}" font-family="${chartFontFamily}" font-size="16" font-weight="500">历史累计生成总量</text>
   <text x="${padding.left}" y="45" fill="${chartColors.stone}" font-family="${chartFontFamily}" font-size="11">自 2026-04-28 起</text>
   <text x="${width - padding.right}" y="34" text-anchor="end" fill="${chartColors.brand}" font-family="${chartFontFamily}" font-size="12" font-weight="500">${escapeXml(summaryText)}</text>
