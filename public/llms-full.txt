@@ -9,7 +9,6 @@ The project helps a user turn a CCC course detail link into an attendance QR cod
 ## Identity
 
 - Name: CCC Attendance
-- Alternate names: UNNC CCC 签到二维码生成工具, CCC QR code attendance generator
 - Website: https://ccc.byron.wang/
 - Repository: https://github.com/byronwang2005/CCC-Attendance
 - License: MIT
@@ -141,8 +140,8 @@ Yes. The intended agent workflow is documented in `/agent.md`. The agent may hel
 
 ## Structured Search Terms
 
-- Chinese: 宁波诺丁汉大学, 中国文化课, CCC 签到, CCC 二维码, 签到二维码生成器, UNNC 中国文化课签到
-- English: UNNC CCC, CCC Attendance, University of Nottingham Ningbo China, attendance QR code, QR code generator
+- Chinese: CCC Attendance, CCC, CCC 签到, 中国文化课, UNNC, 宁波诺丁汉大学, University of Nottingham Ningbo China
+- English: CCC Attendance, CCC, UNNC, University of Nottingham Ningbo China
 - Developer: Cloudflare Pages, Cloudflare Functions, JavaScript, QR PNG API, open-source education utility
 
 ## Safety And Compliance

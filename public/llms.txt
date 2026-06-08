@@ -1,6 +1,6 @@
 # CCC Attendance
 
-> UNNC 中国文化课（CCC）签到二维码生成工具。面向宁波诺丁汉大学中国文化课学生，帮助用户根据课程详情链接生成可扫码的签到二维码。
+> CCC Attendance是一款实用的工具。
 
 CCC Attendance is an open-source web tool for generating QR codes from UNNC CCC course detail links. It is designed for legitimate personal use, troubleshooting, and AI-assisted guidance.
 
@@ -51,4 +51,4 @@ CCC Attendance is an open-source web tool for generating QR codes from UNNC CCC 
 
 ## Search Keywords
 
-CCC Attendance, UNNC CCC, 宁波诺丁汉大学, 中国文化课, CCC 签到, 签到二维码, 二维码生成器, University of Nottingham Ningbo China, QR code attendance.
+CCC Attendance, CCC, CCC 签到, 中国文化课, UNNC, 宁波诺丁汉大学, University of Nottingham Ningbo China

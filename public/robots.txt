@@ -35,12 +35,12 @@ User-agent: Applebot
 Allow: /
 
 User-agent: GPTBot
-Disallow: /
+Allow: /
 
 User-agent: ClaudeBot
-Disallow: /
+Allow: /
 
 User-agent: Google-Extended
-Disallow: /
+Allow: /
 
 Sitemap: https://ccc.byron.wang/sitemap.xml
