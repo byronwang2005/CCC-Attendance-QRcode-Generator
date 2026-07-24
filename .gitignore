@@ -27,3 +27,6 @@ __pycache__/
 
 # Coverage output
 coverage/
+
+# Production build
+dist/

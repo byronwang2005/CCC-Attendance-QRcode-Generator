@@ -1,7 +1,7 @@
 name = "ccc-attendance"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "./public"
+pages_build_output_dir = "./dist"
 
 [[d1_databases]]
 binding = "QR_STATS_DB"

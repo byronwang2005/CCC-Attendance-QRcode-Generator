@@ -1,4 +1,5 @@
-const THREE_MODULE_URL = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import * as THREE from 'three';
+
 const FIXED_TIME_STEP = 1 / 60;
 const RECEIPT_WIDTH = 1.18;
 const RECEIPT_HEIGHT = 1.96;
@@ -31,8 +32,6 @@ const PIN_TETHER_RADIUS_Y = 0.138;
 const PIN_SURFACE_BULGE = 0.018;
 const PIN_SURFACE_DENT = 0.011;
 const RECEIPT_MONO_FONT = '"JetBrains Mono"';
-
-let threeModulePromise;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
@@ -68,12 +67,7 @@ const strokeBlend = (context, color, baseColor, alpha, draw) => {
   draw();
 };
 
-const loadThreeModule = async () => {
-  if (!threeModulePromise) {
-    threeModulePromise = import(THREE_MODULE_URL);
-  }
-  return threeModulePromise;
-};
+const loadThreeModule = async () => THREE;
 
 const loadImage = (src) => new Promise((resolve, reject) => {
   const image = new Image();
