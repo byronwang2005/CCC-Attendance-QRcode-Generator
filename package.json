@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "lucide-static": "^1.26.0",
-    "motion": "^12.42.2",
     "qr-image": "^3.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

@@ -577,7 +577,7 @@ select:focus-visible {
   background: color-mix(in srgb, var(--ivory) 68%, var(--parchment));
 }
 
-.identity-content[hidden] {
+.expandable-section[hidden] {
   display: none;
 }
 

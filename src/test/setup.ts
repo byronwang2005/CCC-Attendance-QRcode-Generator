@@ -21,3 +21,9 @@ Object.defineProperty(navigator, 'clipboard', {
     writeText: vi.fn().mockResolvedValue(undefined)
   }
 });
+
+Object.defineProperty(window, 'scrollTo', {
+  configurable: true,
+  writable: true,
+  value: vi.fn()
+});

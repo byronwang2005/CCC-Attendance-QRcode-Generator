@@ -5,13 +5,14 @@ import {
   lazy,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
   useState
 } from 'react';
-import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import { AGENT_PROMPT, APP_PATHS, TEXT, TIME_LIMITS } from './config';
+import { transitionExpandableSection } from './lib/expandable-section';
 import {
   buildTimestamp,
   clearState,
@@ -262,9 +263,13 @@ function IdentityStep({
   update: (patch: StatePatch) => void;
   showToast: (message: string) => void;
 }) {
-  const reduceMotion = useReducedMotion();
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const humanContentRef = useRef<HTMLDivElement>(null);
+  const agentContentRef = useRef<HTMLDivElement>(null);
+  const initialIdentity = useRef(state.identity).current;
+  const identityTransitionId = useRef(0);
+  const identityTransitionReady = useRef(false);
 
   const selectIdentity = (identity: Identity) => update({ identity });
   const copyAgentPrompt = async () => {
@@ -294,6 +299,38 @@ function IdentityStep({
     navigate(APP_PATHS.time);
   };
 
+  useLayoutEffect(() => {
+    const humanContent = humanContentRef.current;
+    const agentContent = agentContentRef.current;
+    const sections = [humanContent, agentContent].filter((section): section is HTMLDivElement => Boolean(section));
+    const targetSections = state.identity === 'human'
+      ? [humanContent].filter((section): section is HTMLDivElement => Boolean(section))
+      : state.identity === 'agent'
+        ? [agentContent].filter((section): section is HTMLDivElement => Boolean(section))
+        : [];
+    const transitionId = identityTransitionId.current + 1;
+    identityTransitionId.current = transitionId;
+
+    if (!identityTransitionReady.current) {
+      identityTransitionReady.current = true;
+      void Promise.all(sections.map((section) => (
+        transitionExpandableSection(section, targetSections.includes(section), { animate: false })
+      )));
+      return;
+    }
+
+    const visibleSections = sections.filter((section) => !section.hidden);
+    void (async () => {
+      await Promise.all(
+        visibleSections
+          .filter((section) => !targetSections.includes(section))
+          .map((section) => transitionExpandableSection(section, false))
+      );
+      if (identityTransitionId.current !== transitionId) return;
+      await Promise.all(targetSections.map((section) => transitionExpandableSection(section, true)));
+    })();
+  }, [state.identity]);
+
   return (
     <>
       <section className="panel identity-panel">
@@ -319,72 +356,62 @@ function IdentityStep({
           </div>
         </div>
 
-        <AnimatePresence mode="wait" initial={false}>
-          {state.identity === 'human' && (
-            <motion.div
-              key="human"
-              className="identity-content"
-              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
+        <div
+          ref={humanContentRef}
+          className={`identity-content expandable-section${initialIdentity === 'human' ? ' is-expanded' : ''}`}
+          hidden={initialIdentity !== 'human'}
+        >
+          <div className="guide-list" role="list" aria-label="人工签到指引">
+            <Guide index="01" title="卡准时间">
+              最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。
+            </Guide>
+            <Guide index="02" title="连接网络">
+              网络环境需处于<code>eduroam</code>、<code>UNNC-Living</code>或<code>UNNC_IPSec VPN</code>等校园网络之一。
+            </Guide>
+            <Guide index="03" title="复制链接">
+              用手机浏览器（如Safari）打开
+              <a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>
+              ，不要用微信内置浏览器。找到要签到的课程，长按“查看详情”，选择“复制链接”。
+            </Guide>
+            <Guide
+              index="04"
+              title="粘贴链接"
+              extra={(
+                <div className="course-link-input-wrap">
+                  <input
+                    ref={inputRef}
+                    id="urlInput"
+                    type="text"
+                    inputMode="url"
+                    autoComplete="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    placeholder="https://ccc.nottingham.edu.cn/study/home/details?id="
+                    aria-label="课程详情链接输入框"
+                    value={state.url}
+                    onChange={(event) => update({ url: event.target.value.trim() })}
+                  />
+                </div>
+              )}
             >
-              <div className="guide-list" role="list" aria-label="人工签到指引">
-                <Guide index="01" title="卡准时间">
-                  最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。
-                </Guide>
-                <Guide index="02" title="连接网络">
-                  网络环境需处于<code>eduroam</code>、<code>UNNC-Living</code>或<code>UNNC_IPSec VPN</code>等校园网络之一。
-                </Guide>
-                <Guide index="03" title="复制链接">
-                  用手机浏览器（如Safari）打开
-                  <a href="https://ccc.nottingham.edu.cn/study/" target="_blank" rel="noopener noreferrer">CCC课程页面</a>
-                  ，不要用微信内置浏览器。找到要签到的课程，长按“查看详情”，选择“复制链接”。
-                </Guide>
-                <Guide
-                  index="04"
-                  title="粘贴链接"
-                  extra={(
-                    <div className="course-link-input-wrap">
-                      <input
-                        ref={inputRef}
-                        id="urlInput"
-                        type="text"
-                        inputMode="url"
-                        autoComplete="off"
-                        autoCapitalize="off"
-                        spellCheck={false}
-                        placeholder="https://ccc.nottingham.edu.cn/study/home/details?id="
-                        aria-label="课程详情链接输入框"
-                        value={state.url}
-                        onChange={(event) => update({ url: event.target.value.trim() })}
-                      />
-                    </div>
-                  )}
-                >
-                  链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。把完整链接粘贴到下方输入框。
-                </Guide>
-              </div>
-            </motion.div>
-          )}
-          {state.identity === 'agent' && (
-            <motion.div
-              key="agent"
-              className="identity-content agent-content"
-              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-            >
-              <div className="agent-command">
-                <span className="agent-text">{AGENT_PROMPT}</span>
-                <button type="button" className="copy-btn" disabled={copied} onClick={copyAgentPrompt}>
-                  <Icon name={copied ? 'check' : 'copy'} />
-                  <span>{copied ? '已复制!' : '复制'}</span>
-                </button>
-              </div>
-              <p className="agent-hint">把这句话交给AI代理，它会引导您在本地完成后续步骤。</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。把完整链接粘贴到下方输入框。
+            </Guide>
+          </div>
+        </div>
+        <div
+          ref={agentContentRef}
+          className={`identity-content agent-content expandable-section${initialIdentity === 'agent' ? ' is-expanded' : ''}`}
+          hidden={initialIdentity !== 'agent'}
+        >
+          <div className="agent-command">
+            <span className="agent-text">{AGENT_PROMPT}</span>
+            <button type="button" className="copy-btn" disabled={copied} onClick={copyAgentPrompt}>
+              <Icon name={copied ? 'check' : 'copy'} />
+              <span>{copied ? '已复制!' : '复制'}</span>
+            </button>
+          </div>
+          <p className="agent-hint">把这句话交给AI代理，它会引导您在本地完成后续步骤。</p>
+        </div>
       </section>
       <div className="actions actions-major">
         <button
@@ -446,9 +473,13 @@ function TimeStep({
   update: (patch: StatePatch) => void;
   showToast: (message: string) => void;
 }) {
-  const reduceMotion = useReducedMotion();
   const [now, setNow] = useState(new Date());
   const windowRange = useMemo(createSelectableWindow, []);
+  const manualTimeRef = useRef<HTMLDivElement>(null);
+  const initialTimeMode = useRef(state.timeMode).current;
+  const modeScrollY = useRef<number | null>(null);
+  const modeTransitionId = useRef(0);
+  const modeTransitionReady = useRef(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -519,6 +550,33 @@ function TimeStep({
       }
     }
     : { timeMode });
+  const captureModeScroll = () => {
+    modeScrollY.current = window.scrollY;
+  };
+
+  useLayoutEffect(() => {
+    const manualTime = manualTimeRef.current;
+    const transitionId = modeTransitionId.current + 1;
+    modeTransitionId.current = transitionId;
+
+    if (!modeTransitionReady.current) {
+      modeTransitionReady.current = true;
+      void transitionExpandableSection(manualTime, state.timeMode === 'manual', { animate: false });
+      return;
+    }
+
+    const preserveScrollY = modeScrollY.current ?? window.scrollY;
+    modeScrollY.current = null;
+    const restoreScrollPosition = () => {
+      window.scrollTo(window.scrollX, preserveScrollY);
+    };
+
+    restoreScrollPosition();
+    void transitionExpandableSection(manualTime, state.timeMode === 'manual').then(() => {
+      if (modeTransitionId.current === transitionId) restoreScrollPosition();
+    });
+  }, [state.timeMode]);
+
   const goNext = () => {
     try {
       buildTimestamp(state);
@@ -538,47 +596,42 @@ function TimeStep({
           <p className="panel-current-time">当前时间 {formatCurrentTime(now)}</p>
         </div>
         <div className="radio-grid" role="radiogroup" aria-label="时间模式选择">
-          <ChoiceCard selected={state.timeMode === 'auto'} value="auto" onSelect={setMode}>
+          <ChoiceCard selected={state.timeMode === 'auto'} value="auto" onSelect={setMode} onInteractionStart={captureModeScroll}>
             <strong>自动（推荐）</strong>
             <small>适合绝大多数情况。</small>
           </ChoiceCard>
-          <ChoiceCard selected={state.timeMode === 'manual'} value="manual" onSelect={setMode}>
+          <ChoiceCard selected={state.timeMode === 'manual'} value="manual" onSelect={setMode} onInteractionStart={captureModeScroll}>
             <strong>手动</strong>
             <small>自定义签到时间，通常用于提前准备二维码。</small>
           </ChoiceCard>
         </div>
-        <AnimatePresence initial={false}>
-          {state.timeMode === 'manual' && (
-            <motion.div
-              id="manualTime"
-              className="time-grid-shell"
-              initial={reduceMotion ? false : { opacity: 0, height: 0, y: -8 }}
-              animate={{ opacity: 1, height: 'auto', y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, height: 0, y: -6 }}
-            >
-              <div className="time-grid">
-                <div>
-                  <label htmlFor="date">日期</label>
-                  <select id="date" value={state.manualTime.date} onChange={(event) => updateManual({ date: event.target.value })}>
-                    {dateOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="hour">时</label>
-                  <select id="hour" value={String(selectedHour)} onChange={(event) => updateManual({ hour: event.target.value })}>
-                    {hourOptions.map((hour) => <option key={hour} value={hour}>{String(hour).padStart(2, '0')}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="minute">分</label>
-                  <select id="minute" value={String(selectedMinute)} onChange={(event) => updateManual({ minute: event.target.value })}>
-                    {minuteOptions.map((minute) => <option key={minute} value={minute}>{String(minute).padStart(2, '0')}</option>)}
-                  </select>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div
+          ref={manualTimeRef}
+          id="manualTime"
+          className={`time-grid-shell expandable-section${initialTimeMode === 'manual' ? ' is-expanded' : ''}`}
+          hidden={initialTimeMode !== 'manual'}
+        >
+          <div className="time-grid">
+            <div>
+              <label htmlFor="date">日期</label>
+              <select id="date" value={state.manualTime.date} onChange={(event) => updateManual({ date: event.target.value })}>
+                {dateOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="hour">时</label>
+              <select id="hour" value={String(selectedHour)} onChange={(event) => updateManual({ hour: event.target.value })}>
+                {hourOptions.map((hour) => <option key={hour} value={hour}>{String(hour).padStart(2, '0')}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="minute">分</label>
+              <select id="minute" value={String(selectedMinute)} onChange={(event) => updateManual({ minute: event.target.value })}>
+                {minuteOptions.map((minute) => <option key={minute} value={minute}>{String(minute).padStart(2, '0')}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
       </section>
       <div className="actions">
         <button type="button" className="button-secondary" onClick={() => {
@@ -601,15 +654,23 @@ function ChoiceCard({
   selected,
   value,
   onSelect,
+  onInteractionStart,
   children
 }: {
   selected: boolean;
   value: TimeMode;
   onSelect: (value: TimeMode) => void;
+  onInteractionStart: () => void;
   children: ReactNode;
 }) {
   return (
-    <label className={`choice-card ${selected ? 'is-selected' : ''}`}>
+    <label
+      className={`choice-card ${selected ? 'is-selected' : ''}`}
+      onPointerDown={onInteractionStart}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') onInteractionStart();
+      }}
+    >
       <input type="radio" name="mode" value={value} checked={selected} onChange={() => onSelect(value)} />
       <span>{children}</span>
     </label>
@@ -749,13 +810,13 @@ export default function App() {
   if (!ready) return <BootLoader />;
 
   return (
-    <MotionConfig reducedMotion="user" transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}>
+    <>
       <PageShell currentStep={currentStep} onLocked={() => showToast(TEXT.errors.completeCurrentStepFirst)}>
         {currentStep === 1 && <IdentityStep state={state} update={update} showToast={showToast} />}
         {currentStep === 2 && <TimeStep state={state} update={update} showToast={showToast} />}
         {currentStep === 3 && <QrcodeStep state={state} showToast={showToast} />}
       </PageShell>
       <Toast toast={toast} onClose={() => setToast(null)} />
-    </MotionConfig>
+    </>
   );
 }
