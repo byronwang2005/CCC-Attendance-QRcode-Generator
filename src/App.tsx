@@ -522,7 +522,7 @@ function TimeStep({
   const windowRange = useMemo(createSelectableWindow, []);
   const manualTimeRef = useRef<HTMLDivElement>(null);
   const initialTimeMode = useRef(state.timeMode).current;
-  const modeScrollY = useRef<number | null>(null);
+  const modePanelScrollTop = useRef<number | null>(null);
   const modeTransitionId = useRef(0);
   const modeTransitionReady = useRef(false);
 
@@ -585,40 +585,56 @@ function TimeStep({
     update({ manualTime: next });
   };
 
-  const setMode = (timeMode: TimeMode) => update(timeMode === 'manual'
-    ? {
-      timeMode,
-      manualTime: {
-        date: state.manualTime.date,
-        hour: String(selectedHour),
-        minute: String(selectedMinute)
-      }
+  const setMode = (timeMode: TimeMode) => {
+    if (timeMode === 'manual' && state.timeMode !== 'manual') {
+      const panel = manualTimeRef.current?.closest<HTMLElement>('.time-panel');
+      modePanelScrollTop.current = panel?.scrollTop ?? 0;
     }
-    : { timeMode });
-  const captureModeScroll = () => {
-    modeScrollY.current = window.scrollY;
+    update(timeMode === 'manual'
+      ? {
+        timeMode,
+        manualTime: {
+          date: state.manualTime.date,
+          hour: String(selectedHour),
+          minute: String(selectedMinute)
+        }
+      }
+      : { timeMode });
   };
 
   useLayoutEffect(() => {
     const manualTime = manualTimeRef.current;
+    const panel = manualTime?.closest<HTMLElement>('.time-panel') ?? null;
     const transitionId = modeTransitionId.current + 1;
     modeTransitionId.current = transitionId;
+    const scrollPanelTo = (top: number) => {
+      if (!panel) return;
+      if (typeof panel.scrollTo === 'function') panel.scrollTo({ top });
+      else panel.scrollTop = top;
+    };
+    const revealManualControls = () => {
+      if (!manualTime || !panel) return;
+      const targetTop = Math.max(0, manualTime.offsetTop - 12);
+      const maximumTop = Math.max(0, panel.scrollHeight - panel.clientHeight);
+      scrollPanelTo(Math.min(targetTop, maximumTop));
+    };
 
     if (!modeTransitionReady.current) {
       modeTransitionReady.current = true;
-      void transitionExpandableSection(manualTime, state.timeMode === 'manual', { animate: false });
+      void transitionExpandableSection(manualTime, state.timeMode === 'manual', { animate: false }).then(() => {
+        if (state.timeMode === 'manual') revealManualControls();
+      });
       return;
     }
 
-    const preserveScrollY = modeScrollY.current ?? window.scrollY;
-    modeScrollY.current = null;
-    const restoreScrollPosition = () => {
-      window.scrollTo(window.scrollX, preserveScrollY);
-    };
-
-    restoreScrollPosition();
     void transitionExpandableSection(manualTime, state.timeMode === 'manual').then(() => {
-      if (modeTransitionId.current === transitionId) restoreScrollPosition();
+      if (modeTransitionId.current !== transitionId) return;
+      if (state.timeMode === 'manual') {
+        revealManualControls();
+        return;
+      }
+      scrollPanelTo(modePanelScrollTop.current ?? 0);
+      modePanelScrollTop.current = null;
     });
   }, [state.timeMode]);
 
@@ -641,11 +657,11 @@ function TimeStep({
           <p className="panel-current-time">当前时间 {formatCurrentTime(now)}</p>
         </div>
         <div className="radio-grid" role="radiogroup" aria-label="时间模式选择">
-          <ChoiceCard selected={state.timeMode === 'auto'} value="auto" onSelect={setMode} onInteractionStart={captureModeScroll}>
+          <ChoiceCard selected={state.timeMode === 'auto'} value="auto" onSelect={setMode}>
             <strong>自动（推荐）</strong>
             <small>适合绝大多数情况。</small>
           </ChoiceCard>
-          <ChoiceCard selected={state.timeMode === 'manual'} value="manual" onSelect={setMode} onInteractionStart={captureModeScroll}>
+          <ChoiceCard selected={state.timeMode === 'manual'} value="manual" onSelect={setMode}>
             <strong>手动</strong>
             <small>自定义签到时间，通常用于提前准备二维码。</small>
           </ChoiceCard>
@@ -699,23 +715,15 @@ function ChoiceCard({
   selected,
   value,
   onSelect,
-  onInteractionStart,
   children
 }: {
   selected: boolean;
   value: TimeMode;
   onSelect: (value: TimeMode) => void;
-  onInteractionStart: () => void;
   children: ReactNode;
 }) {
   return (
-    <label
-      className={`choice-card ${selected ? 'is-selected' : ''}`}
-      onPointerDown={onInteractionStart}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') onInteractionStart();
-      }}
-    >
+    <label className={`choice-card ${selected ? 'is-selected' : ''}`}>
       <input type="radio" name="mode" value={value} checked={selected} onChange={() => onSelect(value)} />
       <span>{children}</span>
     </label>

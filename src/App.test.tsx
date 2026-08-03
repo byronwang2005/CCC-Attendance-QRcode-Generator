@@ -159,6 +159,36 @@ describe('CCC Attendance first step', () => {
     expect(dateSelect).not.toBeVisible();
   });
 
+  it('reveals manual time controls inside the constrained task panel', async () => {
+    const user = userEvent.setup();
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=2');
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    const panel = document.querySelector<HTMLElement>('.time-panel');
+    const manualTime = document.getElementById('manualTime');
+    expect(panel).not.toBeNull();
+    expect(manualTime).not.toBeNull();
+    if (!panel || !manualTime) return;
+
+    Object.defineProperties(panel, {
+      clientHeight: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 500 },
+      scrollTop: { configurable: true, value: 24, writable: true }
+    });
+    Object.defineProperty(manualTime, 'offsetTop', { configurable: true, value: 360 });
+    const scrollTo = vi.fn();
+    panel.scrollTo = scrollTo;
+
+    await user.click(screen.getByText('手动', { selector: 'strong' }));
+    await waitFor(() => expect(scrollTo).toHaveBeenCalledWith({ top: 200 }));
+    expect(document.getElementById('date')).toBeVisible();
+
+    await user.click(screen.getByText('自动（推荐）', { selector: 'strong' }));
+    await waitFor(() => expect(scrollTo).toHaveBeenLastCalledWith({ top: 24 }));
+  });
+
   it('shows only the Dongqian Lake artwork on the first step', async () => {
     render(<App />);
 
