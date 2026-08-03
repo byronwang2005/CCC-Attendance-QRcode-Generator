@@ -10,6 +10,7 @@ node_modules/
 .wrangler/
 .trae/
 .shared/
+.codex/
 
 # Environment files
 .env
@@ -27,6 +28,15 @@ __pycache__/
 
 # Coverage output
 coverage/
+
+# Local design and browser QA
+/design-qa.md
+/design-qa/
+/playwright-report/
+/test-results/
+
+# TypeScript build cache
+*.tsbuildinfo
 
 # Production build
 dist/

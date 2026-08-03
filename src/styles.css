@@ -311,6 +311,7 @@ select:focus-visible {
 }
 
 .wizard-layout {
+  grid-area: main;
   display: grid;
   gap: var(--page-gap);
   min-width: 0;
@@ -319,17 +320,46 @@ select:focus-visible {
 .workflow-frame {
   display: grid;
   grid-template-columns: 244px minmax(0, 1fr);
-  gap: 42px;
+  grid-template-areas:
+    "steps main"
+    "art main";
+  column-gap: 42px;
+  row-gap: 24px;
   align-items: start;
 }
 
 .stepper {
+  grid-area: steps;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
   position: sticky;
   top: 28px;
   border-top: 1px solid var(--border-warm);
+}
+
+.step-artwork {
+  grid-area: art;
+  justify-self: center;
+  width: 180px;
+  margin: 0;
+  color: var(--stone);
+  text-align: center;
+}
+
+.step-artwork__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 599 / 1000;
+  object-fit: contain;
+}
+
+.step-artwork figcaption {
+  margin-top: 9px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
 }
 
 .step-card {
@@ -1145,7 +1175,17 @@ input[type="number"] {
 
   .workflow-frame {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "steps"
+      "main"
+      "art";
     gap: 24px;
+  }
+
+  .step-artwork {
+    justify-self: end;
+    width: 144px;
+    margin-right: 14px;
   }
 
   .stepper {
@@ -1230,6 +1270,11 @@ input[type="number"] {
 
   .workflow-frame {
     gap: 20px;
+  }
+
+  .step-artwork {
+    width: 120px;
+    margin-right: 20px;
   }
 
   .panel {

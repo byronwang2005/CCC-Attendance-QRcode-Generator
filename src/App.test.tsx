@@ -6,6 +6,18 @@ import { STORAGE_KEY } from './config';
 
 const originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
 
+const validWizardState = {
+  identity: 'human',
+  url: 'https://ccc.nottingham.edu.cn/study/home/details?id=1234',
+  timeMode: 'auto'
+};
+
+const expectSingleArtwork = async (caption: string, alt: string, src: string) => {
+  expect(await screen.findByRole('figure', { name: caption }, { timeout: 2000 })).toBeVisible();
+  expect(screen.getByRole('img', { name: alt })).toHaveAttribute('src', src);
+  expect(document.querySelectorAll('.step-artwork')).toHaveLength(1);
+};
+
 describe('CCC Attendance first step', () => {
   afterEach(() => {
     cleanup();
@@ -145,5 +157,40 @@ describe('CCC Attendance first step', () => {
 
     await user.click(screen.getByText('自动（推荐）', { selector: 'strong' }));
     expect(dateSelect).not.toBeVisible();
+  });
+
+  it('shows only the Dongqian Lake artwork on the first step', async () => {
+    render(<App />);
+
+    await expectSingleArtwork(
+      '宁波东钱湖',
+      '宁波东钱湖小普陀长堤纸本插图',
+      '/assets/images/steps/step-01-dongqian-lake.png'
+    );
+  });
+
+  it('shows only the West Lake artwork with three stone towers on the second step', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=2');
+    render(<App />);
+
+    await expectSingleArtwork(
+      '杭州西湖',
+      '杭州西湖三潭印月三座石塔纸本插图',
+      '/assets/images/steps/step-02-west-lake.png'
+    );
+  });
+
+  it('shows only the Nanhu artwork on the third step', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=3');
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
+    render(<App />);
+
+    await expectSingleArtwork(
+      '嘉兴南湖',
+      '嘉兴南湖红船与烟雨楼纸本插图',
+      '/assets/images/steps/step-03-nanhu.png'
+    );
   });
 });
