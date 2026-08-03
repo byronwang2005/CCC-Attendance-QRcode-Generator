@@ -76,22 +76,12 @@ npm run lint
 - 修改 UI 时，请同时检查 3 个步骤状态的视觉一致性。
 - 不要顺手重构无关文件，除非该问题会直接影响当前改动。
 
-## Commit Style
-
-请沿用当前仓库的 commit 风格：
+## Commit Style (Use English)
 
 - `feat: ...`
 - `fix: ...`
 - `chore: ...`
 - `refactor: ...`
-
-示例：
-
-- `feat: enhance frontend`
-- `fix: revise the logo size`
-- `chore: remove cursor glow effect`
-- `refactor: simplify the code structure`
-
 
 ## Pull Requests
 
