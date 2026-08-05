@@ -5,14 +5,13 @@ import {
   lazy,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
   useState
 } from 'react';
 import { AGENT_PROMPT, APP_PATHS, TEXT, TIME_LIMITS } from './config';
-import { transitionExpandableSection } from './lib/expandable-section';
+import { useExpandableSections } from './lib/use-expandable-sections';
 import {
   buildTimestamp,
   clearState,
@@ -313,8 +312,11 @@ function IdentityStep({
   const humanContentRef = useRef<HTMLDivElement>(null);
   const agentContentRef = useRef<HTMLDivElement>(null);
   const initialIdentity = useRef(state.identity).current;
-  const identityTransitionId = useRef(0);
-  const identityTransitionReady = useRef(false);
+  const identitySectionRefs = useRef({
+    human: humanContentRef,
+    agent: agentContentRef
+  }).current;
+  useExpandableSections(identitySectionRefs, state.identity || null);
 
   const selectIdentity = (identity: Identity) => update({ identity });
   const copyAgentPrompt = async () => {
@@ -343,38 +345,6 @@ function IdentityStep({
     persistState({ ...state, url: validation.normalizedUrl });
     navigate(APP_PATHS.time);
   };
-
-  useLayoutEffect(() => {
-    const humanContent = humanContentRef.current;
-    const agentContent = agentContentRef.current;
-    const sections = [humanContent, agentContent].filter((section): section is HTMLDivElement => Boolean(section));
-    const targetSections = state.identity === 'human'
-      ? [humanContent].filter((section): section is HTMLDivElement => Boolean(section))
-      : state.identity === 'agent'
-        ? [agentContent].filter((section): section is HTMLDivElement => Boolean(section))
-        : [];
-    const transitionId = identityTransitionId.current + 1;
-    identityTransitionId.current = transitionId;
-
-    if (!identityTransitionReady.current) {
-      identityTransitionReady.current = true;
-      void Promise.all(sections.map((section) => (
-        transitionExpandableSection(section, targetSections.includes(section), { animate: false })
-      )));
-      return;
-    }
-
-    const visibleSections = sections.filter((section) => !section.hidden);
-    void (async () => {
-      await Promise.all(
-        visibleSections
-          .filter((section) => !targetSections.includes(section))
-          .map((section) => transitionExpandableSection(section, false))
-      );
-      if (identityTransitionId.current !== transitionId) return;
-      await Promise.all(targetSections.map((section) => transitionExpandableSection(section, true)));
-    })();
-  }, [state.identity]);
 
   return (
     <>
@@ -522,9 +492,8 @@ function TimeStep({
   const windowRange = useMemo(createSelectableWindow, []);
   const manualTimeRef = useRef<HTMLDivElement>(null);
   const initialTimeMode = useRef(state.timeMode).current;
-  const modePanelScrollTop = useRef<number | null>(null);
-  const modeTransitionId = useRef(0);
-  const modeTransitionReady = useRef(false);
+  const timeSectionRefs = useRef({ manual: manualTimeRef }).current;
+  useExpandableSections(timeSectionRefs, state.timeMode === 'manual' ? 'manual' : null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -585,58 +554,16 @@ function TimeStep({
     update({ manualTime: next });
   };
 
-  const setMode = (timeMode: TimeMode) => {
-    if (timeMode === 'manual' && state.timeMode !== 'manual') {
-      const panel = manualTimeRef.current?.closest<HTMLElement>('.time-panel');
-      modePanelScrollTop.current = panel?.scrollTop ?? 0;
-    }
-    update(timeMode === 'manual'
-      ? {
-        timeMode,
-        manualTime: {
-          date: state.manualTime.date,
-          hour: String(selectedHour),
-          minute: String(selectedMinute)
-        }
+  const setMode = (timeMode: TimeMode) => update(timeMode === 'manual'
+    ? {
+      timeMode,
+      manualTime: {
+        date: state.manualTime.date,
+        hour: String(selectedHour),
+        minute: String(selectedMinute)
       }
-      : { timeMode });
-  };
-
-  useLayoutEffect(() => {
-    const manualTime = manualTimeRef.current;
-    const panel = manualTime?.closest<HTMLElement>('.time-panel') ?? null;
-    const transitionId = modeTransitionId.current + 1;
-    modeTransitionId.current = transitionId;
-    const scrollPanelTo = (top: number) => {
-      if (!panel) return;
-      if (typeof panel.scrollTo === 'function') panel.scrollTo({ top });
-      else panel.scrollTop = top;
-    };
-    const revealManualControls = () => {
-      if (!manualTime || !panel) return;
-      const targetTop = Math.max(0, manualTime.offsetTop - 12);
-      const maximumTop = Math.max(0, panel.scrollHeight - panel.clientHeight);
-      scrollPanelTo(Math.min(targetTop, maximumTop));
-    };
-
-    if (!modeTransitionReady.current) {
-      modeTransitionReady.current = true;
-      void transitionExpandableSection(manualTime, state.timeMode === 'manual', { animate: false }).then(() => {
-        if (state.timeMode === 'manual') revealManualControls();
-      });
-      return;
     }
-
-    void transitionExpandableSection(manualTime, state.timeMode === 'manual').then(() => {
-      if (modeTransitionId.current !== transitionId) return;
-      if (state.timeMode === 'manual') {
-        revealManualControls();
-        return;
-      }
-      scrollPanelTo(modePanelScrollTop.current ?? 0);
-      modePanelScrollTop.current = null;
-    });
-  }, [state.timeMode]);
+    : { timeMode });
 
   const goNext = () => {
     try {

@@ -161,6 +161,66 @@ describe('CCC Attendance first step', () => {
     expect(dateSelect).not.toBeVisible();
   });
 
+  it('settles on the latest time mode when switches interrupt active animations', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const pendingAnimations: Array<{
+      animation: Animation & { cancel: ReturnType<typeof vi.fn> };
+      resolve: () => void;
+    }> = [];
+    const animate = vi.fn(() => {
+      let resolve = () => {};
+      const finished = new Promise<void>((finish) => {
+        resolve = finish;
+      });
+      const animation = {
+        cancel: vi.fn(),
+        finished
+      } as unknown as Animation & { cancel: ReturnType<typeof vi.fn> };
+      pendingAnimations.push({ animation, resolve });
+      return animation;
+    });
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: animate
+    });
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=2');
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    const manualTime = document.getElementById('manualTime');
+    expect(manualTime).not.toBeNull();
+    if (!manualTime) return;
+
+    await user.click(screen.getByRole('radio', { name: /^手动/ }));
+    await waitFor(() => expect(pendingAnimations).toHaveLength(2));
+    await user.click(screen.getByRole('radio', { name: /^自动/ }));
+    await waitFor(() => expect(pendingAnimations).toHaveLength(4));
+    expect(pendingAnimations[0].animation.cancel).toHaveBeenCalledOnce();
+    expect(pendingAnimations[1].animation.cancel).toHaveBeenCalledOnce();
+
+    await user.click(screen.getByRole('radio', { name: /^手动/ }));
+    await waitFor(() => expect(pendingAnimations).toHaveLength(6));
+    expect(pendingAnimations[2].animation.cancel).toHaveBeenCalledOnce();
+    expect(pendingAnimations[3].animation.cancel).toHaveBeenCalledOnce();
+    pendingAnimations[4].resolve();
+    pendingAnimations[5].resolve();
+
+    await waitFor(() => expect(manualTime).toHaveClass('is-expanded'));
+    expect(screen.getByRole('radio', { name: /^手动/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /^自动/ })).not.toBeChecked();
+  });
+
   it('reveals every manual time control when browser animations never finish', async () => {
     vi.useFakeTimers();
     vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
@@ -206,7 +266,10 @@ describe('CCC Attendance first step', () => {
     const scrollTo = vi.fn();
     panel.scrollTo = scrollTo;
 
-    fireEvent.click(screen.getByText('手动', { selector: 'strong' }));
+    await act(async () => {
+      fireEvent.click(screen.getByText('手动', { selector: 'strong' }));
+      await Promise.resolve();
+    });
     expect(animate).toHaveBeenCalledTimes(2);
     expect(manualTime.style.height).toBe('0px');
     expect(manualTime.style.overflow).toBe('clip');
@@ -221,10 +284,11 @@ describe('CCC Attendance first step', () => {
     expect(screen.getByRole('combobox', { name: '日期' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: '时' })).toBeVisible();
     expect(screen.getByRole('combobox', { name: '分' })).toBeVisible();
-    expect(scrollTo).toHaveBeenCalledWith({ top: 200 });
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(panel.scrollTop).toBe(24);
   });
 
-  it('reveals manual time controls inside the constrained task panel', async () => {
+  it('leaves constrained task panel scrolling under user control', async () => {
     const user = userEvent.setup();
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
     window.history.replaceState({}, '', '/index.html?step=2');
@@ -247,11 +311,14 @@ describe('CCC Attendance first step', () => {
     panel.scrollTo = scrollTo;
 
     await user.click(screen.getByText('手动', { selector: 'strong' }));
-    await waitFor(() => expect(scrollTo).toHaveBeenCalledWith({ top: 200 }));
     expect(document.getElementById('date')).toBeVisible();
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(panel.scrollTop).toBe(24);
 
     await user.click(screen.getByText('自动（推荐）', { selector: 'strong' }));
-    await waitFor(() => expect(scrollTo).toHaveBeenLastCalledWith({ top: 24 }));
+    expect(document.getElementById('date')).not.toBeVisible();
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(panel.scrollTop).toBe(24);
   });
 
   it('shows only the Dongqian Lake artwork on the first step', async () => {
