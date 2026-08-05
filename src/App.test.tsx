@@ -1,8 +1,9 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { STORAGE_KEY } from './config';
+import { EXPAND_DURATION } from './lib/expandable-section';
 
 const originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
 
@@ -21,6 +22,7 @@ const expectSingleArtwork = async (caption: string, alt: string, src: string) =>
 describe('CCC Attendance first step', () => {
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     vi.restoreAllMocks();
     if (originalAnimate) {
       Object.defineProperty(HTMLElement.prototype, 'animate', originalAnimate);
@@ -157,6 +159,69 @@ describe('CCC Attendance first step', () => {
 
     await user.click(screen.getByText('自动（推荐）', { selector: 'strong' }));
     expect(dateSelect).not.toBeVisible();
+  });
+
+  it('reveals every manual time control when browser animations never finish', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const stalled = new Promise<void>(() => {});
+    const animate = vi.fn(() => ({
+      cancel: vi.fn(),
+      finished: stalled
+    }) as unknown as Animation);
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: animate
+    });
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=2');
+    render(<App />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(520);
+    });
+    expect(screen.getByRole('heading', { name: '选择时间模式' })).toBeVisible();
+
+    const panel = document.querySelector<HTMLElement>('.time-panel');
+    const manualTime = document.getElementById('manualTime');
+    expect(panel).not.toBeNull();
+    expect(manualTime).not.toBeNull();
+    if (!panel || !manualTime) return;
+
+    Object.defineProperties(panel, {
+      clientHeight: { configurable: true, value: 300 },
+      scrollHeight: { configurable: true, value: 500 },
+      scrollTop: { configurable: true, value: 24, writable: true }
+    });
+    Object.defineProperty(manualTime, 'offsetTop', { configurable: true, value: 360 });
+    const scrollTo = vi.fn();
+    panel.scrollTo = scrollTo;
+
+    fireEvent.click(screen.getByText('手动', { selector: 'strong' }));
+    expect(animate).toHaveBeenCalledTimes(2);
+    expect(manualTime.style.height).toBe('0px');
+    expect(manualTime.style.overflow).toBe('clip');
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(EXPAND_DURATION + 100);
+    });
+
+    expect(manualTime).toHaveClass('is-expanded');
+    expect(manualTime.style.height).toBe('');
+    expect(manualTime.style.overflow).toBe('');
+    expect(screen.getByRole('combobox', { name: '日期' })).toBeVisible();
+    expect(screen.getByRole('combobox', { name: '时' })).toBeVisible();
+    expect(screen.getByRole('combobox', { name: '分' })).toBeVisible();
+    expect(scrollTo).toHaveBeenCalledWith({ top: 200 });
   });
 
   it('reveals manual time controls inside the constrained task panel', async () => {

@@ -2,6 +2,7 @@ export const EXPAND_DURATION = 520;
 export const COLLAPSE_DURATION = 420;
 export const IOS_SPRING_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 export const FADE_EASING = 'cubic-bezier(0.2, 0, 0, 1)';
+const TRANSITION_SETTLE_GRACE_MS = 100;
 
 type ActiveTransition = {
   cancel: () => void;
@@ -55,6 +56,7 @@ const cancelActiveTransition = (element: HTMLElement): InterruptedState | null =
 const createTransition = (
   element: HTMLElement,
   animations: Animation[],
+  duration: number,
   onFinish: () => void
 ) => {
   let isSettled = false;
@@ -64,6 +66,8 @@ const createTransition = (
     if (isSettled) return;
 
     isSettled = true;
+    window.clearTimeout(settleTimer);
+    animations.forEach((animation) => animation.cancel());
     activeTransitions.delete(element);
     onFinish();
     resolveTransition();
@@ -74,12 +78,16 @@ const createTransition = (
       if (isSettled) return;
 
       isSettled = true;
+      window.clearTimeout(settleTimer);
       animations.forEach((animation) => animation.cancel());
       resolveTransition();
     }
   };
 
   activeTransitions.set(element, transition);
+  const settleTimer = window.setTimeout(() => {
+    if (activeTransitions.get(element) === transition) settle();
+  }, duration + TRANSITION_SETTLE_GRACE_MS);
 
   const finished = Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
   finished.then(() => {
@@ -145,7 +153,7 @@ export const transitionExpandableSection = (
       fill: 'forwards'
     });
 
-    return createTransition(element, [heightAnimation, presenceAnimation], () => {
+    return createTransition(element, [heightAnimation, presenceAnimation], EXPAND_DURATION, () => {
       element.classList.add('is-expanded');
       element.style.height = '';
       element.style.opacity = '';
@@ -179,7 +187,7 @@ export const transitionExpandableSection = (
     fill: 'forwards'
   });
 
-  return createTransition(element, [heightAnimation, presenceAnimation], () => {
+  return createTransition(element, [heightAnimation, presenceAnimation], COLLAPSE_DURATION, () => {
     element.hidden = true;
     element.classList.remove('is-expanded');
     element.style.height = '';

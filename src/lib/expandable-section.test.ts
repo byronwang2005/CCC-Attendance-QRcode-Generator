@@ -47,6 +47,7 @@ const createSection = ({
 };
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -110,6 +111,96 @@ describe('transitionExpandableSection', () => {
       easing: FADE_EASING,
       fill: 'forwards'
     });
+    expect(element).toHaveAttribute('hidden');
+    expect(element).not.toHaveClass('is-expanded');
+  });
+
+  it('forces a stalled expansion to settle after the animation deadline', async () => {
+    vi.useFakeTimers();
+    setReducedMotion(false);
+    const element = createSection({ hidden: true, height: 0, scrollHeight: 240 });
+    const stalled = new Promise<void>(() => {});
+    const animate = vi.fn(() => createAnimation(stalled));
+    Object.defineProperty(element, 'animate', { configurable: true, value: animate });
+
+    let settled = false;
+    const transition = transitionExpandableSection(element, true).then(() => {
+      settled = true;
+    });
+
+    expect(element).not.toHaveAttribute('hidden');
+    expect(element.style.height).toBe('0px');
+    expect(element.style.overflow).toBe('clip');
+    await vi.advanceTimersByTimeAsync(EXPAND_DURATION + 99);
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(settled).toBe(true);
+    await transition;
+    expect(element).toHaveClass('is-expanded');
+    expect(element.style.height).toBe('');
+    expect(element.style.opacity).toBe('');
+    expect(element.style.transform).toBe('');
+    expect(element.style.overflow).toBe('');
+    expect(animate.mock.results.every(({ value }) => value.cancel.mock.calls.length === 1)).toBe(true);
+  });
+
+  it('forces a stalled collapse to settle after the animation deadline', async () => {
+    vi.useFakeTimers();
+    setReducedMotion(false);
+    const element = createSection({ hidden: false, height: 180, scrollHeight: 180 });
+    const stalled = new Promise<void>(() => {});
+    const animate = vi.fn(() => createAnimation(stalled));
+    Object.defineProperty(element, 'animate', { configurable: true, value: animate });
+
+    let settled = false;
+    const transition = transitionExpandableSection(element, false).then(() => {
+      settled = true;
+    });
+
+    expect(element).not.toHaveAttribute('hidden');
+    expect(element.style.height).toBe('180px');
+    expect(element.style.overflow).toBe('clip');
+    await vi.advanceTimersByTimeAsync(COLLAPSE_DURATION + 99);
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(settled).toBe(true);
+    await transition;
+    expect(element).toHaveAttribute('hidden');
+    expect(element).not.toHaveClass('is-expanded');
+    expect(element.style.height).toBe('');
+    expect(element.style.opacity).toBe('');
+    expect(element.style.transform).toBe('');
+    expect(element.style.overflow).toBe('');
+    expect(animate.mock.results.every(({ value }) => value.cancel.mock.calls.length === 1)).toBe(true);
+  });
+
+  it('clears the stalled transition deadline when a new state interrupts it', async () => {
+    vi.useFakeTimers();
+    setReducedMotion(false);
+    const element = createSection({ hidden: true, height: 84, scrollHeight: 240 });
+    const stalled = new Promise<void>(() => {});
+    const firstAnimations = [createAnimation(stalled), createAnimation(stalled)];
+    const reverseAnimations = [createAnimation(), createAnimation()];
+    const animate = vi.fn()
+      .mockReturnValueOnce(firstAnimations[0])
+      .mockReturnValueOnce(firstAnimations[1])
+      .mockReturnValueOnce(reverseAnimations[0])
+      .mockReturnValueOnce(reverseAnimations[1]);
+    Object.defineProperty(element, 'animate', { configurable: true, value: animate });
+
+    const expanding = transitionExpandableSection(element, true);
+    expect(vi.getTimerCount()).toBe(1);
+
+    const collapsing = transitionExpandableSection(element, false);
+    expect(firstAnimations[0].cancel).toHaveBeenCalledOnce();
+    expect(firstAnimations[1].cancel).toHaveBeenCalledOnce();
+    expect(vi.getTimerCount()).toBe(1);
+
+    await Promise.all([expanding, collapsing]);
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(EXPAND_DURATION + 100);
     expect(element).toHaveAttribute('hidden');
     expect(element).not.toHaveClass('is-expanded');
   });
