@@ -32,6 +32,8 @@ coverage/
 # Local design and browser QA
 /design-qa.md
 /design-qa/
+/.codex-audit/
+/radius-audit.md
 /playwright-report/
 /test-results/
 

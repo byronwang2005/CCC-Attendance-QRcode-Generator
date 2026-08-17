@@ -11,6 +11,9 @@ import {
   useState
 } from 'react';
 import { AGENT_PROMPT, APP_PATHS, TEXT, TIME_LIMITS } from './config';
+import { InkFlowBackground } from './features/background/InkFlowBackground';
+import type { InkStep } from './features/background/ink-flow-config';
+import { GlassIsland, GlassStageProvider } from './features/glass/GlassIsland';
 import { useExpandableSections } from './lib/use-expandable-sections';
 import {
   buildTimestamp,
@@ -28,9 +31,16 @@ import {
 } from './lib/wizard';
 import type { Identity, ManualTime, QrResult, TimeMode, ToastState, WizardState } from './types';
 
-const ReceiptStage = lazy(() => import('./features/qrcode/ReceiptStage').then((module) => ({
+let receiptStagePromise: Promise<typeof import('./features/qrcode/ReceiptStage')> | null = null;
+const preloadReceiptStage = () => {
+  receiptStagePromise ??= import('./features/qrcode/ReceiptStage');
+  return receiptStagePromise;
+};
+const ReceiptStage = lazy(() => preloadReceiptStage().then((module) => ({
   default: module.ReceiptStage
 })));
+
+const NAVIGATION_EVENT = 'ccc:navigate';
 
 type StateAction =
   | { type: 'patch'; patch: StatePatch }
@@ -67,7 +77,7 @@ const stateReducer = (state: WizardState, action: StateAction): WizardState => {
   });
 };
 
-const readCurrentStep = () => {
+const readCurrentStep = (): InkStep => {
   const value = Number.parseInt(new URL(window.location.href).searchParams.get('step') ?? '1', 10);
   return value === 2 || value === 3 ? value : 1;
 };
@@ -78,7 +88,8 @@ const navigate = (path: string, message?: string) => {
     url.searchParams.set('message', message);
     url.searchParams.set('type', 'error');
   }
-  window.location.href = url.toString();
+  window.history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  window.dispatchEvent(new Event(NAVIGATION_EVENT));
 };
 
 const redirect = (path: string, message?: string) => {
@@ -87,19 +98,43 @@ const redirect = (path: string, message?: string) => {
     url.searchParams.set('message', message);
     url.searchParams.set('type', 'error');
   }
-  window.location.replace(url.toString());
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  window.dispatchEvent(new Event(NAVIGATION_EVENT));
 };
 
 const usePageMessage = (showToast: (message: string) => void) => {
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const message = url.searchParams.get('message');
-    if (!message) return;
-    showToast(message);
-    url.searchParams.delete('message');
-    url.searchParams.delete('type');
-    window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+    const consumeMessage = () => {
+      const url = new URL(window.location.href);
+      const message = url.searchParams.get('message');
+      if (!message) return;
+      showToast(message);
+      url.searchParams.delete('message');
+      url.searchParams.delete('type');
+      window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+    };
+    consumeMessage();
+    window.addEventListener('popstate', consumeMessage);
+    window.addEventListener(NAVIGATION_EVENT, consumeMessage);
+    return () => {
+      window.removeEventListener('popstate', consumeMessage);
+      window.removeEventListener(NAVIGATION_EVENT, consumeMessage);
+    };
   }, [showToast]);
+};
+
+const useCurrentStep = () => {
+  const [currentStep, setCurrentStep] = useState<InkStep>(readCurrentStep);
+  useEffect(() => {
+    const syncStep = () => setCurrentStep(readCurrentStep());
+    window.addEventListener('popstate', syncStep);
+    window.addEventListener(NAVIGATION_EVENT, syncStep);
+    return () => {
+      window.removeEventListener('popstate', syncStep);
+      window.removeEventListener(NAVIGATION_EVENT, syncStep);
+    };
+  }, []);
+  return currentStep;
 };
 
 function BootLoader() {
@@ -114,21 +149,23 @@ function BootLoader() {
 
   return (
     <section className="boot-loader" aria-label="正在加载">
-      <div className="boot-loader__panel">
-        <img src="/assets/images/ccc-small.webp" alt="CCC" className="boot-loader__logo" />
-        <p>正在准备</p>
-        <div
-          className="boot-loader__progress"
-          role="progressbar"
-          aria-label="加载进度"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-        >
-          <span style={{ width: `${progress}%` }} />
+      <GlassIsland variant="static" shape="capsule" className="boot-loader__island">
+        <div className="boot-loader__panel">
+          <img src="/assets/images/ccc-small.webp" alt="CCC" className="boot-loader__logo" />
+          <p>正在准备</p>
+          <div
+            className="boot-loader__progress"
+            role="progressbar"
+            aria-label="加载进度"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+          >
+            <span style={{ width: `${progress}%` }} />
+          </div>
+          <strong className="boot-loader__percent">{progress}%</strong>
         </div>
-        <strong className="boot-loader__percent">{progress}%</strong>
-      </div>
+      </GlassIsland>
     </section>
   );
 }
@@ -168,6 +205,22 @@ const STEP_ARTWORKS: Record<number, StepArtworkData> = {
   }
 };
 
+const preloadImage = (src: string) => {
+  const image = new Image();
+  image.src = src;
+  return image.decode?.() ?? Promise.resolve();
+};
+
+const preloadApplication = () => {
+  const fonts = document.fonts?.ready ?? Promise.resolve();
+  const images = [
+    '/assets/images/ccc-small.webp',
+    '/assets/icons/actions.svg',
+    ...Object.values(STEP_ARTWORKS).map((artwork) => artwork.src)
+  ].map(preloadImage);
+  return Promise.allSettled([fonts, preloadReceiptStage(), ...images]);
+};
+
 function Stepper({ currentStep, onLocked }: StepperProps) {
   const activate = (target: number) => {
     if (target === currentStep) return;
@@ -182,31 +235,37 @@ function Stepper({ currentStep, onLocked }: StepperProps) {
   };
 
   return (
-    <section className="stepper" aria-label="步骤进度">
-      {STEP_DATA.map((step) => {
-        const state = step.number === currentStep ? 'active' : (step.number < currentStep ? 'done' : 'idle');
-        const description = step.number < currentStep ? '已完成' : step.description;
-        return (
-          <article
-            key={step.number}
-            className={`step-card is-${state} ${step.number < currentStep ? 'is-clickable-back' : ''} ${step.number > currentStep ? 'is-locked-step' : ''}`}
-            data-step={step.number}
-            aria-current={state === 'active' ? 'step' : undefined}
-            aria-label={`跳转到第 ${step.number} 步`}
-            role="button"
-            tabIndex={0}
-            onClick={() => activate(step.number)}
-            onKeyDown={(event) => onKeyDown(event, step.number)}
-          >
-            <span className="step-number">{String(step.number).padStart(2, '0')}</span>
-            <span className="step-copy">
-              <strong>{step.title}</strong>
-              <small>{description}</small>
-            </span>
-          </article>
-        );
-      })}
-    </section>
+    <GlassIsland variant="static" shape="panel" className="stepper-island">
+      <section className="stepper" aria-label="步骤进度">
+        {STEP_DATA.map((step) => {
+          const state = step.number === currentStep ? 'active' : (step.number < currentStep ? 'done' : 'idle');
+          const description = step.number < currentStep ? '已完成' : step.description;
+          const card = (
+            <article
+              className={`step-card is-${state} ${step.number < currentStep ? 'is-clickable-back' : ''} ${step.number > currentStep ? 'is-locked-step' : ''}`}
+              data-step={step.number}
+              aria-current={state === 'active' ? 'step' : undefined}
+              aria-label={`跳转到第 ${step.number} 步`}
+              role="button"
+              tabIndex={0}
+              onClick={() => activate(step.number)}
+              onKeyDown={(event) => onKeyDown(event, step.number)}
+            >
+              <span className="step-number">{String(step.number).padStart(2, '0')}</span>
+              <span className="step-copy">
+                <strong>{step.title}</strong>
+                <small>{description}</small>
+              </span>
+            </article>
+          );
+          return state === 'active' ? (
+            <GlassIsland key={step.number} variant="interactive" shape="panel" disabled className="step-active-island">
+              {card}
+            </GlassIsland>
+          ) : <div key={step.number} className="step-card-slot">{card}</div>;
+        })}
+      </section>
+    </GlassIsland>
   );
 }
 
@@ -232,16 +291,17 @@ function StepArtwork({ currentStep }: { currentStep: number }) {
 
 function Footer() {
   return (
-    <footer className="site-footer">
-      <img src="/assets/images/ccc-small.webp" className="site-footer__logo" alt="CCC" />
-      <p>
-        本项目以
-        <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
-        开源，源代码见
-        <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
-        。
-      </p>
-    </footer>
+    <GlassIsland variant="static" shape="capsule" className="footer-island">
+      <footer className="site-footer">
+        <p>
+          本项目以
+          <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+          开源，源代码见
+          <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+          。
+        </p>
+      </footer>
+    </GlassIsland>
   );
 }
 
@@ -256,15 +316,17 @@ function Toast({ toast, onClose }: { toast: ToastState | null; onClose: () => vo
     <div className={`toast ${toast.type} show`} role="alertdialog" aria-live="assertive" aria-modal="true" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
-      <div className="toast__window">
-        <div className="toast__header">
-          <div className="toast__label">提示</div>
-          <button ref={closeRef} type="button" className="toast__close" aria-label="关闭提示" onClick={onClose}>
-            <Icon name="x" />
-          </button>
+      <GlassIsland variant="static" shape="panel" className="toast-island">
+        <div className="toast__window">
+          <div className="toast__header">
+            <div className="toast__label">提示</div>
+            <button ref={closeRef} type="button" className="toast__close" aria-label="关闭提示" onClick={onClose}>
+              <Icon name="x" />
+            </button>
+          </div>
+          <div className="toast__message">{toast.message}</div>
         </div>
-        <div className="toast__message">{toast.message}</div>
-      </div>
+      </GlassIsland>
     </div>
   );
 }
@@ -274,26 +336,35 @@ function PageShell({
   onLocked,
   children
 }: {
-  currentStep: number;
+  currentStep: InkStep;
   onLocked: () => void;
   children: ReactNode;
 }) {
+  const stageRef = useRef<HTMLDivElement>(null);
   return (
-    <div className="app-stage" data-step={currentStep}>
-      <div className="page-shell">
-        <header className="masthead" aria-label="站点抬头">
-          <div className="masthead__copy">
-            <h1 className="masthead__title">CCC Attendance</h1>
-            <p className="masthead__summary">一个签到码，三步搞定</p>
+    <div ref={stageRef} className="app-stage" data-step={currentStep}>
+      <InkFlowBackground step={currentStep} />
+      <GlassStageProvider stageRef={stageRef}>
+        <div className="page-shell">
+          <GlassIsland variant="static" shape="capsule" className="masthead-island">
+            <header className="masthead" aria-label="站点抬头">
+              <img src="/assets/images/ccc-small.webp" className="masthead__logo" alt="CCC" />
+              <div className="masthead__copy">
+                <h1 className="masthead__title">CCC Attendance</h1>
+                <p className="masthead__summary">一个签到码，三步搞定</p>
+              </div>
+            </header>
+          </GlassIsland>
+          <div className="workflow-frame">
+            <Stepper currentStep={currentStep} onLocked={onLocked} />
+            <main className="wizard-layout">
+              <div key={currentStep} className="step-scene">{children}</div>
+            </main>
+            <StepArtwork key={currentStep} currentStep={currentStep} />
           </div>
-        </header>
-        <div className="workflow-frame">
-          <Stepper currentStep={currentStep} onLocked={onLocked} />
-          <main className="wizard-layout">{children}</main>
-          <StepArtwork currentStep={currentStep} />
+          <Footer />
         </div>
-        <Footer />
-      </div>
+      </GlassStageProvider>
     </div>
   );
 }
@@ -348,10 +419,12 @@ function IdentityStep({
 
   return (
     <>
+      <GlassIsland variant="content" shape="panel" className="task-glass">
       <section className="panel identity-panel">
         <div className="identity-header">
           <h3>先告诉我，您是？</h3>
           <div className="identity-buttons" role="tablist" aria-label="身份选择">
+            <GlassIsland variant={state.identity === 'human' ? 'interactive' : 'static'} shape="capsule" className="control-island">
             <button
               type="button"
               className={`identity-btn ${state.identity === 'human' ? 'active' : ''}`}
@@ -360,6 +433,8 @@ function IdentityStep({
               <Icon name="user" />
               <span>人类</span>
             </button>
+            </GlassIsland>
+            <GlassIsland variant={state.identity === 'agent' ? 'interactive' : 'static'} shape="capsule" className="control-island">
             <button
               type="button"
               className={`identity-btn ${state.identity === 'agent' ? 'active' : ''}`}
@@ -368,6 +443,7 @@ function IdentityStep({
               <Icon name="bot" />
               <span>AI代理</span>
             </button>
+            </GlassIsland>
           </div>
         </div>
 
@@ -428,7 +504,14 @@ function IdentityStep({
           <p className="agent-hint">把这句话交给AI代理，它会引导您在本地完成后续步骤。</p>
         </div>
       </section>
+      </GlassIsland>
       <div className="actions actions-major">
+        <GlassIsland
+          variant="interactive"
+          shape="capsule"
+          disabled={state.identity !== 'human' || !state.url.trim()}
+          className="action-island"
+        >
         <button
           type="button"
           className="button-primary"
@@ -439,6 +522,7 @@ function IdentityStep({
           <span>下一步</span>
           <Icon name="arrow-right" />
         </button>
+        </GlassIsland>
       </div>
     </>
   );
@@ -578,6 +662,7 @@ function TimeStep({
 
   return (
     <>
+      <GlassIsland variant="content" shape="panel" className="task-glass">
       <section className="panel time-panel">
         <div className="panel-header">
           <h3>选择时间模式</h3>
@@ -621,7 +706,9 @@ function TimeStep({
           </div>
         </div>
       </section>
+      </GlassIsland>
       <div className="actions">
+        <GlassIsland variant="interactive" shape="capsule" className="action-island">
         <button type="button" className="button-secondary" onClick={() => {
           persistState(state);
           navigate(APP_PATHS.index);
@@ -629,10 +716,13 @@ function TimeStep({
           <Icon name="arrow-left" />
           <span>返回上一步</span>
         </button>
+        </GlassIsland>
+        <GlassIsland variant="interactive" shape="capsule" className="action-island">
         <button type="button" className="button-primary" onClick={goNext}>
           <span>下一步</span>
           <Icon name="arrow-right" />
         </button>
+        </GlassIsland>
       </div>
     </>
   );
@@ -650,19 +740,23 @@ function ChoiceCard({
   children: ReactNode;
 }) {
   return (
+    <GlassIsland variant={selected ? 'interactive' : 'static'} shape="panel" className="choice-island">
     <label className={`choice-card ${selected ? 'is-selected' : ''}`}>
       <input type="radio" name="mode" value={value} checked={selected} onChange={() => onSelect(value)} />
       <span>{children}</span>
     </label>
+    </GlassIsland>
   );
 }
 
 function QrcodeStep({
   state,
-  showToast
+  showToast,
+  reset
 }: {
   state: WizardState;
   showToast: (message: string) => void;
+  reset: () => void;
 }) {
   const [result, setResult] = useState<QrResult>({});
   const validation = useMemo(() => validateCourseUrl(state.url), [state.url]);
@@ -710,10 +804,11 @@ function QrcodeStep({
 
   return (
     <>
+      <GlassIsland variant="content" shape="panel" className="task-glass receipt-glass">
       <section className="receipt-panel panel">
         <div id="qrcode" className="qrcode-stage" aria-label="二维码，就位">
           {result.imageUrl && validation.valid ? (
-            <Suspense fallback={<div className="qrcode-placeholder"><div>{TEXT.placeholders.qrCodeLoading}</div></div>}>
+            <Suspense fallback={null}>
               <ReceiptStage
                 imageUrl={result.imageUrl}
                 generatedTime={result.generatedTime ?? ''}
@@ -729,18 +824,24 @@ function QrcodeStep({
           )}
         </div>
       </section>
+      </GlassIsland>
       <div className="actions">
+        <GlassIsland variant="interactive" shape="capsule" disabled className="action-island">
         <button type="button" className="button-secondary" onClick={() => navigate(APP_PATHS.time)}>
           <Icon name="arrow-left" />
           <span>返回上一步</span>
         </button>
+        </GlassIsland>
+        <GlassIsland variant="interactive" shape="capsule" disabled className="action-island">
         <button type="button" className="button-secondary" onClick={() => {
           clearState();
+          reset();
           navigate(APP_PATHS.index);
         }}>
           <Icon name="rotate-ccw" />
           <span>生成更多</span>
         </button>
+        </GlassIsland>
       </div>
     </>
   );
@@ -750,7 +851,7 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [state, dispatch] = useReducer(stateReducer, undefined, loadState);
   const [toast, setToast] = useState<ToastState | null>(null);
-  const currentStep = readCurrentStep();
+  const currentStep = useCurrentStep();
   const showToast = useCallback((message: string) => setToast({ message, type: 'error' }), []);
 
   usePageMessage(showToast);
@@ -760,11 +861,8 @@ export default function App() {
   }, [state]);
 
   useEffect(() => {
-    const image = new Image();
-    image.src = '/assets/images/ccc-small.webp';
-    const fonts = document.fonts?.ready ?? Promise.resolve();
     const delay = new Promise((resolve) => window.setTimeout(resolve, 520));
-    void Promise.allSettled([fonts, image.decode?.() ?? Promise.resolve(), delay]).then(() => setReady(true));
+    void Promise.allSettled([preloadApplication(), delay]).then(() => setReady(true));
   }, []);
 
   useEffect(() => {
@@ -794,7 +892,13 @@ export default function App() {
       <PageShell currentStep={currentStep} onLocked={() => showToast(TEXT.errors.completeCurrentStepFirst)}>
         {currentStep === 1 && <IdentityStep state={state} update={update} showToast={showToast} />}
         {currentStep === 2 && <TimeStep state={state} update={update} showToast={showToast} />}
-        {currentStep === 3 && <QrcodeStep state={state} showToast={showToast} />}
+        {currentStep === 3 && (
+          <QrcodeStep
+            state={state}
+            showToast={showToast}
+            reset={() => dispatch({ type: 'reset' })}
+          />
+        )}
       </PageShell>
       <Toast toast={toast} onClose={() => setToast(null)} />
     </>

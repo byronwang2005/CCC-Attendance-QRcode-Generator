@@ -36,6 +36,7 @@
     "wrangler": "^4.118.0"
   },
   "dependencies": {
+    "liquid-glass-react": "^1.1.1",
     "lucide-static": "^1.26.0",
     "qr-image": "^3.2.0",
     "react": "^19.2.8",

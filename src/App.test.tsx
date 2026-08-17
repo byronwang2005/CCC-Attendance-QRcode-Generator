@@ -50,6 +50,23 @@ describe('CCC Attendance first step', () => {
     expect(screen.getByRole('heading', { name: '卡准时间' })).toBeVisible();
   });
 
+  it('switches steps without remounting the global loader', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '人类' }));
+    await user.type(
+      screen.getByRole('textbox', { name: '课程详情链接输入框' }),
+      'https://ccc.nottingham.edu.cn/study/home/details?id=1234'
+    );
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+
+    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(window.location.search).toBe('?step=2');
+    expect(screen.queryByLabelText('正在加载')).not.toBeInTheDocument();
+  });
+
   it('preserves the agent prompt and keeps the next action unavailable', async () => {
     const user = userEvent.setup();
     render(<App />);
