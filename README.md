@@ -1,7 +1,6 @@
 <div align="center">
-  <img src="public/assets/images/ccc.webp" alt="CCC" width="120" height="103" style="object-fit: contain;" />
-  <h1>CCC Attendance</h1>
-  <p><b>一个签到码，三步搞定</b></p>
+  <img src="public/assets/images/readme-hero.webp" alt="CCC Attendance — 一个签到码，三步搞定" width="1200" />
+  <br />
   <a href="https://ccc.byron.wang"><img src="https://img.shields.io/website?url=https%3A%2F%2Fccc.byron.wang&label=site&style=flat-square" alt="Website"></a>
   <a href="https://github.com/byronwang2005/CCC-Attendance/stargazers"><img src="https://img.shields.io/github/stars/byronwang2005/CCC-Attendance?style=flat-square" alt="Stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
