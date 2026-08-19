@@ -79,6 +79,26 @@ describe('CCC Attendance first step', () => {
     expect(loader.querySelector('.glass-island')).toBeNull();
   });
 
+  it('places the open-source metadata in the workflow with safe external links', async () => {
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+
+    const footer = screen.getByRole('contentinfo');
+    const workflow = document.querySelector('.workflow-frame');
+    const licenseLink = screen.getByRole('link', { name: 'MIT License' });
+    const repositoryLink = screen.getByRole('link', { name: 'GitHub Repository' });
+
+    expect(workflow).toContainElement(footer);
+    expect(footer.querySelector('.glass-island')).toBeNull();
+    expect(licenseLink).toHaveAttribute('href', 'https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE');
+    expect(repositoryLink).toHaveAttribute('href', 'https://github.com/byronwang2005/CCC-Attendance');
+    for (const link of [licenseLink, repositoryLink]) {
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    }
+  });
+
   it('preserves the identity flow and enables the next action for a course link', async () => {
     const user = userEvent.setup();
     render(<App />);

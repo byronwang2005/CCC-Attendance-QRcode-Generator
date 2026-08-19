@@ -345,17 +345,15 @@ function StepArtwork({ currentStep }: { currentStep: number }) {
 
 function Footer() {
   return (
-    <GlassIsland variant="static" shape="capsule" className="footer-island">
-      <footer className="site-footer">
-        <p>
-          本项目以
-          <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
-          开源，源代码见
-          <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
-          。
-        </p>
-      </footer>
-    </GlassIsland>
+    <footer className="site-footer">
+      <p>
+        本项目以
+        <a href="https://github.com/byronwang2005/CCC-Attendance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+        开源，源代码见
+        <a href="https://github.com/byronwang2005/CCC-Attendance" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+        。
+      </p>
+    </footer>
   );
 }
 
@@ -428,8 +426,8 @@ function PageShell({
               <div key={currentStep} className="step-scene">{children}</div>
             </main>
             <StepArtwork key={currentStep} currentStep={currentStep} />
+            <Footer />
           </div>
-          <Footer />
       </div>
     </div>
   );
