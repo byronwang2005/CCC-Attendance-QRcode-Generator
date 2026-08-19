@@ -100,6 +100,9 @@ body {
   gap: 16px;
   min-width: min(320px, 100%);
   padding: 30px 28px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--stone);
   text-align: center;
 }
@@ -2247,10 +2250,6 @@ input[type="number"] {
 
 .boot-loader {
   background: var(--parchment);
-}
-
-.boot-loader__island {
-  min-width: min(320px, 100%);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {

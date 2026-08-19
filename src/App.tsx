@@ -208,23 +208,21 @@ function BootLoader() {
 
   return (
     <section className="boot-loader" aria-label="正在加载">
-      <GlassIsland variant="static" shape="capsule" className="boot-loader__island">
-        <div className="boot-loader__panel">
-          <img src="/assets/images/ccc-small.webp" alt="CCC" className="boot-loader__logo" />
-          <p>正在准备</p>
-          <div
-            className="boot-loader__progress"
-            role="progressbar"
-            aria-label="加载进度"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={progress}
-          >
-            <span style={{ width: `${progress}%` }} />
-          </div>
-          <strong className="boot-loader__percent">{progress}%</strong>
+      <div className="boot-loader__panel">
+        <img src="/assets/images/ccc-small.webp" alt="CCC" className="boot-loader__logo" />
+        <p>正在准备</p>
+        <div
+          className="boot-loader__progress"
+          role="progressbar"
+          aria-label="加载进度"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+        >
+          <span style={{ width: `${progress}%` }} />
         </div>
-      </GlassIsland>
+        <strong className="boot-loader__percent">{progress}%</strong>
+      </div>
     </section>
   );
 }

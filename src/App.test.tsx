@@ -71,6 +71,14 @@ describe('CCC Attendance first step', () => {
     window.history.replaceState({}, '', '/index.html?step=1');
   });
 
+  it('renders the global boot loader without glass material', () => {
+    render(<App />);
+
+    const loader = screen.getByLabelText('正在加载');
+    expect(loader.querySelector('.boot-loader__panel')).not.toBeNull();
+    expect(loader.querySelector('.glass-island')).toBeNull();
+  });
+
   it('preserves the identity flow and enables the next action for a course link', async () => {
     const user = userEvent.setup();
     render(<App />);
