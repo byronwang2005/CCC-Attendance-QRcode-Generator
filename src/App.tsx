@@ -830,11 +830,11 @@ function ChoiceCard({
 function QrcodeStep({
   state,
   showToast,
-  reset
+  startOver
 }: {
   state: WizardState;
   showToast: (message: string) => void;
-  reset: () => void;
+  startOver: () => void;
 }) {
   const [result, setResult] = useState<QrResult>({});
   const validation = useMemo(() => validateCourseUrl(state.url), [state.url]);
@@ -911,11 +911,7 @@ function QrcodeStep({
         </button>
         </GlassIsland>
         <GlassIsland variant="interactive" shape="capsule" className="action-island">
-        <button type="button" className="button-secondary" onClick={() => {
-          clearState();
-          reset();
-          navigate(APP_PATHS.index);
-        }}>
+        <button type="button" className="button-secondary" onClick={startOver}>
           <Icon name="rotate-ccw" />
           <span>生成更多</span>
         </button>
@@ -929,6 +925,7 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [state, dispatch] = useReducer(stateReducer, undefined, loadState);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const isStartingOverRef = useRef(false);
   const currentStep = useCurrentStep();
   const showToast = useCallback((message: string) => setToast({ message, type: 'error' }), []);
 
@@ -952,7 +949,11 @@ export default function App() {
   }, [currentStep]);
 
   useEffect(() => {
-    if (currentStep === 1) return;
+    if (currentStep === 1) {
+      isStartingOverRef.current = false;
+      return;
+    }
+    if (isStartingOverRef.current) return;
     const validation = validateCourseUrl(state.url);
     if (!state.url) {
       redirect(APP_PATHS.index, currentStep === 2 ? TEXT.redirects.finishFirstStep : TEXT.redirects.finishPreviousSteps);
@@ -974,7 +975,13 @@ export default function App() {
           <QrcodeStep
             state={state}
             showToast={showToast}
-            reset={() => dispatch({ type: 'reset' })}
+            startOver={() => {
+              isStartingOverRef.current = true;
+              clearState();
+              dispatch({ type: 'reset' });
+              setToast(null);
+              navigate(APP_PATHS.index);
+            }}
           />
         )}
       </PageShell>

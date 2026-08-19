@@ -219,6 +219,37 @@ describe('CCC Attendance first step', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
+  it('starts over from the QR step without showing a missing-prerequisite error', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=3');
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
+    let commitTransition = () => {};
+    Object.defineProperty(document, 'startViewTransition', {
+      configurable: true,
+      value: vi.fn((update: ViewTransitionUpdateCallback) => {
+        commitTransition = update;
+        return {
+          finished: Promise.resolve(),
+          ready: Promise.resolve(),
+          skipTransition: vi.fn(),
+          updateCallbackDone: Promise.resolve()
+        } as unknown as ViewTransition;
+      })
+    });
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('button', { name: '生成更多' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '生成更多' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    await act(async () => commitTransition());
+
+    expect(await screen.findByRole('heading', { name: '先告诉我，您是？' })).toBeVisible();
+    expect(window.location.search).toBe('?step=1');
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '下一步' })).toBeDisabled();
+  });
+
   it('preserves the agent prompt and keeps the next action unavailable', async () => {
     const user = userEvent.setup();
     render(<App />);
