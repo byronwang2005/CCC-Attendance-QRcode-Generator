@@ -1,14 +1,16 @@
 <div align="center">
   <img src="public/assets/images/readme-hero.webp" alt="CCC Attendance — 一个签到码，三步搞定" width="1200" />
-  <br />
-  <a href="https://ccc.byron.wang"><img src="https://img.shields.io/website?url=https%3A%2F%2Fccc.byron.wang&label=site&style=flat-square" alt="Website"></a>
-  <a href="https://github.com/byronwang2005/CCC-Attendance/stargazers"><img src="https://img.shields.io/github/stars/byronwang2005/CCC-Attendance?style=flat-square" alt="Stars"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
 </div>
 
 <p align="center">
   <img src="https://ccc.byron.wang/api/stats.svg" alt="过去一天内每小时生成数量" width="49%" />
   <img src="https://ccc.byron.wang/api/stats-total.svg" alt="历史累计生成总量" width="49%" />
+</p>
+
+<p align="center">
+  <a href="https://ccc.byron.wang"><img src="https://img.shields.io/website?url=https%3A%2F%2Fccc.byron.wang&label=site&style=flat-square" alt="Website"></a>
+  <a href="https://github.com/byronwang2005/CCC-Attendance/stargazers"><img src="https://img.shields.io/github/stars/byronwang2005/CCC-Attendance?style=flat-square" alt="Stars"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
 </p>
 
 

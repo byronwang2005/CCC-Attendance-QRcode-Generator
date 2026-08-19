@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "public/assets/images/readme-hero.webp"
 LOGO = ROOT / "public/assets/images/ccc-small.webp"
-TITLE_FONT = Path("/System/Library/Fonts/SFNSRounded.ttf")
+TITLE_FONT = ROOT / "public/assets/fonts/TsangerJinKai02-W05.ttf"
 SUMMARY_FONT = ROOT / "public/assets/fonts/TsangerJinKai02-W04.ttf"
 
 WIDTH = 1200
@@ -62,8 +62,7 @@ def compose_frame(index: int, logo_frames: list[Image.Image]) -> Image.Image:
     frame.alpha_composite(logo, (255, 104))
 
     draw = ImageDraw.Draw(frame)
-    title_font = ImageFont.truetype(str(TITLE_FONT), 66, index=0)
-    title_font.set_variation_by_axes([400, 520])
+    title_font = ImageFont.truetype(str(TITLE_FONT), 66)
     summary_font = ImageFont.truetype(str(SUMMARY_FONT), 31)
     draw.text((435, 91), "CCC Attendance", font=title_font, fill=(*NAVY, 255), stroke_width=0)
     draw.text((438, 181), "一个签到码，三步搞定", font=summary_font, fill=(45, 70, 102, 242))
