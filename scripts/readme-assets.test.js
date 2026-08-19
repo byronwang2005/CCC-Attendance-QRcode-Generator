@@ -32,7 +32,10 @@ describe('README visual assets', () => {
   it('uses responsive chart widths and the project badge palette', () => {
     const readme = readFileSync('README.md', 'utf8');
 
-    expect(readme.match(/api\/stats(?:-total)?\.svg[^>]+width="600"/g)).toHaveLength(2);
-    expect(readme.match(/labelColor=504E49&color=1B365D/g)).toHaveLength(3);
+    expect(readme).toContain('readme-hero.webp" alt="CCC Attendance — 一个签到码，三步搞定" width="100%"');
+    expect(readme.match(/api\/stats(?:-total)?\.svg[^>]+width="50%"/g)).toHaveLength(2);
+    expect(readme).toContain('width="50%" /><img src="https://ccc.byron.wang/api/stats-total.svg"');
+    expect(readme.match(/labelColor=504E49&color=1B365D/g)).toHaveLength(2);
+    expect(readme).toContain('img.shields.io/badge/license-MIT-1B365D?style=flat-square&labelColor=504E49');
   });
 });
