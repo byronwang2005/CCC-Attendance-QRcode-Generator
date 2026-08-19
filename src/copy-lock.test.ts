@@ -9,7 +9,7 @@ describe('copy lock', () => {
     const digest = createHash('sha256')
       .update(JSON.stringify({ copy: COPY_LOCK, agent: AGENT_PROMPT, text: TEXT }))
       .digest('hex');
-    expect(digest).toBe('511f9cad51d8bf9d41268e136fd44768a054b33cafc3861fab11873648147acf');
+    expect(digest).toBe('64c9729b3514a3ac521384d2b1cfdf1fa167fde44254c28de4272a29538ef216');
     expect(AGENT_PROMPT).toBe(
       'Please read the instruction in "https://ccc.byron.wang/agent.md" and assist the user to generate the QR code.'
     );

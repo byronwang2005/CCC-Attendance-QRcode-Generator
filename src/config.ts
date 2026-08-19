@@ -17,7 +17,7 @@ export const AGENT_PROMPT = 'Please read the instruction in "https://ccc.byron.w
 
 export const TEXT = {
   errors: {
-    chooseIdentityFirst: '请先选择身份（人类或AI代理）',
+    chooseIdentityFirst: '请先选择身份（人类或智能体）',
     pasteCourseUrlFirst: '请先粘贴课程详情链接',
     invalidCourseUrl: '链接格式不正确，请检查是否复制了完整的课程详情链接',
     unsupportedCourseUrlProtocol: '链接协议不支持，请使用http或https开头的链接',
@@ -63,10 +63,10 @@ export const COPY_LOCK = [
   '查看结果',
   '先告诉我，您是？',
   '人类',
-  'AI代理',
+  '智能体',
   '复制',
   '已复制!',
-  '把这句话交给AI代理，它会引导您在本地完成后续步骤。',
+  '把这句话交给智能体，它会引导您在本地完成后续步骤。',
   '卡准时间',
   '最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。',
   '连接网络',

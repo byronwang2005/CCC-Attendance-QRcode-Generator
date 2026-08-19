@@ -6,6 +6,34 @@ import { STORAGE_KEY } from './config';
 import { EXPAND_DURATION } from './lib/expandable-section';
 
 const originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
+const originalStartViewTransition = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
+
+const installViewTransitionMock = () => {
+  const transitions: Array<{
+    resolve: () => void;
+    skipTransition: ReturnType<typeof vi.fn>;
+  }> = [];
+  const startViewTransition = vi.fn((update: ViewTransitionUpdateCallback) => {
+    let resolve = () => {};
+    const finished = new Promise<void>((done) => {
+      resolve = done;
+    });
+    update();
+    const skipTransition = vi.fn(() => resolve());
+    transitions.push({ resolve, skipTransition });
+    return {
+      finished,
+      ready: Promise.resolve(),
+      skipTransition,
+      updateCallbackDone: Promise.resolve()
+    } as unknown as ViewTransition;
+  });
+  Object.defineProperty(document, 'startViewTransition', {
+    configurable: true,
+    value: startViewTransition
+  });
+  return { startViewTransition, transitions };
+};
 
 const validWizardState = {
   identity: 'human',
@@ -29,6 +57,13 @@ describe('CCC Attendance first step', () => {
     } else {
       Reflect.deleteProperty(HTMLElement.prototype, 'animate');
     }
+    if (originalStartViewTransition) {
+      Object.defineProperty(document, 'startViewTransition', originalStartViewTransition);
+    } else {
+      Reflect.deleteProperty(document, 'startViewTransition');
+    }
+    document.documentElement.removeAttribute('data-step-direction');
+    document.documentElement.removeAttribute('data-step-transition');
   });
 
   beforeEach(() => {
@@ -67,15 +102,157 @@ describe('CCC Attendance first step', () => {
     expect(screen.queryByLabelText('正在加载')).not.toBeInTheDocument();
   });
 
+  it('coordinates forward and backward navigation with one native view transition at a time', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const { startViewTransition, transitions } = installViewTransitionMock();
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    expect(document.querySelector('.stepper')).toHaveAttribute('data-current-step', '1');
+    expect(document.querySelectorAll('.stepper-active-indicator')).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(startViewTransition).toHaveBeenCalledTimes(1);
+    expect(document.documentElement).toHaveAttribute('data-step-direction', 'forward');
+    expect(document.documentElement).toHaveAttribute('data-step-transition', 'native');
+    expect(document.querySelector('.stepper')).toHaveAttribute('data-current-step', '2');
+
+    await user.click(screen.getByRole('button', { name: '返回上一步' }));
+    expect(await screen.findByRole('heading', { name: '先告诉我，您是？' })).toBeVisible();
+    expect(startViewTransition).toHaveBeenCalledTimes(2);
+    expect(transitions[0].skipTransition).toHaveBeenCalledOnce();
+    expect(document.documentElement).toHaveAttribute('data-step-direction', 'backward');
+    expect(document.querySelector('.stepper')).toHaveAttribute('data-current-step', '1');
+
+    await act(async () => transitions[1].resolve());
+    await waitFor(() => {
+      expect(document.documentElement).not.toHaveAttribute('data-step-direction');
+      expect(document.documentElement).not.toHaveAttribute('data-step-transition');
+    });
+  });
+
+  it('uses the same directional transition for browser history navigation', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=2');
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const { startViewTransition, transitions } = installViewTransitionMock();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    window.history.pushState({}, '', '/index.html?step=1');
+    fireEvent(window, new PopStateEvent('popstate'));
+
+    expect(await screen.findByRole('heading', { name: '先告诉我，您是？' })).toBeVisible();
+    expect(startViewTransition).toHaveBeenCalledOnce();
+    expect(document.documentElement).toHaveAttribute('data-step-direction', 'backward');
+    await act(async () => transitions[0].resolve());
+  });
+
+  it('changes steps immediately when reduced motion is enabled', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    const { startViewTransition } = installViewTransitionMock();
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(startViewTransition).not.toHaveBeenCalled();
+    expect(document.documentElement).not.toHaveAttribute('data-step-direction');
+    expect(document.documentElement).not.toHaveAttribute('data-step-transition');
+  });
+
+  it('does not restart QR generation when the native step transition settles', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=2');
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
+    const { transitions } = installViewTransitionMock();
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    await act(async () => transitions[0].resolve());
+    await Promise.resolve();
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it('preserves the agent prompt and keeps the next action unavailable', async () => {
     const user = userEvent.setup();
     render(<App />);
 
     expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
-    await user.click(screen.getByRole('button', { name: 'AI代理' }));
+    await user.click(screen.getByRole('button', { name: '智能体' }));
 
     expect(await screen.findByText(/Please read the instruction/)).toBeVisible();
     expect(screen.getByRole('button', { name: '下一步' })).toBeDisabled();
+  });
+
+  it('keeps an error toast mounted until its exit animation completes', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '跳转到第 2 步' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).not.toHaveClass('is-exiting');
+
+    await user.click(screen.getByRole('button', { name: '关闭提示' }));
+    expect(dialog).toHaveClass('is-exiting');
+    expect(dialog).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   });
 
   it('keeps both identity sections mounted while switching their expandable state', async () => {
@@ -92,7 +269,7 @@ describe('CCC Attendance first step', () => {
     expect(humanGuide).toBeVisible();
     expect(agentPrompt).not.toBeVisible();
 
-    await user.click(screen.getByRole('button', { name: 'AI代理' }));
+    await user.click(screen.getByRole('button', { name: '智能体' }));
     expect(humanGuide).not.toBeVisible();
     expect(agentPrompt).toBeVisible();
 
@@ -139,7 +316,7 @@ describe('CCC Attendance first step', () => {
 
     await user.click(screen.getByRole('button', { name: '人类' }));
     await waitFor(() => expect(pendingAnimations).toHaveLength(2));
-    await user.click(screen.getByRole('button', { name: 'AI代理' }));
+    await user.click(screen.getByRole('button', { name: '智能体' }));
     await waitFor(() => expect(pendingAnimations).toHaveLength(4));
     expect(pendingAnimations[0].animation.cancel).toHaveBeenCalledOnce();
     expect(pendingAnimations[1].animation.cancel).toHaveBeenCalledOnce();

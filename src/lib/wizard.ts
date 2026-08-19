@@ -187,7 +187,7 @@ export const formatCurrentTime = (date: Date) => (
 );
 
 export const getIdentityLabel = (identity: Identity) => (
-  identity === 'agent' ? 'AI代理（Agent）' : (identity === 'human' ? '人类（Human）' : '未选择')
+  identity === 'agent' ? '智能体（Agent）' : (identity === 'human' ? '人类（Human）' : '未选择')
 );
 
 export const getTimeModeLabel = (state: WizardState) => {

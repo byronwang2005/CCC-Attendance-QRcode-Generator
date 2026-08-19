@@ -1,37 +1,56 @@
-import LiquidGlass from 'liquid-glass-react';
-import {
-  createContext,
-  type ReactNode,
-  type RefObject,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react';
+import { Glass, type GlassOptics } from '@samasante/liquid-glass';
+import { type ReactNode, useEffect, useState } from 'react';
 
 export type GlassVariant = 'static' | 'interactive' | 'content';
 export type GlassShape = 'capsule' | 'panel';
 
-const GlassStageContext = createContext<RefObject<HTMLElement | null> | null>(null);
+export const LIVE_GLASS_OPTICS: Partial<GlassOptics> = {
+  strength: 0.05,
+  depth: 0.5,
+  curvature: 0.3,
+  bend: 0.45,
+  bendWidth: 0.16,
+  dispersion: 0.22,
+  frost: 5,
+  saturate: 1.08,
+  sheen: 0.3,
+  sheenWidth: 2.5,
+  glow: 0.08,
+  specular: 0.9,
+  mapSize: 256,
+  brightness: 0
+};
 
-export function GlassStageProvider({
-  stageRef,
-  children
-}: {
-  stageRef: RefObject<HTMLElement | null>;
-  children: ReactNode;
-}) {
-  return <GlassStageContext.Provider value={stageRef}>{children}</GlassStageContext.Provider>;
-}
+export const ACTION_GLASS_OPTICS: Partial<GlassOptics> = {
+  ...LIVE_GLASS_OPTICS,
+  strength: 0.055,
+  depth: 0.55,
+  curvature: 0.34,
+  bend: 0.48,
+  dispersion: 0.24,
+  specular: 1
+};
 
 export function supportsInteractiveGlass() {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const finePointer = window.matchMedia('(pointer: fine)').matches;
-  const chromium = /(?:Chrome|Chromium|Edg)\//.test(window.navigator.userAgent);
   const supportsBackdrop = typeof CSS !== 'undefined' && typeof CSS.supports === 'function'
     && (CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'));
-  return !reducedMotion && finePointer && chromium && supportsBackdrop;
+  return !reducedMotion && supportsBackdrop;
+}
+
+export function useInteractiveGlass() {
+  const [supported, setSupported] = useState(false);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const refresh = () => setSupported(supportsInteractiveGlass());
+    refresh();
+    reducedMotion.addEventListener('change', refresh);
+    return () => reducedMotion.removeEventListener('change', refresh);
+  }, []);
+
+  return supported;
 }
 
 export function GlassIsland({
@@ -47,42 +66,8 @@ export function GlassIsland({
   className?: string;
   children: ReactNode;
 }) {
-  const mouseContainer = useContext(GlassStageContext);
-  const [canAnimate, setCanAnimate] = useState(false);
-  const islandRef = useRef<HTMLDivElement>(null);
-  const [cornerRadius, setCornerRadius] = useState(shape === 'capsule' ? 999 : 32);
-
-  useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const finePointer = window.matchMedia('(pointer: fine)');
-    const refresh = () => setCanAnimate(supportsInteractiveGlass());
-    refresh();
-    reducedMotion.addEventListener('change', refresh);
-    finePointer.addEventListener('change', refresh);
-    return () => {
-      reducedMotion.removeEventListener('change', refresh);
-      finePointer.removeEventListener('change', refresh);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (shape === 'capsule') return;
-    const refreshRadius = () => {
-      const island = islandRef.current;
-      if (!island) return;
-      const resolvedRadius = Number.parseFloat(window.getComputedStyle(island).borderTopLeftRadius);
-      if (Number.isFinite(resolvedRadius)) setCornerRadius(resolvedRadius);
-    };
-    refreshRadius();
-    window.addEventListener('resize', refreshRadius, { passive: true });
-    return () => window.removeEventListener('resize', refreshRadius);
-  }, [shape]);
-
+  const canAnimate = useInteractiveGlass();
   const dynamic = variant === 'interactive' && !disabled && canAnimate;
-  const primaryOptics = variant === 'interactive';
-  const displacementScale = primaryOptics
-    ? (shape === 'capsule' ? 24 : 18)
-    : variant === 'content' ? 10 : shape === 'capsule' ? 14 : 12;
   const classes = [
     'glass-island',
     `glass-island--${variant}`,
@@ -93,30 +78,19 @@ export function GlassIsland({
 
   if (!dynamic) {
     return (
-      <div ref={islandRef} className={classes} data-glass-mode="static">
+      <div className={classes} data-glass-mode="static">
         <div className="glass-island__content">{children}</div>
       </div>
     );
   }
 
   return (
-    <div ref={islandRef} className={classes} data-glass-mode="interactive">
-      <LiquidGlass
-        className="glass-island__lens"
-        mouseContainer={mouseContainer}
-        displacementScale={displacementScale}
-        blurAmount={primaryOptics ? 0.055 : 0.04}
-        saturation={112}
-        aberrationIntensity={primaryOptics ? 0.45 : 0.18}
-        elasticity={primaryOptics ? 0.035 : 0.02}
-        cornerRadius={cornerRadius}
-        padding="0"
-        overLight
-        mode="standard"
-      >
-        <span className="glass-island__optics" aria-hidden="true" />
-      </LiquidGlass>
+    <Glass
+      className={classes}
+      data-glass-mode="interactive"
+      optics={className.includes('action-island') ? ACTION_GLASS_OPTICS : LIVE_GLASS_OPTICS}
+    >
       <div className="glass-island__content">{children}</div>
-    </div>
+    </Glass>
   );
 }

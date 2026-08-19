@@ -10,10 +10,12 @@ import {
   useRef,
   useState
 } from 'react';
+import { flushSync } from 'react-dom';
 import { AGENT_PROMPT, APP_PATHS, TEXT, TIME_LIMITS } from './config';
 import { InkFlowBackground } from './features/background/InkFlowBackground';
 import type { InkStep } from './features/background/ink-flow-config';
-import { GlassIsland, GlassStageProvider } from './features/glass/GlassIsland';
+import { GlassIsland } from './features/glass/GlassIsland';
+import { SegmentedGlassControl } from './features/glass/SegmentedGlassControl';
 import { useExpandableSections } from './lib/use-expandable-sections';
 import {
   buildTimestamp,
@@ -41,6 +43,10 @@ const ReceiptStage = lazy(() => preloadReceiptStage().then((module) => ({
 })));
 
 const NAVIGATION_EVENT = 'ccc:navigate';
+const STEP_TRANSITION_DURATION = 520;
+const TOAST_EXIT_DURATION = 220;
+
+type StepDirection = 'forward' | 'backward';
 
 type StateAction =
   | { type: 'patch'; patch: StatePatch }
@@ -125,13 +131,66 @@ const usePageMessage = (showToast: (message: string) => void) => {
 
 const useCurrentStep = () => {
   const [currentStep, setCurrentStep] = useState<InkStep>(readCurrentStep);
+  const currentStepRef = useRef(currentStep);
+  const transitionRef = useRef<ViewTransition | null>(null);
+  const cleanupTimerRef = useRef<number>(0);
+
   useEffect(() => {
-    const syncStep = () => setCurrentStep(readCurrentStep());
+    const clearTransitionState = () => {
+      window.clearTimeout(cleanupTimerRef.current);
+      document.documentElement.removeAttribute('data-step-direction');
+      document.documentElement.removeAttribute('data-step-transition');
+    };
+
+    const syncStep = () => {
+      const nextStep = readCurrentStep();
+      const previousStep = currentStepRef.current;
+      if (nextStep === previousStep) return;
+
+      const direction: StepDirection = nextStep > previousStep ? 'forward' : 'backward';
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      const commit = () => {
+        flushSync(() => {
+          currentStepRef.current = nextStep;
+          setCurrentStep(nextStep);
+        });
+      };
+
+      transitionRef.current?.skipTransition();
+      clearTransitionState();
+      document.documentElement.dataset.stepDirection = direction;
+
+      if (reducedMotion) {
+        commit();
+        clearTransitionState();
+        return;
+      }
+
+      if (typeof document.startViewTransition !== 'function') {
+        document.documentElement.dataset.stepTransition = 'fallback';
+        commit();
+        cleanupTimerRef.current = window.setTimeout(clearTransitionState, STEP_TRANSITION_DURATION);
+        return;
+      }
+
+      document.documentElement.dataset.stepTransition = 'native';
+      const transition = document.startViewTransition(commit);
+      transitionRef.current = transition;
+      void transition.finished.catch(() => undefined).finally(() => {
+        if (transitionRef.current !== transition) return;
+        transitionRef.current = null;
+        clearTransitionState();
+      });
+    };
+
     window.addEventListener('popstate', syncStep);
     window.addEventListener(NAVIGATION_EVENT, syncStep);
     return () => {
       window.removeEventListener('popstate', syncStep);
       window.removeEventListener(NAVIGATION_EVENT, syncStep);
+      transitionRef.current?.skipTransition();
+      transitionRef.current = null;
+      clearTransitionState();
     };
   }, []);
   return currentStep;
@@ -236,7 +295,8 @@ function Stepper({ currentStep, onLocked }: StepperProps) {
 
   return (
     <GlassIsland variant="static" shape="panel" className="stepper-island">
-      <section className="stepper" aria-label="步骤进度">
+      <section className="stepper" aria-label="步骤进度" data-current-step={currentStep}>
+        <div className="stepper-active-indicator" aria-hidden="true" />
         {STEP_DATA.map((step) => {
           const state = step.number === currentStep ? 'active' : (step.number < currentStep ? 'done' : 'idle');
           const description = step.number < currentStep ? '已完成' : step.description;
@@ -258,11 +318,7 @@ function Stepper({ currentStep, onLocked }: StepperProps) {
               </span>
             </article>
           );
-          return state === 'active' ? (
-            <GlassIsland key={step.number} variant="interactive" shape="panel" disabled className="step-active-island">
-              {card}
-            </GlassIsland>
-          ) : <div key={step.number} className="step-card-slot">{card}</div>;
+          return <div key={step.number} className="step-card-slot">{card}</div>;
         })}
       </section>
     </GlassIsland>
@@ -307,20 +363,35 @@ function Footer() {
 
 function Toast({ toast, onClose }: { toast: ToastState | null; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const closeTimerRef = useRef<number>(0);
+  const [isClosing, setIsClosing] = useState(false);
+
   useEffect(() => {
     if (toast) closeRef.current?.focus();
   }, [toast]);
 
+  useEffect(() => () => window.clearTimeout(closeTimerRef.current), []);
+
+  const requestClose = () => {
+    if (isClosing) return;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      onClose();
+      return;
+    }
+    setIsClosing(true);
+    closeTimerRef.current = window.setTimeout(onClose, TOAST_EXIT_DURATION);
+  };
+
   if (!toast || toast.type === 'success') return null;
   return (
-    <div className={`toast ${toast.type} show`} role="alertdialog" aria-live="assertive" aria-modal="true" onMouseDown={(event) => {
-      if (event.target === event.currentTarget) onClose();
+    <div className={`toast ${toast.type} show${isClosing ? ' is-exiting' : ''}`} role="alertdialog" aria-live="assertive" aria-modal="true" onMouseDown={(event) => {
+      if (event.target === event.currentTarget) requestClose();
     }}>
       <GlassIsland variant="static" shape="panel" className="toast-island">
         <div className="toast__window">
           <div className="toast__header">
             <div className="toast__label">提示</div>
-            <button ref={closeRef} type="button" className="toast__close" aria-label="关闭提示" onClick={onClose}>
+            <button ref={closeRef} type="button" className="toast__close" aria-label="关闭提示" onClick={requestClose}>
               <Icon name="x" />
             </button>
           </div>
@@ -340,12 +411,10 @@ function PageShell({
   onLocked: () => void;
   children: ReactNode;
 }) {
-  const stageRef = useRef<HTMLDivElement>(null);
   return (
-    <div ref={stageRef} className="app-stage" data-step={currentStep}>
+    <div className="app-stage" data-step={currentStep}>
       <InkFlowBackground step={currentStep} />
-      <GlassStageProvider stageRef={stageRef}>
-        <div className="page-shell">
+      <div className="page-shell">
           <GlassIsland variant="static" shape="capsule" className="masthead-island">
             <header className="masthead" aria-label="站点抬头">
               <img src="/assets/images/ccc-small.webp" className="masthead__logo" alt="CCC" />
@@ -363,8 +432,7 @@ function PageShell({
             <StepArtwork key={currentStep} currentStep={currentStep} />
           </div>
           <Footer />
-        </div>
-      </GlassStageProvider>
+      </div>
     </div>
   );
 }
@@ -423,28 +491,32 @@ function IdentityStep({
       <section className="panel identity-panel">
         <div className="identity-header">
           <h3>先告诉我，您是？</h3>
-          <div className="identity-buttons" role="tablist" aria-label="身份选择">
-            <GlassIsland variant={state.identity === 'human' ? 'interactive' : 'static'} shape="capsule" className="control-island">
+          <SegmentedGlassControl
+            selectedIndex={state.identity === 'human' ? 0 : state.identity === 'agent' ? 1 : -1}
+            count={2}
+            className="identity-buttons"
+            role="group"
+            ariaLabel="身份选择"
+          >
             <button
               type="button"
               className={`identity-btn ${state.identity === 'human' ? 'active' : ''}`}
+              aria-pressed={state.identity === 'human'}
               onClick={() => selectIdentity('human')}
             >
               <Icon name="user" />
               <span>人类</span>
             </button>
-            </GlassIsland>
-            <GlassIsland variant={state.identity === 'agent' ? 'interactive' : 'static'} shape="capsule" className="control-island">
             <button
               type="button"
               className={`identity-btn ${state.identity === 'agent' ? 'active' : ''}`}
+              aria-pressed={state.identity === 'agent'}
               onClick={() => selectIdentity('agent')}
             >
               <Icon name="bot" />
-              <span>AI代理</span>
+              <span>智能体</span>
             </button>
-            </GlassIsland>
-          </div>
+          </SegmentedGlassControl>
         </div>
 
         <div
@@ -501,7 +573,7 @@ function IdentityStep({
               <span>{copied ? '已复制!' : '复制'}</span>
             </button>
           </div>
-          <p className="agent-hint">把这句话交给AI代理，它会引导您在本地完成后续步骤。</p>
+          <p className="agent-hint">把这句话交给智能体，它会引导您在本地完成后续步骤。</p>
         </div>
       </section>
       </GlassIsland>
@@ -668,7 +740,13 @@ function TimeStep({
           <h3>选择时间模式</h3>
           <p className="panel-current-time">当前时间 {formatCurrentTime(now)}</p>
         </div>
-        <div className="radio-grid" role="radiogroup" aria-label="时间模式选择">
+        <SegmentedGlassControl
+          selectedIndex={state.timeMode === 'manual' ? 1 : 0}
+          count={2}
+          className="radio-grid"
+          role="radiogroup"
+          ariaLabel="时间模式选择"
+        >
           <ChoiceCard selected={state.timeMode === 'auto'} value="auto" onSelect={setMode}>
             <strong>自动（推荐）</strong>
             <small>适合绝大多数情况。</small>
@@ -677,7 +755,7 @@ function TimeStep({
             <strong>手动</strong>
             <small>自定义签到时间，通常用于提前准备二维码。</small>
           </ChoiceCard>
-        </div>
+        </SegmentedGlassControl>
         <div
           ref={manualTimeRef}
           id="manualTime"
@@ -740,12 +818,12 @@ function ChoiceCard({
   children: ReactNode;
 }) {
   return (
-    <GlassIsland variant={selected ? 'interactive' : 'static'} shape="panel" className="choice-island">
+    <div className="choice-island">
     <label className={`choice-card ${selected ? 'is-selected' : ''}`}>
       <input type="radio" name="mode" value={value} checked={selected} onChange={() => onSelect(value)} />
       <span>{children}</span>
     </label>
-    </GlassIsland>
+    </div>
   );
 }
 
@@ -826,13 +904,13 @@ function QrcodeStep({
       </section>
       </GlassIsland>
       <div className="actions">
-        <GlassIsland variant="interactive" shape="capsule" disabled className="action-island">
+        <GlassIsland variant="interactive" shape="capsule" className="action-island">
         <button type="button" className="button-secondary" onClick={() => navigate(APP_PATHS.time)}>
           <Icon name="arrow-left" />
           <span>返回上一步</span>
         </button>
         </GlassIsland>
-        <GlassIsland variant="interactive" shape="capsule" disabled className="action-island">
+        <GlassIsland variant="interactive" shape="capsule" className="action-island">
         <button type="button" className="button-secondary" onClick={() => {
           clearState();
           reset();
@@ -900,7 +978,7 @@ export default function App() {
           />
         )}
       </PageShell>
-      <Toast toast={toast} onClose={() => setToast(null)} />
+      <Toast key={toast ? `${toast.type}:${toast.message}` : 'none'} toast={toast} onClose={() => setToast(null)} />
     </>
   );
 }

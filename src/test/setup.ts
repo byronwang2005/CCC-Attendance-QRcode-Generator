@@ -32,3 +32,11 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   configurable: true,
   value: vi.fn(() => null)
 });
+
+class ResizeObserverMock implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+vi.stubGlobal('ResizeObserver', ResizeObserverMock);

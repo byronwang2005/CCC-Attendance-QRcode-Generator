@@ -1,9 +1,11 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { GlassIsland, supportsInteractiveGlass } from './GlassIsland';
+import { ACTION_GLASS_OPTICS, GlassIsland, LIVE_GLASS_OPTICS, supportsInteractiveGlass } from './GlassIsland';
 
-vi.mock('liquid-glass-react', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="liquid-glass">{children}</div>
+vi.mock('@samasante/liquid-glass', () => ({
+  Glass: ({ children, optics, ...props }: { children: React.ReactNode; optics: unknown }) => (
+    <div data-testid="liquid-glass" data-optics={JSON.stringify(optics)} {...props}>{children}</div>
+  )
 }));
 
 const mockMedia = (reduced: boolean, fine: boolean) => {
@@ -31,11 +33,21 @@ describe('GlassIsland', () => {
     vi.unstubAllGlobals();
   });
 
-  it('uses the live lens on supported fine-pointer devices', async () => {
+  it('uses the live lens with the calibrated optics on supported devices', async () => {
     mockMedia(false, true);
     render(<GlassIsland variant="interactive" shape="capsule"><button>继续</button></GlassIsland>);
-    expect(await screen.findByTestId('liquid-glass')).toBeInTheDocument();
+    expect(await screen.findByTestId('liquid-glass')).toHaveAttribute('data-optics', JSON.stringify(LIVE_GLASS_OPTICS));
     expect(screen.getByText('继续').closest('[data-glass-mode]')).toHaveAttribute('data-glass-mode', 'interactive');
+  });
+
+  it('uses the stronger action preset for action islands', async () => {
+    mockMedia(false, true);
+    render(
+      <GlassIsland variant="interactive" shape="capsule" className="action-island">
+        <button>下一步</button>
+      </GlassIsland>
+    );
+    expect(await screen.findByTestId('liquid-glass')).toHaveAttribute('data-optics', JSON.stringify(ACTION_GLASS_OPTICS));
   });
 
   it('falls back to static glass when motion is reduced', () => {
