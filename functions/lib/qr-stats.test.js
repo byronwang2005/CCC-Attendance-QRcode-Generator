@@ -8,6 +8,9 @@ describe('QR statistics SVG design', () => {
     expect(svg).toContain("font-family: 'TsangerJinKai02'");
     expect(svg).toContain('data:font/woff2;base64,');
     expect(svg).toContain('url(#hourlyPaper)');
+    expect(svg).toContain('width="600" height="168"');
+    expect(svg).not.toMatch(/<line(?:\s|>)/);
+    expect(svg.match(/<circle/g)).toHaveLength(1);
     expect(svg).not.toContain('<image');
     expect(svg).not.toContain('xlink');
   });
@@ -21,6 +24,9 @@ describe('QR statistics SVG design', () => {
     expect(svg).toContain("font-family: 'TsangerJinKai02'");
     expect(svg).toContain('data:font/woff2;base64,');
     expect(svg).toContain('url(#totalPaper)');
+    expect(svg).toContain('width="600" height="168"');
+    expect(svg).not.toMatch(/<line(?:\s|>)/);
+    expect(svg.match(/<circle/g)).toHaveLength(1);
     expect(svg).not.toContain('<image');
     expect(svg).not.toContain('xlink');
   });

@@ -16,7 +16,7 @@ TITLE_FONT = ROOT / "public/assets/fonts/TsangerJinKai02-W05.ttf"
 SUMMARY_FONT = ROOT / "public/assets/fonts/TsangerJinKai02-W04.ttf"
 
 WIDTH = 1200
-HEIGHT = 330
+HEIGHT = 220
 FRAME_COUNT = 90
 FRAME_DURATION_MS = 50
 
@@ -30,15 +30,15 @@ def fluid_background(progress: float) -> Image.Image:
     draw = ImageDraw.Draw(haze)
 
     left_x = 105 + 36 * math.sin(progress * math.tau)
-    left_y = 150 + 18 * math.cos(progress * math.tau)
+    left_y = 105 + 14 * math.cos(progress * math.tau)
     right_x = 1035 + 44 * math.cos(progress * math.tau + 0.8)
-    right_y = 130 + 25 * math.sin(progress * math.tau + 0.6)
+    right_y = 92 + 18 * math.sin(progress * math.tau + 0.6)
     center_x = 610 + 70 * math.sin(progress * math.tau + 2.2)
 
-    draw.ellipse((left_x - 300, left_y - 220, left_x + 300, left_y + 220), fill=(42, 78, 115, 25))
-    draw.ellipse((right_x - 310, right_y - 230, right_x + 310, right_y + 230), fill=(166, 139, 88, 22))
-    draw.ellipse((center_x - 360, 70, center_x + 360, 410), fill=(255, 255, 252, 62))
-    haze = haze.filter(ImageFilter.GaussianBlur(92))
+    draw.ellipse((left_x - 300, left_y - 170, left_x + 300, left_y + 170), fill=(42, 78, 115, 25))
+    draw.ellipse((right_x - 310, right_y - 180, right_x + 310, right_y + 180), fill=(166, 139, 88, 22))
+    draw.ellipse((center_x - 360, 35, center_x + 360, 285), fill=(255, 255, 252, 62))
+    haze = haze.filter(ImageFilter.GaussianBlur(76))
     return Image.alpha_composite(background, haze)
 
 
@@ -56,16 +56,16 @@ def compose_frame(index: int, logo_frames: list[Image.Image]) -> Image.Image:
     frame = fluid_background(progress)
 
     logo_index = round(progress * (len(logo_frames) - 1))
-    logo = logo_frames[logo_index].resize((142, 121), Image.Resampling.LANCZOS)
+    logo = logo_frames[logo_index].resize((116, 99), Image.Resampling.LANCZOS)
     logo_alpha = 0.94 + 0.06 * math.sin(progress * math.tau - math.pi / 2)
     logo.putalpha(logo.getchannel("A").point(lambda value: round(value * logo_alpha)))
-    frame.alpha_composite(logo, (255, 104))
+    frame.alpha_composite(logo, (272, 61))
 
     draw = ImageDraw.Draw(frame)
-    title_font = ImageFont.truetype(str(TITLE_FONT), 66)
-    summary_font = ImageFont.truetype(str(SUMMARY_FONT), 31)
-    draw.text((435, 91), "CCC Attendance", font=title_font, fill=(*NAVY, 255), stroke_width=0)
-    draw.text((438, 181), "一个签到码，三步搞定", font=summary_font, fill=(45, 70, 102, 242))
+    title_font = ImageFont.truetype(str(TITLE_FONT), 62)
+    summary_font = ImageFont.truetype(str(SUMMARY_FONT), 28)
+    draw.text((414, 43), "CCC Attendance", font=title_font, fill=(*NAVY, 255), stroke_width=0)
+    draw.text((417, 123), "一个签到码，三步搞定", font=summary_font, fill=(45, 70, 102, 242))
     return frame.convert("RGB")
 
 
