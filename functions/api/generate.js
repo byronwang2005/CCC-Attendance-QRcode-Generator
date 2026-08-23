@@ -1,5 +1,5 @@
 import qr from 'qr-image';
-import { buildAttendanceUrl, extractScheduleId } from '../../shared/attendance.js';
+import { buildAttendanceUrl, extractScheduleId } from '../lib/attendance.js';
 import { ERROR_MESSAGES, RESPONSE_HEADERS } from '../lib/api-constants.js';
 import { recordQrGeneration } from '../lib/qr-stats.js';
 

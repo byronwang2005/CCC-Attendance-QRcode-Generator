@@ -12,8 +12,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "public/assets/images/readme-hero.webp"
 LOGO = ROOT / "public/assets/images/ccc-small.webp"
-TITLE_FONT = ROOT / "public/assets/fonts/TsangerJinKai02-W05.ttf"
-SUMMARY_FONT = ROOT / "public/assets/fonts/TsangerJinKai02-W04.ttf"
+TITLE_FONT = ROOT / "assets-src/fonts/TsangerJinKai02-W05.ttf"
+SUMMARY_FONT = ROOT / "assets-src/fonts/TsangerJinKai02-W04.ttf"
 
 WIDTH = 1200
 HEIGHT = 220

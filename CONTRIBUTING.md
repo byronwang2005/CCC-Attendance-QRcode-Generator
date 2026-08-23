@@ -34,8 +34,8 @@ npm run preview
 
 - `src/`：React 前端、状态和交互。
 - `functions/`：Cloudflare Pages Functions 和服务端工具。
-- `shared/`：前后端共用的纯逻辑。
 - `public/`：静态资源和公开知识文件。
+- `assets-src/`：仅供资源生成脚本使用、不随站点发布的源素材。
 - `migrations/`：D1 迁移；数据库变更必须新增迁移，不得修改已有迁移。
 - `scripts/`：测试和资源生成脚本。
 
