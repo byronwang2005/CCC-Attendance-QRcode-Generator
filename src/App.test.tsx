@@ -41,12 +41,6 @@ const validWizardState = {
   timeMode: 'auto'
 };
 
-const expectSingleArtwork = async (caption: string, alt: string, src: string) => {
-  expect(await screen.findByRole('figure', { name: caption }, { timeout: 2000 })).toBeVisible();
-  expect(screen.getByRole('img', { name: alt })).toHaveAttribute('src', src);
-  expect(document.querySelectorAll('.step-artwork')).toHaveLength(1);
-};
-
 describe('CCC Attendance first step', () => {
   afterEach(() => {
     cleanup();
@@ -574,38 +568,18 @@ describe('CCC Attendance first step', () => {
     expect(panel.scrollTop).toBe(24);
   });
 
-  it('shows only the Dongqian Lake artwork on the first step', async () => {
+  it.each([1, 2, 3])('does not render step artwork on step %i', async (step) => {
+    if (step > 1) {
+      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    }
+    if (step === 3) {
+      vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
+    }
+    window.history.replaceState({}, '', `/index.html?step=${step}`);
     render(<App />);
 
-    await expectSingleArtwork(
-      '宁波东钱湖',
-      '宁波东钱湖小普陀长堤纸本插图',
-      '/assets/images/steps/step-01-dongqian-lake.png'
-    );
-  });
-
-  it('shows only the West Lake artwork with three stone towers on the second step', async () => {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
-    window.history.replaceState({}, '', '/index.html?step=2');
-    render(<App />);
-
-    await expectSingleArtwork(
-      '杭州西湖',
-      '杭州西湖三潭印月三座石塔纸本插图',
-      '/assets/images/steps/step-02-west-lake.png'
-    );
-  });
-
-  it('shows only the Nanhu artwork on the third step', async () => {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
-    window.history.replaceState({}, '', '/index.html?step=3');
-    vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
-    render(<App />);
-
-    await expectSingleArtwork(
-      '嘉兴南湖',
-      '嘉兴南湖红船与烟雨楼纸本插图',
-      '/assets/images/steps/step-03-nanhu.png'
-    );
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    expect(document.querySelector('.step-artwork')).not.toBeInTheDocument();
+    expect(document.querySelector('img[src*="/assets/images/steps/"]')).not.toBeInTheDocument();
   });
 });

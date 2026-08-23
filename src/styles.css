@@ -374,10 +374,9 @@ select:focus-visible {
 .workflow-frame {
   display: grid;
   grid-template-columns: 244px minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas:
     "steps main"
-    "art main"
     "footer main";
   column-gap: 42px;
   row-gap: 24px;
@@ -396,46 +395,6 @@ select:focus-visible {
   position: sticky;
   top: 28px;
   border-top: 1px solid var(--border-warm);
-}
-
-.step-artwork {
-  grid-area: art;
-  justify-self: center;
-  align-self: start;
-  width: 180px;
-  margin: 0;
-  color: var(--stone);
-  text-align: center;
-  animation: step-artwork-enter 760ms cubic-bezier(.2, .75, .22, 1) both;
-}
-
-.step-artwork__image {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 599 / 1000;
-  object-fit: contain;
-}
-
-@keyframes step-artwork-enter {
-  from {
-    opacity: 0;
-    filter: blur(7px) saturate(.78);
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    filter: blur(0) saturate(1);
-    transform: translateY(0);
-  }
-}
-
-.step-artwork figcaption {
-  margin-top: 9px;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
 }
 
 .step-card {
@@ -1246,8 +1205,7 @@ input[type="number"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ink-flow-layer,
-  .step-artwork {
+  .ink-flow-layer {
     animation: none;
     opacity: 1;
     filter: none;
@@ -1312,19 +1270,13 @@ input[type="number"] {
   }
 
   .workflow-frame {
-    grid-template-columns: minmax(0, 1fr) 120px;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "steps steps"
-      "main art";
+      "steps"
+      "main"
+      "footer";
     gap: 24px;
-  }
-
-  .step-artwork {
-    justify-self: center;
-    align-self: center;
-    width: 112px;
-    margin-right: 0;
   }
 
   .stepper {
@@ -1408,23 +1360,13 @@ input[type="number"] {
   }
 
   .workflow-frame {
-    grid-template-columns: minmax(0, 1fr) 72px;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "steps art"
-      "main main";
-    column-gap: 8px;
+      "steps"
+      "main"
+      "footer";
     row-gap: 10px;
-  }
-
-  .step-artwork {
-    align-self: center;
-    width: 64px;
-    margin-right: 0;
-  }
-
-  .step-artwork figcaption {
-    display: none;
   }
 
   .panel {
@@ -1622,12 +1564,12 @@ input[type="number"] {
   }
 
   .workflow-frame {
-    grid-template-columns: 168px minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "steps main"
-      "art main";
-    column-gap: 14px;
+      "steps"
+      "main"
+      "footer";
     row-gap: 8px;
   }
 
@@ -1647,16 +1589,6 @@ input[type="number"] {
   }
 
   .step-card small {
-    display: none;
-  }
-
-  .step-artwork {
-    align-self: center;
-    width: 62px;
-  }
-
-  .step-artwork figcaption,
-  .site-footer {
     display: none;
   }
 
@@ -1842,10 +1774,9 @@ input[type="number"] {
 
 .workflow-frame {
   grid-template-columns: 330px minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas:
     "steps main"
-    "art main"
     "footer main";
   column-gap: 20px;
   row-gap: 18px;
@@ -1926,23 +1857,6 @@ input[type="number"] {
 .step-card small {
   margin-top: 6px;
   font-size: 13px;
-}
-
-.step-artwork {
-  width: 226px;
-  align-self: center;
-  filter: drop-shadow(0 14px 20px rgb(35 44 52 / 8%));
-}
-
-.step-artwork figcaption {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 5px 12px;
-  border: 1px solid rgb(255 255 255 / 64%);
-  border-radius: 999px;
-  background: rgb(250 249 245 / 46%);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
 }
 
 .wizard-layout {
@@ -2267,16 +2181,14 @@ input[type="number"] {
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass-island.is-static,
-  .identity-buttons,
-  .step-artwork figcaption {
+  .identity-buttons {
     background: rgb(250 249 245 / 94%);
   }
 }
 
 @media (forced-colors: active) {
   .glass-island,
-  .identity-buttons,
-  .step-artwork figcaption {
+  .identity-buttons {
     border: 1px solid CanvasText;
     background: Canvas;
     box-shadow: none;
@@ -2295,12 +2207,12 @@ input[type="number"] {
   }
 
   .workflow-frame {
-    grid-template-columns: minmax(0, 1fr) 126px;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "steps steps"
-      "main art"
-      "footer footer";
+      "steps"
+      "main"
+      "footer";
     gap: 16px;
   }
 
@@ -2354,10 +2266,6 @@ input[type="number"] {
     height: 3px;
   }
 
-  .step-artwork {
-    width: 118px;
-  }
-
   .identity-header {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -2407,10 +2315,9 @@ input[type="number"] {
 
   .workflow-frame {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "steps"
-      "art"
       "main"
       "footer";
     gap: 8px;
@@ -2445,23 +2352,6 @@ input[type="number"] {
   }
 
   .step-card small {
-    display: none;
-  }
-
-  .step-artwork {
-    justify-self: end;
-    width: 62px;
-    height: 42px;
-    overflow: visible;
-  }
-
-  .step-artwork__image {
-    height: 62px;
-    margin-top: -10px;
-    object-fit: contain;
-  }
-
-  .step-artwork figcaption {
     display: none;
   }
 
@@ -2553,19 +2443,9 @@ input[type="number"] {
     height: 42px;
   }
 
-  .step-artwork {
-    width: 145px;
-  }
-
   .panel {
     padding-top: 26px;
     padding-bottom: 26px;
-  }
-}
-
-@media (max-width: 980px) and (orientation: landscape) and (max-height: 600px) {
-  .site-footer {
-    display: none;
   }
 }
 
@@ -2637,13 +2517,7 @@ input[type="number"] {
   animation: none;
 }
 
-.step-artwork {
-  view-transition-name: step-artwork;
-  animation: none;
-}
-
-:root[data-step-transition="native"] .step-scene,
-:root[data-step-transition="native"] .step-artwork {
+:root[data-step-transition="native"] .step-scene {
   animation: none;
 }
 
@@ -2655,26 +2529,14 @@ input[type="number"] {
   animation: step-scene-enter-backward var(--step-transition-duration) var(--step-transition-ease) both;
 }
 
-:root[data-step-transition="fallback"][data-step-direction="forward"] .step-artwork {
-  animation: step-artwork-enter-forward var(--step-transition-duration) var(--step-transition-ease) both;
-}
-
-:root[data-step-transition="fallback"][data-step-direction="backward"] .step-artwork {
-  animation: step-artwork-enter-backward var(--step-transition-duration) var(--step-transition-ease) both;
-}
-
-::view-transition-group(wizard-scene),
-::view-transition-group(step-artwork) {
+::view-transition-group(wizard-scene) {
   animation-duration: var(--step-transition-duration);
   animation-timing-function: var(--step-transition-ease);
 }
 
 ::view-transition-image-pair(wizard-scene),
-::view-transition-image-pair(step-artwork),
 ::view-transition-old(wizard-scene),
-::view-transition-new(wizard-scene),
-::view-transition-old(step-artwork),
-::view-transition-new(step-artwork) {
+::view-transition-new(wizard-scene) {
   animation-duration: var(--step-transition-duration);
   animation-timing-function: var(--step-transition-ease);
   mix-blend-mode: normal;
@@ -2696,22 +2558,6 @@ input[type="number"] {
   animation-name: step-scene-enter-backward;
 }
 
-:root[data-step-direction="forward"]::view-transition-old(step-artwork) {
-  animation-name: step-artwork-exit-forward;
-}
-
-:root[data-step-direction="forward"]::view-transition-new(step-artwork) {
-  animation-name: step-artwork-enter-forward;
-}
-
-:root[data-step-direction="backward"]::view-transition-old(step-artwork) {
-  animation-name: step-artwork-exit-backward;
-}
-
-:root[data-step-direction="backward"]::view-transition-new(step-artwork) {
-  animation-name: step-artwork-enter-backward;
-}
-
 @keyframes step-scene-exit-forward {
   from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
   to { opacity: 0; transform: translate3d(-28px, 0, 0) scale(.992); }
@@ -2729,26 +2575,6 @@ input[type="number"] {
 
 @keyframes step-scene-enter-backward {
   from { opacity: 0; transform: translate3d(-28px, 0, 0) scale(.992); }
-  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-}
-
-@keyframes step-artwork-exit-forward {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-  to { opacity: 0; transform: translate3d(-38px, 0, 0) scale(.98); }
-}
-
-@keyframes step-artwork-enter-forward {
-  from { opacity: 0; transform: translate3d(38px, 0, 0) scale(.98); }
-  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-}
-
-@keyframes step-artwork-exit-backward {
-  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-  to { opacity: 0; transform: translate3d(38px, 0, 0) scale(.98); }
-}
-
-@keyframes step-artwork-enter-backward {
-  from { opacity: 0; transform: translate3d(-38px, 0, 0) scale(.98); }
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
@@ -2788,8 +2614,7 @@ input[type="number"] {
     transition: none;
   }
 
-  .step-scene,
-  .step-artwork {
+  .step-scene {
     animation: none;
   }
 }

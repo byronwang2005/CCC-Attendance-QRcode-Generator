@@ -238,30 +238,6 @@ const STEP_DATA = [
   { number: 3, title: '生成二维码', description: '查看结果' }
 ] as const;
 
-interface StepArtworkData {
-  src: string;
-  alt: string;
-  caption: string;
-}
-
-const STEP_ARTWORKS: Record<number, StepArtworkData> = {
-  1: {
-    src: '/assets/images/steps/step-01-dongqian-lake.png',
-    alt: '宁波东钱湖小普陀长堤纸本插图',
-    caption: '宁波东钱湖'
-  },
-  2: {
-    src: '/assets/images/steps/step-02-west-lake.png',
-    alt: '杭州西湖三潭印月三座石塔纸本插图',
-    caption: '杭州西湖'
-  },
-  3: {
-    src: '/assets/images/steps/step-03-nanhu.png',
-    alt: '嘉兴南湖红船与烟雨楼纸本插图',
-    caption: '嘉兴南湖'
-  }
-};
-
 const preloadImage = (src: string) => {
   const image = new Image();
   image.src = src;
@@ -272,8 +248,7 @@ const preloadApplication = () => {
   const fonts = document.fonts?.ready ?? Promise.resolve();
   const images = [
     '/assets/images/ccc-small.webp',
-    '/assets/icons/actions.svg',
-    ...Object.values(STEP_ARTWORKS).map((artwork) => artwork.src)
+    '/assets/icons/actions.svg'
   ].map(preloadImage);
   return Promise.allSettled([fonts, preloadReceiptStage(), ...images]);
 };
@@ -320,26 +295,6 @@ function Stepper({ currentStep, onLocked }: StepperProps) {
         })}
       </section>
     </GlassIsland>
-  );
-}
-
-function StepArtwork({ currentStep }: { currentStep: number }) {
-  const artwork = STEP_ARTWORKS[currentStep] ?? STEP_ARTWORKS[1];
-  const captionId = `step-artwork-caption-${currentStep}`;
-
-  return (
-    <figure className="step-artwork" aria-labelledby={captionId}>
-      <img
-        className="step-artwork__image"
-        src={artwork.src}
-        alt={artwork.alt}
-        width="599"
-        height="1000"
-        loading="lazy"
-        decoding="async"
-      />
-      <figcaption id={captionId}>{artwork.caption}</figcaption>
-    </figure>
   );
 }
 
@@ -425,7 +380,6 @@ function PageShell({
             <main className="wizard-layout">
               <div key={currentStep} className="step-scene">{children}</div>
             </main>
-            <StepArtwork key={currentStep} currentStep={currentStep} />
             <Footer />
           </div>
       </div>
