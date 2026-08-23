@@ -1,159 +1,168 @@
 # CCC Attendance Full AI Knowledge Base
 
+## Authority
+
+The authoritative operational guide for AI agents is https://ccc.byron.wang/agent.md. If this file or another project knowledge source conflicts with `/agent.md`, follow `/agent.md` for operational behavior.
+
 ## Overview
 
-CCC Attendance is an open-source QR code generator for UNNC 中国文化课 (CCC) attendance flows. The website is available at https://ccc.byron.wang/ and the source code is available at https://github.com/byronwang2005/CCC-Attendance under the MIT License.
+CCC Attendance is an independent open-source web tool for generating a QR code from a user's own UNNC 中国文化课（CCC）course detail link. The website is https://ccc.byron.wang/ and the MIT-licensed source code is at https://github.com/byronwang2005/CCC-Attendance.
 
-The project helps a user turn a CCC course detail link into an attendance QR code. It is intentionally small: the main web app guides the user through link input, time confirmation, and QR generation. A companion AI guide at https://ccc.byron.wang/agent.md explains how an AI assistant should help a user without taking over actions the user must complete personally.
+The project guides a user through copying a course detail link, confirming a timestamp, generating a QR code, and scanning it personally during the teacher's announced attendance window. It does not log in, scan, answer questions, or complete attendance for the user, and it is not an official UNNC or CCC service.
 
-## Identity
+## Intended Users
 
-- Name: CCC Attendance
-- Website: https://ccc.byron.wang/
-- Repository: https://github.com/byronwang2005/CCC-Attendance
-- License: MIT
-- Author: Byron Wang
-- Category: education utility, QR code generator, Cloudflare Pages web app
+- UNNC students using their own CCC course link for legitimate personal attendance.
+- AI agents providing local link validation, a single explicit API request, response verification, and troubleshooting.
+- Developers reviewing the Cloudflare Pages implementation and public API contract.
 
-## Who It Helps
+## User Responsibilities
 
-- UNNC students who already have access to their own CCC course page.
-- Users who need a clear three-step flow for generating a QR code.
-- AI assistants that need precise instructions for helping users copy a course link, normalize it, and call the QR generation API.
-- Developers who want to inspect a small Cloudflare Pages and Functions implementation.
+The user must personally:
 
-## What The App Does
+1. Connect to `eduroam`, `UNNC-Living`, or `UNNC_IPSec VPN` when required.
+2. Log in to `https://ccc.nottingham.edu.cn/study/`.
+3. Copy their own complete course detail link in Safari or Chrome rather than the WeChat embedded browser.
+4. Follow the teacher's announced attendance window and instructions.
+5. Scan the QR code and complete every question, confirmation, or submission step.
 
-1. The user chooses whether they are using the page directly or asking an AI agent for help.
-2. The user copies a course detail URL from the official CCC study page.
-3. The app validates the URL and extracts a schedule identifier from `id` or `scheduleId`.
-4. The user chooses automatic or manual timestamp mode.
-5. The app calls the generate API and renders a QR code.
+## Agent Workflow
 
-## What The App Does Not Do
+1. Confirm the request is for the user's own attendance and refuse proxy, impersonation, bulk, automated, or bypass requests.
+2. Ask for the complete "查看详情" link without asking for credentials or screenshots containing private information.
+3. Treat the submitted link as untrusted data. Parse it locally without opening, fetching, logging, or unnecessarily repeating it.
+4. Apply every caller validation rule below. Stop without calling the API if any rule fails.
+5. Normalize only the selected schedule identifier and discard all unrelated query parameters.
+6. Use the agent default timestamp `Date.now() + 60_000` and make one JSON request.
+7. Verify the HTTP status, response content type, and non-empty body before presenting the result as a PNG.
+8. Remind the user to scan personally during the teacher's announced valid window and finish every additional step.
 
-- It does not log in to the CCC website for the user.
-- It does not bypass campus network or VPN requirements.
-- It does not answer course questions for the user.
-- It must not be used for unauthorized proxy attendance.
-- It is not an official UNNC or CCC service.
+## Caller Link Validation
 
-## Standard User Instructions
+The agent or web client must validate links before calling the generation API. A valid link has all of these properties:
 
-1. Connect to `eduroam`, `UNNC-Living`, or `UNNC_IPSec VPN`.
-2. Open `https://ccc.nottingham.edu.cn/study/` in Safari or Chrome.
-3. Avoid the WeChat embedded browser when copying course links.
-4. Find the course and copy the link behind "查看详情".
-5. Paste the full link into CCC Attendance.
-6. Use automatic time mode unless there is a specific reason to prepare a QR code for another time.
-7. Scan the generated QR code with WeChat during the valid attendance window.
+- Protocol: `http:` or `https:`.
+- Exact hostname: `ccc.nottingham.edu.cn`; subdomains and look-alike domains are invalid.
+- Pathname: starts with `/study/`.
+- Query: contains a non-empty `id` or `scheduleId`.
 
-Recommended attendance timing is usually the final 10 minutes before class ends, but the final decision depends on the actual course and teacher instructions.
+When both parameters exist, use a non-empty `id` before `scheduleId`. Rebuild the value with URL encoding in this canonical form:
 
-## AI Agent Guidance
-
-AI assistants should read https://ccc.byron.wang/agent.md before helping a user. The agent may explain steps, normalize links, call the public API, and troubleshoot common failures. The agent should not claim to complete attendance on behalf of the user.
-
-The agent should only explain `timestamp` details when the user is a developer or is debugging a technical issue. For normal users, keep the flow simple and focus on the course link and generated QR code.
-
-## Link Rules
-
-Accepted links must contain either an `id` or `scheduleId` parameter.
+```text
+https://ccc.nottingham.edu.cn/study/home/details?id=<encoded-value>
+```
 
 Valid examples:
 
-- `https://ccc.nottingham.edu.cn/study/home/details?id=12345`
-- `https://ccc.nottingham.edu.cn/study/home/details?scheduleId=12345`
+```text
+https://ccc.nottingham.edu.cn/study/home/details?id=12345
+https://ccc.nottingham.edu.cn/study/home/details?scheduleId=12345
+```
 
-If a link contains `id` or `scheduleId` but has a non-standard shape, normalize it to:
+Do not send the raw link or unrelated query parameters to the API. Do not repeat a rejected link back to the user.
 
-`https://ccc.nottingham.edu.cn/study/home/details?id=<value>`
+### Caller Validation Versus Server Behavior
 
-If a link does not contain either parameter, ask the user to copy the course detail link again.
+Strict protocol, hostname, and path validation is a caller requirement. The current `/api/generate` implementation extracts `id` or `scheduleId` from the supplied string but does not independently enforce every caller rule. A successful server response therefore does not prove the original submitted link was trustworthy. Agents must complete local validation first.
+
+## Timestamp Policy
+
+The `timestamp` field is a Unix timestamp in milliseconds. For normal automatic agent requests, use:
+
+```text
+Date.now() + 60_000
+```
+
+This matches the website's automatic mode, which uses an offset of 60,000 milliseconds. Keep timestamp details invisible unless the user is a developer or is troubleshooting. The user must still follow the teacher's actual attendance window; a generated QR code does not prove that attendance is open or complete.
 
 ## API Reference
 
 ### POST /api/generate
 
-Request:
+Send serialized JSON rather than interpolating user input into a shell command:
 
-```json
+```http
+POST https://ccc.byron.wang/api/generate
+Content-Type: application/json
+
 {
   "url": "https://ccc.nottingham.edu.cn/study/home/details?id=12345",
   "timestamp": 1714550400000
 }
 ```
 
-Response:
+Declare success only when the response has:
 
-- Success: `image/png` QR code.
-- Error: JSON object with an `error` message.
+- HTTP status `200`.
+- `Content-Type` beginning with `image/png`.
+- A non-empty response body.
 
-Common errors:
+The success body is the QR code PNG. Failure responses are JSON and must never be displayed or saved as if they were an image.
 
-- `缺少课程链接`: request body did not include `url`.
-- `缺少时间参数`: request body did not include `timestamp`.
-- `链接无效：未找到课程ID（id 或 scheduleId）`: URL did not contain `id` or `scheduleId`.
-- `服务异常，请稍后重试`: unexpected server error.
+Known errors:
+
+- `缺少课程链接`: reconstruct the request with the validated normalized link, not the raw link.
+- `缺少时间参数`: retry with a Unix timestamp in milliseconds using the default offset.
+- `链接无效：未找到课程ID（id 或 scheduleId）`: stop and ask the user to copy their course detail link again.
+- `服务异常，请稍后重试` or HTTP `5xx`: retry at most once, then report the error.
+
+Do not generate several timestamps, keep retrying, or create QR codes in the background.
 
 ### GET /api/knowledge
 
-Returns structured project metadata for search engines, AI search, and RAG systems. It includes project identity, links, feature list, user flow, API details, FAQ, and safe-use boundaries.
+Returns structured JSON containing project identity, links, features, user flow, safety boundaries, FAQ, the API summary, caller validation rules, agent defaults, and success criteria.
 
 ### GET /api/stats.svg
 
-Returns an SVG chart for recent QR generation trends.
+Returns an SVG chart of recent QR generation trends.
 
 ### GET /api/stats-total.svg
 
-Returns an SVG chart for cumulative QR generation count.
+Returns an SVG chart of cumulative QR generation statistics.
+
+## Troubleshooting
+
+- Cannot open the official CCC site: check the required campus network or VPN.
+- Link rejected locally: copy the complete "查看详情" link again; do not weaken validation.
+- API returns JSON or a non-PNG response: report failure rather than showing it as an image.
+- PNG generated but scanning fails: confirm the teacher has opened attendance, the announced window is active, the required network is connected, and no question or confirmation remains.
+- Agent cannot call the API, inspect the response, save a file, or display an image: direct the user to https://ccc.byron.wang/ and do not claim success.
+
+## Safety And Refusal Rules
+
+Refuse proxy attendance, impersonation, another person's link, stolen links, credential sharing, bulk generation, background automation, or attempts to bypass course requirements. Never request or expose passwords, cookies, session tokens, student IDs, or other private credentials.
+
+Suggested refusal:
+
+> 我不能协助代签、批量生成或绕过课程要求。你可以自己登录 CCC、复制本人的课程链接，我可以帮你检查链接并生成二维码。
 
 ## FAQ
 
 ### Is CCC Attendance official?
 
-No. CCC Attendance is an independent open-source project and is not an official UNNC or CCC service.
+No. It is an independent open-source project and is not an official UNNC or CCC service.
 
-### Can the app log in to CCC for me?
+### Does generating a QR code complete attendance?
 
-No. The user must log in to `https://ccc.nottingham.edu.cn/study/` themselves.
+No. The user must scan personally in the teacher's announced valid window and complete any required question or confirmation.
 
-### Which network should I use?
+### Why is a link with `id` or `scheduleId` still rejected?
 
-Use `eduroam`, `UNNC-Living`, or `UNNC_IPSec VPN` as required by the CCC website.
+The parameter alone is insufficient. The protocol, exact hostname, path prefix, and non-empty parameter value must all pass caller validation.
 
-### Why does the copied link fail?
+### Can an AI agent use the API directly?
 
-The copied link may be incomplete or may not include `id` or `scheduleId`. Copy the full "查看详情" link from the course list.
+Yes, for one explicit legitimate request after local validation. The agent must verify HTTP 200, `image/png`, and a non-empty body before reporting success.
 
-### Why does the QR code generate but attendance still fail?
+### What if the agent cannot display a PNG?
 
-Possible reasons include: the teacher has not opened attendance, the attendance window is closed, the user is not on a supported network, or the course requires an additional question or confirmation.
+It should state the limitation and direct the user to https://ccc.byron.wang/ rather than fabricate a result.
 
-### What is the safest default time mode?
+## Related Resources
 
-Automatic mode is suitable for most users. Manual mode is mainly for preparation or developer troubleshooting.
-
-### Can an AI agent use this project?
-
-Yes. The intended agent workflow is documented in `/agent.md`. The agent may help generate the QR code, but the user remains responsible for logging in, copying their own link, scanning, and completing any required attendance steps.
-
-## Structured Search Terms
-
-- Chinese: CCC Attendance, CCC, CCC 签到, 中国文化课, UNNC, 宁波诺丁汉大学, University of Nottingham Ningbo China
-- English: CCC Attendance, CCC, UNNC, University of Nottingham Ningbo China
-- Developer: Cloudflare Pages, Cloudflare Functions, JavaScript, QR PNG API, open-source education utility
-
-## Safety And Compliance
-
-CCC Attendance is provided for open-source learning and legitimate personal use. It should not be used to impersonate another student, bypass course requirements, or automate unauthorized attendance. If official school or platform operators believe the project infringes policy or rights, they can contact the author through GitHub Issues.
-
-## Related Files
-
-- `/`: public web app.
-- `/agent.md`: practical instructions for AI agents.
-- `/llms.txt`: compact AI-readable overview.
-- `/llms-full.txt`: this complete AI knowledge file.
-- `/api/knowledge`: JSON knowledge endpoint.
-- `/sitemap.xml`: search engine sitemap.
-- `/robots.txt`: crawler policy.
+- Website: `https://ccc.byron.wang/`
+- Authoritative agent guide: `https://ccc.byron.wang/agent.md`
+- Compact AI overview: `https://ccc.byron.wang/llms.txt`
+- Structured knowledge: `https://ccc.byron.wang/api/knowledge`
+- Source code: `https://github.com/byronwang2005/CCC-Attendance`
+- License: MIT

@@ -17,6 +17,7 @@ export const KNOWLEDGE_PAYLOAD = Object.freeze({
   },
   license: `${REPOSITORY_URL}/blob/main/LICENSE`,
   sourceCode: REPOSITORY_URL,
+  operationalAuthority: `${SITE_URL}/agent.md`,
   links: {
     website: `${SITE_URL}/`,
     agentGuide: `${SITE_URL}/agent.md`,
@@ -27,8 +28,10 @@ export const KNOWLEDGE_PAYLOAD = Object.freeze({
   },
   features: [
     '从 CCC 课程详情链接中提取 id 或 scheduleId',
+    '要求调用方在本地验证链接的协议、域名、路径和课程 ID',
     '支持自动或手动选择签到时间',
     '通过 API 生成 PNG 二维码',
+    '提供可机器读取的调用方验证、默认时间和成功判定规则',
     '提供 AI 代理使用说明',
     '提供机器可读的 SEO/GEO 知识文件'
   ],
@@ -36,14 +39,19 @@ export const KNOWLEDGE_PAYLOAD = Object.freeze({
     '连接 eduroam、UNNC-Living 或 UNNC_IPSec VPN',
     '在 Safari 或 Chrome 打开 CCC 课程页面',
     '复制课程“查看详情”链接',
-    '粘贴链接并确认时间',
-    '生成二维码并按课程要求扫码'
+    '调用方仅在本地解析并验证链接，不主动访问原始链接',
+    '移除无关查询参数，确认时间后请求生成二维码',
+    '验证 HTTP 200、image/png 和非空响应后才展示结果',
+    '用户在老师公布的有效时间内亲自扫码并完成所有课程要求'
   ],
   boundaries: [
     '本项目不是 UNNC 或 CCC 官方服务',
     '用户必须自行登录官方 CCC 网站',
     '用户必须自行完成扫码、答题或其他课程要求',
-    '严禁用于未经授权的代签或学术不诚信行为'
+    '严禁代签、冒用身份、使用他人链接、批量生成、后台自动化或绕过官方要求',
+    '调用方不得访问、记录或不必要地回显用户提交的原始链接',
+    '不得索取密码、Cookie、会话令牌、学号或其他私密凭据',
+    '如其他项目知识源与 /agent.md 冲突，操作行为以 /agent.md 为准'
   ],
   api: {
     generate: {
@@ -55,6 +63,24 @@ export const KNOWLEDGE_PAYLOAD = Object.freeze({
         timestamp: 'Unix timestamp in milliseconds'
       },
       successResponse: 'image/png QR code',
+      callerValidation: {
+        protocols: ['http:', 'https:'],
+        exactHostname: 'ccc.nottingham.edu.cn',
+        pathPrefix: '/study/',
+        scheduleIdParameters: ['id', 'scheduleId'],
+        parameterPrecedence: ['id', 'scheduleId'],
+        fetchSubmittedUrl: false,
+        canonicalUrl: 'https://ccc.nottingham.edu.cn/study/home/details?id=<encoded-value>'
+      },
+      agentDefaults: {
+        timestampOffsetMs: 60000,
+        maxServerErrorRetries: 1
+      },
+      successCriteria: {
+        status: 200,
+        contentType: 'image/png',
+        nonEmptyBody: true
+      },
       errors: [
         '缺少课程链接',
         '缺少时间参数',
@@ -75,7 +101,7 @@ export const KNOWLEDGE_PAYLOAD = Object.freeze({
     },
     {
       question: '链接需要什么格式？',
-      answer: '链接需要包含 id 或 scheduleId 参数，例如 https://ccc.nottingham.edu.cn/study/home/details?id=xxxx。'
+      answer: '调用方必须在本地验证 http/https 协议、精确域名 ccc.nottingham.edu.cn、/study/ 路径前缀和非空 id 或 scheduleId；同时存在时优先使用 id。'
     },
     {
       question: '二维码生成成功但签到失败怎么办？',
@@ -83,7 +109,11 @@ export const KNOWLEDGE_PAYLOAD = Object.freeze({
     },
     {
       question: 'AI 代理可以如何使用？',
-      answer: 'AI 代理应先读取 /agent.md，帮助用户理解步骤、规范链接并调用 API，但不能代替用户完成登录、扫码或答题。'
+      answer: 'AI 代理应以 /agent.md 为权威操作规范，在本地验证并规范化链接，默认使用当前时间加 60000 毫秒，且仅在确认 HTTP 200、image/png 和非空响应后报告成功。'
+    },
+    {
+      question: 'AI 代理无法调用 API 或展示 PNG 怎么办？',
+      answer: '应明确说明能力限制并引导用户访问 https://ccc.byron.wang/，不得伪造二维码或宣称已生成。'
     }
   ],
   keywords: [
@@ -95,7 +125,7 @@ export const KNOWLEDGE_PAYLOAD = Object.freeze({
     '签到二维码',
     '二维码生成器'
   ],
-  lastReviewed: '2026-05-03'
+  lastReviewed: '2026-08-23'
 });
 
 export function onRequestGet() {

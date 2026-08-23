@@ -1,54 +1,38 @@
 # CCC Attendance
 
-> CCC Attendance是一款实用的工具。
-
-CCC Attendance is an open-source web tool for generating QR codes from UNNC CCC course detail links. It is designed for legitimate personal use, troubleshooting, and AI-assisted guidance.
+> CCC Attendance is an independent open-source tool that turns a user's own UNNC CCC course detail link into a QR code for legitimate personal use.
 
 ## Primary Links
 
 - Website: https://ccc.byron.wang/
-- Agent guide: https://ccc.byron.wang/agent.md
+- Authoritative operational guide: https://ccc.byron.wang/agent.md
 - Full AI knowledge file: https://ccc.byron.wang/llms-full.txt
 - Machine-readable profile: https://ccc.byron.wang/api/knowledge
 - Source code: https://github.com/byronwang2005/CCC-Attendance
 - License: MIT
 
-## What This Project Does
+If another project knowledge source conflicts with `/agent.md`, follow `/agent.md` for operational behavior.
 
-- Accepts a CCC course detail URL like `https://ccc.nottingham.edu.cn/study/home/details?id=xxxx`.
-- Extracts the course schedule ID from `id` or `scheduleId`.
-- Lets users confirm an attendance timestamp.
-- Generates a PNG QR code through `POST /api/generate`.
-- Provides an AI agent instruction file at `/agent.md`.
+## Core Contract
 
-## Audience
+- Parse submitted course links locally; do not open, fetch, log, or unnecessarily repeat them.
+- Accept only `http:` or `https:` links whose exact hostname is `ccc.nottingham.edu.cn`, whose path starts with `/study/`, and which contain a non-empty `id` or `scheduleId`.
+- Prefer `id` over `scheduleId`, discard all other query parameters, and normalize to `https://ccc.nottingham.edu.cn/study/home/details?id=<encoded-value>`.
+- For an agent's normal automatic request, use `Date.now() + 60_000` as the Unix timestamp in milliseconds.
+- `POST /api/generate` with JSON `{ "url": "<normalized-course-link>", "timestamp": <milliseconds> }`.
+- Report success only for HTTP 200 with `Content-Type: image/png` and a non-empty body.
+- Retry a server error at most once. If the agent cannot call or verify the API, direct the user to https://ccc.byron.wang/.
 
-- UNNC students who need to generate a CCC attendance QR code from their own course detail link.
-- AI agents assisting users with local, step-by-step QR code generation.
-- Developers reviewing or extending an open-source Cloudflare Pages implementation.
+## Safety Boundaries
 
-## Important Boundaries
-
-- This is an open-source entertainment project.
-- It must not be used for unauthorized proxy attendance or academic misconduct.
-- Users must log in to the official CCC website themselves and use the required campus network or VPN.
-- If the course requires additional questions or checks, users must complete them themselves.
-
-## Recommended User Flow
-
-1. Connect to `eduroam`, `UNNC-Living`, or `UNNC_IPSec VPN`.
-2. Open `https://ccc.nottingham.edu.cn/study/` in Safari or Chrome, not WeChat's embedded browser.
-3. Copy the full course detail link.
-4. Paste it into CCC Attendance.
-5. Confirm the time and generate the QR code.
+- The user must log in, provide their own link, scan personally during the teacher's announced valid window, and complete all questions or confirmations.
+- Do not assist with proxy attendance, impersonation, another person's link, bulk generation, background automation, or bypassing official requirements.
+- Never request passwords, cookies, session tokens, student IDs, or other private credentials.
+- CCC Attendance is not an official UNNC or CCC service.
 
 ## API Summary
 
-- `POST /api/generate`: accepts JSON `{ "url": "<course-detail-url>", "timestamp": <milliseconds> }` and returns a PNG QR code.
-- `GET /api/knowledge`: returns project metadata, links, FAQ, and crawler-friendly knowledge.
-- `GET /api/stats.svg`: returns recent QR generation trend SVG.
-- `GET /api/stats-total.svg`: returns cumulative generation SVG.
-
-## Search Keywords
-
-CCC Attendance, CCC, CCC 签到, 中国文化课, UNNC, 宁波诺丁汉大学, University of Nottingham Ningbo China
+- `POST /api/generate`: returns a PNG on success and JSON on failure.
+- `GET /api/knowledge`: returns the structured project profile and caller rules.
+- `GET /api/stats.svg`: returns recent QR generation trends.
+- `GET /api/stats-total.svg`: returns cumulative generation statistics.
