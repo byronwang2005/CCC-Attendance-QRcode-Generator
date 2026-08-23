@@ -2,60 +2,69 @@
 
 感谢你愿意为 `CCC-Attendance` 做贡献。
 
-在提交代码前，请先确认你的修改符合项目当前目标：保持页面简单、直接、可用，不引入和现有交互风格冲突的复杂效果。
-
 ## Before You Start
 
-- 本项目是一个前端为主的Cloudflare Pages应用。
-- React 应用位于 `src/`，静态资源位于 `public/`，接口函数位于 `functions/`。
+- 使用 Node.js 22 或更高版本。
 
 ## Local Setup
 
-1. 安装依赖：
+按锁文件安装依赖：
 
 ```bash
-npm install
+npm ci
 ```
 
-2. 启动本地开发环境：
+仅调试前端 UI 时使用 Vite：
 
 ```bash
 npm run dev
 ```
 
-3. 运行lint：
+需要调试 Cloudflare Functions 或完整主流程时，使用本地 D1 和 Pages 预览：
 
 ```bash
-npm run lint
+npm run build
+npx wrangler d1 migrations apply QR_STATS_DB --local
+npm run preview
 ```
 
-## Code Style
+不要对贡献测试使用 `--remote` 或直接运行 `npm run deploy`。
 
-- 保持实现直接，不要引入无必要的视觉特效或复杂动画。
-- 优先沿用现有命名和文件组织方式。
-- 修改UI时，请同时检查3个步骤状态的视觉一致性。
-- 不要顺手重构无关文件，除非该问题会直接影响当前改动。
+## Project Structure
+
+- `src/`：React 前端、状态和交互。
+- `functions/`：Cloudflare Pages Functions 和服务端工具。
+- `shared/`：前后端共用的纯逻辑。
+- `public/`：静态资源和公开知识文件。
+- `migrations/`：D1 迁移；数据库变更必须新增迁移，不得修改已有迁移。
+- `scripts/`：测试和资源生成脚本。
+
+## Contribution Rules
+
+- 新功能优先复用可靠的 GitHub/npm 项目，同时检查许可证、维护状态和安全性。
+- 沿用现有命名和目录边界，不要顺手重构无关文件。
+- UI 改动需要检查 3 个步骤、移动端、性能、无障碍和 `prefers-reduced-motion`。
+- 带有 `Generated` 标记或由 `scripts/` 输出的文件不得手动编辑；应修改源文件并重新运行对应脚本。
 
 ## Commit Style (Use English)
 
-- `feat: ...`
-- `fix: ...`
-- `chore: ...`
-- `refactor: ...`
+- `feat: ...`：新功能。
+- `fix: ...`：缺陷修复。
+- `refactor: ...`：不改变行为的重构。
+- `chore: ...`：文档、测试、依赖、资源和工具链调整。
 
 ## Pull Requests
 
-- PR 标题建议与最终 commit 语义一致。
-- 描述中请写清楚：
-  - 改了什么
-  - 为什么要改
-  - 是否影响 UI、二维码生成或时间选择流程
-- 如果改动涉及界面，请附截图或录屏。
+- PR 标题与最终 Commit message 保持同一语义。
+- 说明改了什么、为什么修改，以及对 UI、API、二维码、时间或数据库的影响。
+- UI改动需要附上截图或录屏。
 
 ## Validation
 
-提交前至少完成以下检查：
+提交前运行：
 
-- 页面可正常打开
-- 主流程可从步骤1走到步骤3
-- `npm run lint` 已执行
+```bash
+npm test
+npm run lint
+npm run build
+```
