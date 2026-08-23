@@ -25,7 +25,7 @@ vi.mock('@samasante/liquid-glass', () => ({
   glassEase: (value: number) => value
 }));
 
-const mockMotion = (reduced: boolean) => {
+const mockEnvironment = ({ reduced = false, safari = false }: { reduced?: boolean; safari?: boolean } = {}) => {
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
     matches: query.includes('prefers-reduced-motion') ? reduced : false,
     media: query,
@@ -36,6 +36,16 @@ const mockMotion = (reduced: boolean) => {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn()
   }));
+  Object.defineProperty(window.navigator, 'userAgent', {
+    configurable: true,
+    value: safari
+      ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/26.0 Safari/605.1.15'
+      : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36'
+  });
+  Object.defineProperty(window.navigator, 'userAgentData', {
+    configurable: true,
+    value: undefined
+  });
   vi.stubGlobal('CSS', { supports: vi.fn(() => true) });
 };
 
@@ -49,7 +59,7 @@ describe('SegmentedGlassControl', () => {
   });
 
   it('renders one shared live lens and animates it between segments', async () => {
-    mockMotion(false);
+    mockEnvironment();
     const { rerender } = render(
       <SegmentedGlassControl selectedIndex={0} count={2} ariaLabel="身份选择">
         <button>人类</button>
@@ -68,20 +78,40 @@ describe('SegmentedGlassControl', () => {
     expect(animateGlassValue).toHaveBeenCalledWith(expect.anything(), 0, expect.objectContaining({ duration: 0.32 }));
   });
 
-  it('uses a static selection surface when motion is reduced', () => {
-    mockMotion(true);
+  it('uses a pearl selection surface on Safari while preserving motion', async () => {
+    mockEnvironment({ safari: true });
+    const { container, rerender } = render(
+      <SegmentedGlassControl selectedIndex={0} count={2}>
+        <button>自动</button>
+        <button>手动</button>
+      </SegmentedGlassControl>
+    );
+    expect(container.querySelector('.segmented-glass__lens--pearl')).toBeInTheDocument();
+    rerender(
+      <SegmentedGlassControl selectedIndex={1} count={2}>
+        <button>自动</button>
+        <button>手动</button>
+      </SegmentedGlassControl>
+    );
+    expect(animateGlassValue).toHaveBeenCalled();
+  });
+
+  it('moves the pearl selection immediately when motion is reduced', () => {
+    mockEnvironment({ reduced: true, safari: true });
     const { container } = render(
       <SegmentedGlassControl selectedIndex={0} count={2}>
         <button>自动</button>
         <button>手动</button>
       </SegmentedGlassControl>
     );
-    expect(container.querySelector('.segmented-glass__lens--static')).toBeInTheDocument();
+    expect(container.querySelector('.segmented-glass__lens--pearl')).toBeInTheDocument();
+    expect(container.querySelector('.segmented-glass')).toHaveClass('reduces-motion');
+    expect(animateGlassValue).not.toHaveBeenCalled();
     expect(screen.queryByTestId('live-segment-lens')).not.toBeInTheDocument();
   });
 
   it('does not render a selected lens before a choice is made', () => {
-    mockMotion(false);
+    mockEnvironment();
     const { container } = render(
       <SegmentedGlassControl selectedIndex={-1} count={2}>
         <button>人类</button>

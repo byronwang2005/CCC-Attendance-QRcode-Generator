@@ -2,10 +2,12 @@ import { useEffect, useRef } from 'react';
 import {
   chooseQualityTier,
   DEFAULT_QUALITY_TIER,
+  INK_AUTONOMOUS_MOTION,
   INK_PALETTES,
   INK_RENDER_SCALES,
   QUALITY_SAMPLE_SIZE,
-  shouldRenderStaticInk,
+  resolveInkMotionPolicy,
+  type InkMotionPolicy,
   type InkStep
 } from './ink-flow-config';
 
@@ -84,11 +86,11 @@ void main() {
   vec4 flow = texture(u_flow, uv);
   vec2 flowDirection = (flow.gb - 0.5) * 2.0 * flow.r * u_flow_strength;
 
-  float time = u_time * 0.068;
+  float time = u_time * ${INK_AUTONOMOUS_MOTION.timeScale};
   vec2 field = paper * 2.15;
   float warpA = valueNoise(field * 0.72 + vec2(time, -time * 0.55));
   float warpB = valueNoise(field * 1.35 + vec2(-time * 0.42, time) + warpA * 1.7);
-  field += vec2(warpA - 0.5, warpB - 0.5) * 0.82 + flowDirection * 0.9;
+  field += vec2(warpA - 0.5, warpB - 0.5) * ${INK_AUTONOMOUS_MOTION.warpStrength} + flowDirection * 0.9;
   float inkNoise = valueNoise(field * 1.18 + warpB * 0.7);
   float detail = valueNoise(field * 2.55 - warpA * 0.9);
   float wash = smoothstep(0.28, 0.74, inkNoise * 0.72 + detail * 0.28);
@@ -122,7 +124,7 @@ void main() {
   accentAlpha += flowHalo * 0.2;
   vec3 color = mix(u_ink, u_accent, clamp(accentAlpha * 5.2 + flowHalo * 0.62, 0.0, 0.76));
   float alpha = clamp(inkAlpha + accentAlpha, 0.0, 0.2);
-  out_color = vec4(color, alpha);
+  out_color = vec4(color * alpha, alpha);
 }`;
 
 type FlowTarget = {
@@ -166,7 +168,7 @@ class InkFlowRenderer {
   private canvas: HTMLCanvasElement;
   private gl: WebGL2RenderingContext;
   private step: InkStep;
-  private staticMode: boolean;
+  private motion: InkMotionPolicy;
   private flowProgram: WebGLProgram;
   private inkProgram: WebGLProgram;
   private buffer: WebGLBuffer;
@@ -191,12 +193,12 @@ class InkFlowRenderer {
   private resizeObserver: ResizeObserver;
   private intersectionObserver: IntersectionObserver;
 
-  constructor(canvas: HTMLCanvasElement, step: InkStep, staticMode: boolean) {
+  constructor(canvas: HTMLCanvasElement, step: InkStep, motion: InkMotionPolicy) {
     const gl = canvas.getContext('webgl2', {
       alpha: true,
       antialias: false,
       depth: false,
-      premultipliedAlpha: false,
+      premultipliedAlpha: true,
       powerPreference: 'low-power',
       preserveDrawingBuffer: false
     });
@@ -218,7 +220,7 @@ class InkFlowRenderer {
       ink: [...initialPalette.ink],
       inkOpacity: initialPalette.inkOpacity
     };
-    this.staticMode = staticMode;
+    this.motion = motion;
     this.flowProgram = flowProgram;
     this.inkProgram = inkProgram;
     this.buffer = buffer;
@@ -246,7 +248,7 @@ class InkFlowRenderer {
 
   setStep(step: InkStep) {
     this.step = step;
-    if (this.staticMode) {
+    if (!this.motion.animate) {
       const palette = INK_PALETTES[step];
       this.palette = {
         accent: [...palette.accent],
@@ -318,7 +320,7 @@ class InkFlowRenderer {
   }
 
   setPointer(clientX: number, clientY: number) {
-    if (this.staticMode) return;
+    if (!this.motion.pointerReactive) return;
     const rect = this.canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const x = (clientX - rect.left) / rect.width;
@@ -391,7 +393,7 @@ class InkFlowRenderer {
   }
 
   private sampleQuality(frameMs: number) {
-    if (this.staticMode || frameMs <= 0 || frameMs > 80) return;
+    if (!this.motion.animate || frameMs <= 0 || frameMs > 80) return;
     this.frameSamples.push(frameMs);
     if (this.frameSamples.length < QUALITY_SAMPLE_SIZE) return;
     const average = this.frameSamples.reduce((sum, sample) => sum + sample, 0) / this.frameSamples.length;
@@ -411,7 +413,7 @@ class InkFlowRenderer {
     this.previousFrameTime = now;
     this.sampleQuality(frameMs);
     this.render(now, deltaSeconds);
-    if (this.staticMode) {
+    if (!this.motion.animate) {
       this.running = false;
       return;
     }
@@ -461,16 +463,15 @@ export function InkFlowBackground({ step }: { step: InkStep }) {
     if (!canvas) return;
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const coarsePointerQuery = window.matchMedia('(hover: none), (pointer: coarse)');
-    const staticMode = shouldRenderStaticInk({
+    const motion = resolveInkMotionPolicy({
       coarsePointer: coarsePointerQuery.matches,
-      reducedMotion: reducedMotionQuery.matches,
-      step: stepRef.current
+      reducedMotion: reducedMotionQuery.matches
     });
 
     const start = () => {
       rendererRef.current?.destroy();
       try {
-        rendererRef.current = new InkFlowRenderer(canvas, stepRef.current, staticMode);
+        rendererRef.current = new InkFlowRenderer(canvas, stepRef.current, motion);
         rendererRef.current.resume();
       } catch {
         rendererRef.current = null;
@@ -488,13 +489,13 @@ export function InkFlowBackground({ step }: { step: InkStep }) {
     const handleContextRestored = () => start();
 
     start();
-    window.addEventListener('pointermove', handlePointer, { passive: true });
+    if (motion.pointerReactive) window.addEventListener('pointermove', handlePointer, { passive: true });
     document.addEventListener('visibilitychange', handleVisibility);
     canvas.addEventListener('webglcontextlost', handleContextLost);
     canvas.addEventListener('webglcontextrestored', handleContextRestored);
 
     return () => {
-      window.removeEventListener('pointermove', handlePointer);
+      if (motion.pointerReactive) window.removeEventListener('pointermove', handlePointer);
       document.removeEventListener('visibilitychange', handleVisibility);
       canvas.removeEventListener('webglcontextlost', handleContextLost);
       canvas.removeEventListener('webglcontextrestored', handleContextRestored);

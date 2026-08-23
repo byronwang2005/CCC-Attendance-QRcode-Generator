@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   chooseQualityTier,
   DEFAULT_QUALITY_TIER,
+  INK_AUTONOMOUS_MOTION,
   INK_PALETTES,
-  shouldRenderStaticInk
+  resolveInkMotionPolicy
 } from './ink-flow-config';
 
 describe('ink flow configuration', () => {
@@ -13,6 +14,15 @@ describe('ink flow configuration', () => {
     expect(INK_PALETTES[3].accentHex).toBe('#92291c');
     expect(Object.values(INK_PALETTES).every((palette) => palette.accentOpacity <= 0.11)).toBe(true);
     expect(Object.values(INK_PALETTES).every((palette) => palette.inkOpacity <= 0.16)).toBe(true);
+  });
+
+  it('uses one clearly visible autonomous flow cadence on every animated device', () => {
+    expect(INK_AUTONOMOUS_MOTION).toEqual({
+      timeScale: 0.1,
+      warpStrength: 0.92
+    });
+    expect(resolveInkMotionPolicy({ coarsePointer: true, reducedMotion: false }).animate).toBe(true);
+    expect(resolveInkMotionPolicy({ coarsePointer: false, reducedMotion: false }).animate).toBe(true);
   });
 
   it('adapts quality only when a high-refresh display misses its frame budget', () => {
@@ -25,10 +35,24 @@ describe('ink flow configuration', () => {
     expect(chooseQualityTier(0, 16.7, 16.1)).toBe(DEFAULT_QUALITY_TIER);
   });
 
-  it('uses a static frame only for reduced motion and coarse pointers', () => {
-    expect(shouldRenderStaticInk({ coarsePointer: false, reducedMotion: false, step: 1 })).toBe(false);
-    expect(shouldRenderStaticInk({ coarsePointer: true, reducedMotion: false, step: 1 })).toBe(true);
-    expect(shouldRenderStaticInk({ coarsePointer: false, reducedMotion: true, step: 2 })).toBe(true);
-    expect(shouldRenderStaticInk({ coarsePointer: false, reducedMotion: false, step: 3 })).toBe(false);
+  it('keeps mobile ink moving without reacting to touch pointers', () => {
+    expect(resolveInkMotionPolicy({ coarsePointer: true, reducedMotion: false })).toEqual({
+      animate: true,
+      pointerReactive: false
+    });
+  });
+
+  it('keeps fine-pointer ink moving and pointer reactive', () => {
+    expect(resolveInkMotionPolicy({ coarsePointer: false, reducedMotion: false })).toEqual({
+      animate: true,
+      pointerReactive: true
+    });
+  });
+
+  it('renders one static frame when motion is reduced', () => {
+    expect(resolveInkMotionPolicy({ coarsePointer: false, reducedMotion: true })).toEqual({
+      animate: false,
+      pointerReactive: false
+    });
   });
 });

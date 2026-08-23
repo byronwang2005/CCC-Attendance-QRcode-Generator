@@ -35,6 +35,10 @@ export const INK_PALETTES: Record<InkStep, InkPalette> = {
 export const INK_RENDER_SCALES = [0.7, 0.8, 0.9] as const;
 export const DEFAULT_QUALITY_TIER = 1;
 export const QUALITY_SAMPLE_SIZE = 120;
+export const INK_AUTONOMOUS_MOTION = {
+  timeScale: 0.1,
+  warpStrength: 0.92
+} as const;
 
 export function chooseQualityTier(
   currentTier: number,
@@ -51,13 +55,20 @@ export function chooseQualityTier(
   return safeTier;
 }
 
-export function shouldRenderStaticInk({
+export type InkMotionPolicy = {
+  animate: boolean;
+  pointerReactive: boolean;
+};
+
+export function resolveInkMotionPolicy({
   coarsePointer,
   reducedMotion
 }: {
   coarsePointer: boolean;
   reducedMotion: boolean;
-  step: InkStep;
-}) {
-  return coarsePointer || reducedMotion;
+}): InkMotionPolicy {
+  return {
+    animate: !reducedMotion,
+    pointerReactive: !coarsePointer && !reducedMotion
+  };
 }

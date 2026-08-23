@@ -16,7 +16,7 @@ import {
   useRef,
   useState
 } from 'react';
-import { LIVE_GLASS_OPTICS, useInteractiveGlass } from './GlassIsland';
+import { LIVE_GLASS_OPTICS, useGlassCapabilities } from './GlassIsland';
 
 interface SegmentMetrics {
   width: number;
@@ -45,7 +45,10 @@ export function SegmentedGlassControl({
   const selectedIndexRef = useRef(selectedIndex);
   const position = useMemo(() => glassValue(0), []);
   const [metrics, setMetrics] = useState<SegmentMetrics | null>(null);
-  const canAnimate = useInteractiveGlass();
+  const capabilities = useGlassCapabilities();
+  const canAnimate = capabilities.motion;
+  const canRefract = capabilities.material === 'refractive';
+  const lensMaterial = canRefract ? 'refractive' : capabilities.material;
 
   selectedIndexRef.current = selectedIndex;
 
@@ -99,7 +102,8 @@ export function SegmentedGlassControl({
   return (
     <div
       ref={railRef}
-      className={`segmented-glass ${canAnimate ? 'has-live-lens' : 'has-static-lens'} ${className}`.trim()}
+      className={`segmented-glass is-${lensMaterial} ${canAnimate ? 'allows-motion' : 'reduces-motion'} ${className}`.trim()}
+      data-glass-material={lensMaterial}
       role={role}
       aria-label={ariaLabel}
       style={{ '--segment-count': count } as CSSProperties}
@@ -116,11 +120,15 @@ export function SegmentedGlassControl({
             height: metrics.height
           }}
         >
-          {canAnimate ? (
+          {canRefract ? (
             <Glass className="segmented-glass__lens" optics={LIVE_GLASS_OPTICS}>
               <span className="segmented-glass__lens-fill" />
             </Glass>
-          ) : <span className="segmented-glass__lens segmented-glass__lens--static" />}
+          ) : (
+            <span className={`segmented-glass__lens segmented-glass__lens--${lensMaterial}`}>
+              <span className="segmented-glass__lens-fill" />
+            </span>
+          )}
         </GlassDiv>
       )}
       <div className="segmented-glass__options">{children}</div>
