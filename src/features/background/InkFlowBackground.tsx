@@ -3,10 +3,13 @@ import {
   chooseQualityTier,
   DEFAULT_QUALITY_TIER,
   INK_AUTONOMOUS_MOTION,
+  INK_MACRO_DRIFT,
+  INK_MACRO_DRIFT_SPEED,
   INK_PALETTES,
   INK_RENDER_SCALES,
   QUALITY_SAMPLE_SIZE,
   resolveInkMotionPolicy,
+  type InkMacroDrift,
   type InkMotionPolicy,
   type InkStep
 } from './ink-flow-config';
@@ -60,6 +63,9 @@ uniform vec3 u_ink;
 uniform vec3 u_accent;
 uniform float u_ink_opacity;
 uniform float u_accent_opacity;
+uniform vec2 u_left_drift;
+uniform vec2 u_upper_drift;
+uniform vec2 u_right_drift;
 out vec4 out_color;
 
 float hash21(vec2 point) {
@@ -93,11 +99,15 @@ void main() {
   field += vec2(warpA - 0.5, warpB - 0.5) * ${INK_AUTONOMOUS_MOTION.warpStrength} + flowDirection * 0.9;
   float inkNoise = valueNoise(field * 1.18 + warpB * 0.7);
   float detail = valueNoise(field * 2.55 - warpA * 0.9);
-  float wash = smoothstep(0.28, 0.74, inkNoise * 0.72 + detail * 0.28);
+  float washField = inkNoise * 0.72 + detail * 0.28;
+  float wash = smoothstep(0.28, 0.74, washField);
+  float flowEdge = smoothstep(0.43, 0.5, washField) * (1.0 - smoothstep(0.5, 0.58, washField));
 
-  float leftArtwork = exp(-length((uv - vec2(0.17, 0.6)) * vec2(3.05, 1.75)));
-  float upperAir = exp(-length((uv - vec2(0.72, 0.12)) * vec2(1.12, 2.55)));
-  float rightAir = exp(-length((uv - vec2(0.83, 0.52)) * vec2(2.0, 1.35)));
+  float leftArtwork = exp(-length((uv - (vec2(0.17, 0.6) + u_left_drift)) * vec2(3.05, 1.75)));
+  float upperAir = exp(-length((uv - (vec2(0.72, 0.12) + u_upper_drift)) * vec2(1.12, 2.55)));
+  float rightAir = exp(-length((uv - (vec2(0.83, 0.52) + u_right_drift)) * vec2(2.0, 1.35)));
+  float movingMass = clamp(leftArtwork * 0.74 + upperAir * 0.42 + rightAir * 0.5, 0.0, 1.0);
+  float macroEdge = smoothstep(0.26, 0.48, movingMass) * (1.0 - smoothstep(0.62, 0.84, movingMass));
   float edgeAir = smoothstep(0.4, 0.75, length((uv - 0.5) * vec2(0.82, 1.0)));
   float compositionMask = clamp(
     leftArtwork * 1.18 + upperAir * 0.52 + rightAir * 0.46 + edgeAir * 0.34,
@@ -122,7 +132,8 @@ void main() {
   float accentShape = smoothstep(0.42, 0.82, warpA * 0.58 + warpB * 0.42);
   float accentAlpha = (leftArtwork * accentShape + rightAir * accentShape * 0.28) * u_accent_opacity * bottomFade;
   accentAlpha += flowHalo * 0.2;
-  vec3 color = mix(u_ink, u_accent, clamp(accentAlpha * 5.2 + flowHalo * 0.62, 0.0, 0.76));
+  float colorDepth = accentAlpha * 5.2 + flowHalo * 0.62 + flowEdge * 0.48 + macroEdge * 0.86;
+  vec3 color = mix(u_ink, u_accent, clamp(colorDepth, 0.0, 0.76));
   float alpha = clamp(inkAlpha + accentAlpha, 0.0, 0.2);
   out_color = vec4(color * alpha, alpha);
 }`;
@@ -133,6 +144,8 @@ type FlowTarget = {
   texture: WebGLTexture;
   width: number;
 };
+
+const TAU = Math.PI * 2;
 
 function createShader(gl: WebGL2RenderingContext, type: number, source: string) {
   const shader = gl.createShader(type);
@@ -360,6 +373,15 @@ class InkFlowRenderer {
     this.pointer.velocityY *= 0.82;
   }
 
+  private setMacroDrift(uniformName: string, drift: InkMacroDrift, elapsedSeconds: number) {
+    const phase = elapsedSeconds * TAU * INK_MACRO_DRIFT_SPEED;
+    this.gl.uniform2f(
+      this.gl.getUniformLocation(this.inkProgram, uniformName),
+      Math.sin(phase / drift.xPeriodSeconds + drift.xPhase) * drift.xAmplitude,
+      Math.cos(phase / drift.yPeriodSeconds + drift.yPhase) * drift.yAmplitude
+    );
+  }
+
   private render(now: number, deltaSeconds: number) {
     const { gl } = this;
     this.renderFlow(now, deltaSeconds);
@@ -370,9 +392,13 @@ class InkFlowRenderer {
     gl.useProgram(this.inkProgram);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.flowTargets?.[this.flowIndex].texture ?? null);
+    const elapsedSeconds = this.motion.animate ? (now - this.startTime) / 1000 : 0;
     gl.uniform1i(gl.getUniformLocation(this.inkProgram, 'u_flow'), 0);
     gl.uniform2f(gl.getUniformLocation(this.inkProgram, 'u_resolution'), this.canvas.width, this.canvas.height);
-    gl.uniform1f(gl.getUniformLocation(this.inkProgram, 'u_time'), (now - this.startTime) / 1000);
+    gl.uniform1f(gl.getUniformLocation(this.inkProgram, 'u_time'), elapsedSeconds);
+    this.setMacroDrift('u_left_drift', INK_MACRO_DRIFT.left, elapsedSeconds);
+    this.setMacroDrift('u_upper_drift', INK_MACRO_DRIFT.upper, elapsedSeconds);
+    this.setMacroDrift('u_right_drift', INK_MACRO_DRIFT.right, elapsedSeconds);
     gl.uniform1f(
       gl.getUniformLocation(this.inkProgram, 'u_flow_strength'),
       Math.max(0, 1 - Math.max(0, now - this.lastPointerTime - 550) / 1850)
