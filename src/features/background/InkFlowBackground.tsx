@@ -114,9 +114,6 @@ void main() {
     0.0,
     1.0
   );
-  float bottomFade = 1.0 - smoothstep(0.76, 1.0, uv.y);
-  float sideFade = smoothstep(0.0, 0.045, uv.x) * (1.0 - smoothstep(0.965, 1.0, uv.x));
-
   float cell = 6.0;
   vec2 dotCell = fract(gl_FragCoord.xy / cell) - 0.5;
   float stipple = 1.0 - smoothstep(0.08, 0.2, length(dotCell));
@@ -124,13 +121,13 @@ void main() {
   float fiber = hash21(vec2(floor(gl_FragCoord.x * 0.42), floor(gl_FragCoord.y * 0.14)));
 
   float flowHalo = flow.r * u_flow_strength * smoothstep(0.02, 0.62, wash);
-  float inkAlpha = wash * compositionMask * bottomFade * sideFade * u_ink_opacity;
+  float inkAlpha = wash * compositionMask * u_ink_opacity;
   inkAlpha += stipple * stippleGate * compositionMask * 0.021;
   inkAlpha += (fiber - 0.5) * compositionMask * 0.013;
   inkAlpha += flowHalo * 0.15;
 
   float accentShape = smoothstep(0.42, 0.82, warpA * 0.58 + warpB * 0.42);
-  float accentAlpha = (leftArtwork * accentShape + rightAir * accentShape * 0.28) * u_accent_opacity * bottomFade;
+  float accentAlpha = (leftArtwork * accentShape + rightAir * accentShape * 0.28) * u_accent_opacity;
   accentAlpha += flowHalo * 0.2;
   float colorDepth = accentAlpha * 5.2 + flowHalo * 0.62 + flowEdge * 0.48 + macroEdge * 0.86;
   vec3 color = mix(u_ink, u_accent, clamp(colorDepth, 0.0, 0.76));

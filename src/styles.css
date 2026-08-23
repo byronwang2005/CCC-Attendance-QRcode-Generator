@@ -254,20 +254,8 @@ select:focus-visible {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
-  background-color: #f5f3ed;
-  transition: background-color 620ms cubic-bezier(.22, .72, .2, 1);
-}
-
-.app-stage[data-step="1"] {
-  background-color: #f3f4f0;
-}
-
-.app-stage[data-step="2"] {
-  background-color: #f6f2e8;
-}
-
-.app-stage[data-step="3"] {
-  background-color: #f6efeb;
+  background-color: var(--ink-stage-background, #f5f3ed);
+  transition: background-color 520ms cubic-bezier(.22, .72, .2, 1);
 }
 
 .cursor-layer {
@@ -1687,7 +1675,6 @@ input[type="number"] {
   --pearl-inner: inset 0 1px 0 rgb(255 255 255 / 84%), inset 0 -1px 0 rgb(70 83 96 / 10%);
   --pearl-rim-light: rgb(255 255 255 / 88%);
   --pearl-rim-cool: rgb(171 193 213 / 34%);
-  --pearl-rim-warm: rgb(255 235 199 / 24%);
 }
 
 .glass-island {
@@ -1737,8 +1724,7 @@ input[type="number"] {
   z-index: 1;
   background:
     radial-gradient(120% 78% at 14% -10%, rgb(255 255 255 / 34%), transparent 52%),
-    radial-gradient(82% 54% at 96% 105%, var(--pearl-rim-cool), transparent 62%),
-    linear-gradient(112deg, transparent 36%, var(--pearl-rim-warm) 52%, transparent 66%);
+    radial-gradient(82% 54% at 96% 105%, var(--pearl-rim-cool), transparent 62%);
   opacity: .72;
 }
 
@@ -2077,9 +2063,7 @@ input[type="number"] {
 .segmented-glass__lens--pearl .segmented-glass__lens-fill {
   position: relative;
   z-index: 0;
-  background:
-    radial-gradient(120% 90% at 16% -12%, rgb(255 255 255 / 42%), transparent 56%),
-    linear-gradient(116deg, transparent 42%, rgb(255 234 198 / 18%) 57%, transparent 72%);
+  background: radial-gradient(120% 90% at 16% -12%, rgb(255 255 255 / 42%), transparent 56%);
 }
 
 .segmented-glass__lens--solid {

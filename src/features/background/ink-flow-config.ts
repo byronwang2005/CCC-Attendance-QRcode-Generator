@@ -4,6 +4,7 @@ export type InkPalette = {
   accent: readonly [number, number, number];
   accentHex: string;
   accentOpacity: number;
+  backgroundHex: string;
   ink: readonly [number, number, number];
   inkHex: string;
   inkOpacity: number;
@@ -14,6 +15,7 @@ export const INK_PALETTES: Record<InkStep, InkPalette> = {
     accent: [0.192, 0.361, 0.451],
     accentHex: '#315c73',
     accentOpacity: 0.105,
+    backgroundHex: '#f0f3f4',
     ink: [0.353, 0.455, 0.533],
     inkHex: '#5a7488',
     inkOpacity: 0.155
@@ -22,6 +24,7 @@ export const INK_PALETTES: Record<InkStep, InkPalette> = {
     accent: [0.208, 0.404, 0.365],
     accentHex: '#35675d',
     accentOpacity: 0.095,
+    backgroundHex: '#f1f4f1',
     ink: [0.353, 0.482, 0.451],
     inkHex: '#5a7b73',
     inkOpacity: 0.15
@@ -30,6 +33,7 @@ export const INK_PALETTES: Record<InkStep, InkPalette> = {
     accent: [0.431, 0.376, 0.259],
     accentHex: '#6e6042',
     accentOpacity: 0.1,
+    backgroundHex: '#f4f2ec',
     ink: [0.537, 0.482, 0.376],
     inkHex: '#897b60',
     inkOpacity: 0.155

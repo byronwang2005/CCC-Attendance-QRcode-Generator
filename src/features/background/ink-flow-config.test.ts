@@ -47,6 +47,14 @@ describe('ink flow configuration', () => {
     expect(INK_PALETTES[3].ink).toEqual([0.537, 0.482, 0.376]);
   });
 
+  it('keeps each WebGL fallback background beside its ink palette', () => {
+    expect(Object.values(INK_PALETTES).map((palette) => palette.backgroundHex)).toEqual([
+      '#f0f3f4',
+      '#f1f4f1',
+      '#f4f2ec'
+    ]);
+  });
+
   it('uses one clearly visible autonomous flow cadence on every animated device', () => {
     expect(INK_AUTONOMOUS_MOTION).toEqual({
       timeScale: 0.1,

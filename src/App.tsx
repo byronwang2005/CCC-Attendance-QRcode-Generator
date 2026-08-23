@@ -1,4 +1,5 @@
 import {
+  type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
   Suspense,
@@ -13,7 +14,7 @@ import {
 import { flushSync } from 'react-dom';
 import { AGENT_PROMPT, APP_PATHS, TEXT, TIME_LIMITS } from './config';
 import { InkFlowBackground } from './features/background/InkFlowBackground';
-import type { InkStep } from './features/background/ink-flow-config';
+import { INK_PALETTES, type InkStep } from './features/background/ink-flow-config';
 import { GlassIsland } from './features/glass/GlassIsland';
 import { SegmentedGlassControl } from './features/glass/SegmentedGlassControl';
 import { useExpandableSections } from './lib/use-expandable-sections';
@@ -362,8 +363,12 @@ function PageShell({
   onLocked: () => void;
   children: ReactNode;
 }) {
+  const stageStyle = {
+    '--ink-stage-background': INK_PALETTES[currentStep].backgroundHex
+  } as CSSProperties;
+
   return (
-    <div className="app-stage" data-step={currentStep}>
+    <div className="app-stage" data-step={currentStep} style={stageStyle}>
       <InkFlowBackground step={currentStep} />
       <div className="page-shell">
           <GlassIsland variant="static" shape="capsule" className="masthead-island">

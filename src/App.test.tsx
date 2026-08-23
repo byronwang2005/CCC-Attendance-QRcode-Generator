@@ -124,6 +124,29 @@ describe('CCC Attendance first step', () => {
     expect(screen.queryByLabelText('正在加载')).not.toBeInTheDocument();
   });
 
+  it('keeps the stage fallback background synchronized with every ink palette', async () => {
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    const stage = document.querySelector<HTMLElement>('.app-stage');
+    expect(stage?.style.getPropertyValue('--ink-stage-background')).toBe('#f0f3f4');
+
+    await user.click(screen.getByRole('button', { name: '人类' }));
+    await user.type(
+      screen.getByRole('textbox', { name: '课程详情链接输入框' }),
+      'https://ccc.nottingham.edu.cn/study/home/details?id=1234'
+    );
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(stage?.style.getPropertyValue('--ink-stage-background')).toBe('#f1f4f1');
+
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+    expect(await screen.findByRole('button', { name: '生成更多' })).toBeVisible();
+    expect(stage?.style.getPropertyValue('--ink-stage-background')).toBe('#f4f2ec');
+  });
+
   it('coordinates forward and backward navigation with one native view transition at a time', async () => {
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
     vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
