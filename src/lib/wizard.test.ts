@@ -3,6 +3,10 @@ import { TEXT } from '../config';
 import {
   buildTimestamp,
   createDefaultState,
+  getIdentityLabel,
+  getReceiptIdentityLabel,
+  getReceiptTimeModeLabel,
+  getTimeModeLabel,
   parseErrorMessage,
   sanitizeState,
   validateCourseUrl
@@ -43,6 +47,25 @@ describe('wizard compatibility', () => {
     expect(validateCourseUrl('').message).toBe(TEXT.errors.pasteCourseUrlFirst);
     expect(validateCourseUrl('https://example.com/study/home/details?id=1').message)
       .toBe(TEXT.errors.invalidCourseUrlDomain);
+  });
+
+  it('uses Chinese-only identity labels', () => {
+    expect(getIdentityLabel('human')).toBe('人类');
+    expect(getIdentityLabel('agent')).toBe('智能体');
+  });
+
+  it('uses concise time mode labels', () => {
+    const automatic = createDefaultState();
+    expect(getTimeModeLabel(automatic)).toBe('自动');
+    expect(getTimeModeLabel({ ...automatic, timeMode: 'manual' })).toBe('手动');
+  });
+
+  it('uses English-only receipt labels', () => {
+    const automatic = createDefaultState();
+    expect(getReceiptIdentityLabel('human')).toBe('Human');
+    expect(getReceiptIdentityLabel('agent')).toBe('Agent');
+    expect(getReceiptTimeModeLabel(automatic)).toBe('Auto');
+    expect(getReceiptTimeModeLabel({ ...automatic, timeMode: 'manual' })).toBe('Manual');
   });
 
   it('builds auto and manual timestamps with the original limits', () => {

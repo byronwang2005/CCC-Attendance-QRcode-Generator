@@ -22,5 +22,6 @@ export interface ToastState {
 export interface QrResult {
   imageUrl?: string;
   generatedTime?: string;
+  validTime?: string;
   message?: string;
 }

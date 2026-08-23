@@ -25,6 +25,8 @@ import {
   formatDateTime,
   formatDateValue,
   getIdentityLabel,
+  getReceiptIdentityLabel,
+  getReceiptTimeModeLabel,
   getTimeModeLabel,
   loadState,
   parseErrorMessage,
@@ -42,6 +44,15 @@ const preloadReceiptStage = () => {
 const ReceiptStage = lazy(() => preloadReceiptStage().then((module) => ({
   default: module.ReceiptStage
 })));
+
+const scheduleReceiptStagePreload = () => {
+  if (typeof window.requestIdleCallback === 'function') {
+    const requestId = window.requestIdleCallback(() => void preloadReceiptStage(), { timeout: 1200 });
+    return () => window.cancelIdleCallback(requestId);
+  }
+  const timerId = window.setTimeout(() => void preloadReceiptStage(), 280);
+  return () => window.clearTimeout(timerId);
+};
 
 const NAVIGATION_EVENT = 'ccc:navigate';
 const STEP_TRANSITION_DURATION = 520;
@@ -251,7 +262,7 @@ const preloadApplication = () => {
     '/assets/images/ccc-small.webp',
     '/assets/icons/actions.svg'
   ].map(preloadImage);
-  return Promise.allSettled([fonts, preloadReceiptStage(), ...images]);
+  return Promise.allSettled([fonts, ...images]);
 };
 
 function Stepper({ currentStep, onLocked }: StepperProps) {
@@ -611,6 +622,8 @@ function TimeStep({
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => scheduleReceiptStagePreload(), []);
+
   const dateOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     const cursor = new Date(windowRange.windowStart.getFullYear(), windowRange.windowStart.getMonth(), windowRange.windowStart.getDate());
@@ -751,7 +764,13 @@ function TimeStep({
         </button>
         </GlassIsland>
         <GlassIsland variant="interactive" shape="capsule" className="action-island">
-        <button type="button" className="button-primary" onClick={goNext}>
+        <button
+          type="button"
+          className="button-primary"
+          onPointerEnter={() => void preloadReceiptStage()}
+          onFocus={() => void preloadReceiptStage()}
+          onClick={goNext}
+        >
           <span>下一步</span>
           <Icon name="arrow-right" />
         </button>
@@ -793,6 +812,10 @@ function QrcodeStep({
 }) {
   const [result, setResult] = useState<QrResult>({});
   const validation = useMemo(() => validateCourseUrl(state.url), [state.url]);
+  const identityLabel = getIdentityLabel(state.identity);
+  const modeLabel = getTimeModeLabel(state);
+  const receiptIdentityLabel = getReceiptIdentityLabel(state.identity);
+  const receiptModeLabel = getReceiptTimeModeLabel(state);
 
   useEffect(() => {
     if (!validation.valid) return;
@@ -816,7 +839,13 @@ function QrcodeStep({
         });
         if (!response.ok) throw new Error(parseErrorMessage(await response.text()));
         objectUrl = URL.createObjectURL(await response.blob());
-        if (active) setResult({ imageUrl: objectUrl, generatedTime: formatDateTime(timestamp) });
+        if (active) {
+          setResult({
+            imageUrl: objectUrl,
+            generatedTime: formatDateTime(Date.now()),
+            validTime: formatDateTime(timestamp)
+          });
+        }
       } catch (error) {
         const message = error instanceof Error && error.message === 'Failed to fetch'
           ? TEXT.errors.networkError
@@ -839,21 +868,42 @@ function QrcodeStep({
     <>
       <GlassIsland variant="content" shape="panel" className="task-glass receipt-glass">
       <section className="receipt-panel panel">
-        <div id="qrcode" className="qrcode-stage" aria-label="二维码，就位">
-          {result.imageUrl && validation.valid ? (
-            <Suspense fallback={null}>
-              <ReceiptStage
-                imageUrl={result.imageUrl}
-                generatedTime={result.generatedTime ?? ''}
-                identityLabel={getIdentityLabel(state.identity)}
-                modeLabel={getTimeModeLabel(state)}
-                scheduleId={validation.scheduleId}
-              />
-            </Suspense>
-          ) : (
-            <div className="qrcode-placeholder">
-              <div>{result.message ? TEXT.errors.qrCodeGenerationFailed : TEXT.placeholders.qrCodeLoading}</div>
-            </div>
+        <div className={`receipt-result-layout${result.imageUrl ? ' is-ready' : ' is-pending'}`}>
+          <div id="qrcode" className="qrcode-stage" aria-label="二维码，就位">
+            {result.imageUrl && validation.valid ? (
+              <Suspense fallback={<div className="qrcode-placeholder">{TEXT.placeholders.receiptLoading}</div>}>
+                <ReceiptStage
+                  imageUrl={result.imageUrl}
+                  generatedTime={result.generatedTime ?? ''}
+                  validTime={result.validTime ?? ''}
+                  identityLabel={receiptIdentityLabel}
+                  modeLabel={receiptModeLabel}
+                  scheduleId={validation.scheduleId}
+                  accentColor={INK_PALETTES[3].accentHex}
+                  ambientColor={INK_PALETTES[3].inkHex}
+                />
+              </Suspense>
+            ) : (
+              <div className="qrcode-placeholder">
+                <div>{result.message ? TEXT.errors.qrCodeGenerationFailed : TEXT.placeholders.qrCodeLoading}</div>
+              </div>
+            )}
+          </div>
+          {result.imageUrl && validation.valid && (
+            <GlassIsland variant="static" shape="panel" className="receipt-summary-island">
+              <aside className="receipt-result-summary" aria-live="polite">
+                <div className="receipt-result-summary__copy">
+                  <h3>{TEXT.status.qrCodeReady}</h3>
+                </div>
+                <dl className="receipt-result-summary__details">
+                  <div><dt>生成时间</dt><dd>{result.generatedTime}</dd></div>
+                  <div><dt>模式</dt><dd>{modeLabel}</dd></div>
+                  <div><dt>身份</dt><dd>{identityLabel}</dd></div>
+                  <div><dt>课程ID</dt><dd>{validation.scheduleId}</dd></div>
+                  <div><dt>有效时间</dt><dd>{result.validTime}</dd></div>
+                </dl>
+              </aside>
+            </GlassIsland>
           )}
         </div>
       </section>

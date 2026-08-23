@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { createReceiptStage } from './receipt-stage.js';
+import { createReceiptStage, type ReceiptStageOptions } from './receipt-stage';
 
-interface ReceiptStageProps {
-  imageUrl: string;
-  generatedTime: string;
-  identityLabel: string;
-  modeLabel: string;
-  scheduleId: string;
-}
+export type ReceiptStageProps = ReceiptStageOptions;
 
 export function ReceiptStage(props: ReceiptStageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,11 +28,33 @@ export function ReceiptStage(props: ReceiptStageProps) {
       disposed = true;
       stage?.destroy();
     };
-  }, [props.imageUrl, props.generatedTime, props.identityLabel, props.modeLabel, props.scheduleId]);
+  }, [
+    props.accentColor,
+    props.ambientColor,
+    props.generatedTime,
+    props.identityLabel,
+    props.imageUrl,
+    props.modeLabel,
+    props.scheduleId,
+    props.validTime
+  ]);
 
   if (fallback) {
-    return <img src={props.imageUrl} alt="Attendance QR Code" className="qrcode-image qrcode-image-fallback" />;
+    return (
+      <article className="receipt-stage-fallback" aria-label="二维码二维回执">
+        <header>CCC ATTENDANCE</header>
+        <dl>
+          <div><dt>GENERATED TIME</dt><dd>{props.generatedTime}</dd></div>
+          <div><dt>MODE</dt><dd>{props.modeLabel}</dd></div>
+          <div><dt>IDENTITY</dt><dd>{props.identityLabel}</dd></div>
+          <div><dt>SCHEDULE ID</dt><dd>{props.scheduleId}</dd></div>
+          <div><dt>VALID TIME</dt><dd>{props.validTime}</dd></div>
+        </dl>
+        <img src={props.imageUrl} alt="Attendance QR Code" />
+        <footer>SCAN · ATTEND · COMPLETE</footer>
+      </article>
+    );
   }
 
-  return <div ref={containerRef} className="receipt-stage-host" />;
+  return <div ref={containerRef} className="receipt-stage-host" aria-hidden="true" />;
 }

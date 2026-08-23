@@ -187,16 +187,19 @@ export const formatCurrentTime = (date: Date) => (
 );
 
 export const getIdentityLabel = (identity: Identity) => (
-  identity === 'agent' ? '智能体（Agent）' : (identity === 'human' ? '人类（Human）' : '未选择')
+  identity === 'agent' ? '智能体' : (identity === 'human' ? '人类' : '未选择')
+);
+
+export const getReceiptIdentityLabel = (identity: Identity) => (
+  identity === 'agent' ? 'Agent' : (identity === 'human' ? 'Human' : 'Not selected')
 );
 
 export const getTimeModeLabel = (state: WizardState) => {
-  if (state.timeMode !== 'manual') return '自动模式';
-  try {
-    return `手动模式（${formatDateTime(buildTimestamp(state))}）`;
-  } catch {
-    return '手动模式';
-  }
+  return state.timeMode === 'manual' ? '手动' : '自动';
+};
+
+export const getReceiptTimeModeLabel = (state: WizardState) => {
+  return state.timeMode === 'manual' ? 'Manual' : 'Auto';
 };
 
 export const parseErrorMessage = (rawText: string) => {

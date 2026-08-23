@@ -1,16 +1,85 @@
-import * as THREE from 'three';
+import {
+  BufferAttribute,
+  BufferGeometry,
+  CanvasTexture,
+  Color,
+  ConeGeometry,
+  CylinderGeometry,
+  DirectionalLight,
+  DoubleSide,
+  DynamicDrawUsage,
+  Group,
+  HemisphereLight,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+  Plane,
+  Raycaster,
+  RepeatWrapping,
+  Scene,
+  SphereGeometry,
+  SRGBColorSpace,
+  Vector2,
+  Vector3,
+  WebGLRenderer
+} from 'three';
+import {
+  fitReceiptCamera,
+  RECEIPT_HEIGHT,
+  RECEIPT_TEXTURE_HEIGHT,
+  RECEIPT_TEXTURE_WIDTH,
+  RECEIPT_VERTICAL_FOV,
+  RECEIPT_WIDTH,
+  type ReceiptStageTheme
+} from './receipt-stage-config';
+
+const THREE = {
+  BufferAttribute,
+  BufferGeometry,
+  CanvasTexture,
+  ConeGeometry,
+  CylinderGeometry,
+  DirectionalLight,
+  DoubleSide,
+  DynamicDrawUsage,
+  Group,
+  HemisphereLight,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+  Plane,
+  Raycaster,
+  RepeatWrapping,
+  Scene,
+  SphereGeometry,
+  SRGBColorSpace,
+  Vector2,
+  Vector3,
+  WebGLRenderer
+} as const;
+
+type ThreeApi = typeof THREE;
+
+export interface ReceiptStageOptions extends ReceiptStageTheme {
+  generatedTime: string;
+  identityLabel: string;
+  imageUrl: string;
+  modeLabel: string;
+  scheduleId: string;
+  validTime: string;
+}
 
 const FIXED_TIME_STEP = 1 / 60;
-const RECEIPT_WIDTH = 1.18;
-const RECEIPT_HEIGHT = 1.96;
-const RECEIPT_TEXTURE_WIDTH = 1024;
-const RECEIPT_TEXTURE_HEIGHT = 1520;
 const WAKEUP_VELOCITY_SQ = 0.0000032;
-const INTRO_DROP_DISTANCE = 1.34;
-const INTRO_DURATION_MS = 1080;
+const INTRO_DROP_DISTANCE = 0.92;
+const INTRO_DURATION_MS = 720;
 const PIN_INSERT_DISTANCE = 0.28;
-const PIN_ANIMATION_DURATION_MS = 220;
-const PIN_ANIMATION_STAGGER_MS = 90;
+const PIN_ANIMATION_DURATION_MS = 180;
+const PIN_ANIMATION_STAGGER_MS = 70;
 const PIN_LAYOUT = Object.freeze([
   Object.freeze({
     x: -RECEIPT_WIDTH * 0.41,
@@ -31,16 +100,16 @@ const PIN_TETHER_RADIUS_X = 0.152;
 const PIN_TETHER_RADIUS_Y = 0.138;
 const PIN_SURFACE_BULGE = 0.018;
 const PIN_SURFACE_DENT = 0.011;
-const RECEIPT_MONO_FONT = '"JetBrains Mono"';
+const RECEIPT_PRINT_FONT = '"Courier Prime", "Courier New", monospace';
 
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-const easeOutCubic = (value) => 1 - Math.pow(1 - value, 3);
-const receiptPointToTexture = (x, y, width, height) => ({
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
+const receiptPointToTexture = (x: number, y: number, width: number, height: number) => ({
   x: (x / RECEIPT_WIDTH + 0.5) * width,
   y: (0.5 - y / RECEIPT_HEIGHT) * height
 });
 
-const parseHexColor = (color) => {
+const parseHexColor = (color: string): [number, number, number] => {
   const normalized = color.replace('#', '');
   return [
     Number.parseInt(normalized.slice(0, 2), 16),
@@ -49,27 +118,40 @@ const parseHexColor = (color) => {
   ];
 };
 
-const blendHexColor = (color, baseColor, alpha) => {
+const blendHexColor = (color: string, baseColor: string, alpha: number) => {
   const source = parseHexColor(color);
   const base = parseHexColor(baseColor);
-  const channel = (index) => Math.round(source[index] * alpha + base[index] * (1 - alpha));
+  const channel = (index: number) => Math.round(source[index] * alpha + base[index] * (1 - alpha));
 
   return `#${[0, 1, 2].map((index) => channel(index).toString(16).padStart(2, '0')).join('')}`;
 };
 
-const fillRectBlend = (context, color, baseColor, alpha, x, y, width, height) => {
+const fillRectBlend = (
+  context: CanvasRenderingContext2D,
+  color: string,
+  baseColor: string,
+  alpha: number,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) => {
   context.fillStyle = blendHexColor(color, baseColor, alpha);
   context.fillRect(x, y, width, height);
 };
 
-const strokeBlend = (context, color, baseColor, alpha, draw) => {
+const strokeBlend = (
+  context: CanvasRenderingContext2D,
+  color: string,
+  baseColor: string,
+  alpha: number,
+  draw: () => void
+) => {
   context.strokeStyle = blendHexColor(color, baseColor, alpha);
   draw();
 };
 
-const loadThreeModule = async () => THREE;
-
-const loadImage = (src) => new Promise((resolve, reject) => {
+const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
   const image = new Image();
   image.decoding = 'async';
   image.onload = async () => {
@@ -86,10 +168,14 @@ const loadImage = (src) => new Promise((resolve, reject) => {
   image.src = src;
 });
 
-const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
+const buildReceiptTexture = (
+  THREE: ThreeApi,
+  renderer: WebGLRenderer,
+  qrImage: HTMLImageElement,
+  meta: ReceiptStageOptions
+) => {
   const width = RECEIPT_TEXTURE_WIDTH;
   const height = RECEIPT_TEXTURE_HEIGHT;
-  const scaleY = height / 1820;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -133,30 +219,31 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   }
 
   context.textAlign = 'center';
-  context.font = `400 50px ${RECEIPT_MONO_FONT}`;
+  context.font = `400 50px ${RECEIPT_PRINT_FONT}`;
   context.fillStyle = blendHexColor('#141413', receiptPaper, 0.84);
-  context.fillText('CCC ATTENDANCE', width / 2, 136 * scaleY);
+  context.fillText('CCC ATTENDANCE', width / 2, 118);
 
   context.lineWidth = 3;
   context.setLineDash([10, 9]);
   strokeBlend(context, ruleColor, receiptPaper, 1, () => {
     context.beginPath();
-    context.moveTo(92, 226 * scaleY);
-    context.lineTo(width - 92, 226 * scaleY);
+    context.moveTo(92, 176);
+    context.lineTo(width - 92, 176);
     context.stroke();
   });
   context.setLineDash([]);
 
   const lines = [
-    ['TIME', meta.generatedTime ?? '--'],
+    ['GENERATED TIME', meta.generatedTime ?? '--'],
     ['MODE', meta.modeLabel ?? '--'],
     ['IDENTITY', meta.identityLabel ?? '--'],
-    ['SCHEDULE ID', meta.scheduleId ?? '--']
+    ['SCHEDULE ID', meta.scheduleId ?? '--'],
+    ['VALID TIME', meta.validTime ?? '--']
   ];
 
   context.textAlign = 'left';
-  context.font = `400 25px ${RECEIPT_MONO_FONT}`;
-  let currentY = 278 * scaleY;
+  context.font = `400 25px ${RECEIPT_PRINT_FONT}`;
+  let currentY = 224;
 
   for (const [label, value] of lines) {
     context.fillStyle = blendHexColor('#6b6a64', receiptPaper, 0.92);
@@ -168,21 +255,21 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
     context.lineWidth = 1;
     strokeBlend(context, ruleColor, receiptPaper, 1, () => {
       context.beginPath();
-      context.moveTo(100, currentY + 18 * scaleY);
-      context.lineTo(width - 100, currentY + 18 * scaleY);
+      context.moveTo(100, currentY + 20);
+      context.lineTo(width - 100, currentY + 20);
       context.stroke();
     });
-    currentY += 70 * scaleY;
+    currentY += 52;
   }
 
-  const qrSize = 472;
+  const qrSize = 592;
   const qrX = (width - qrSize) / 2;
-  const qrY = 540 * scaleY;
+  const qrY = 530;
 
-  fillRectBlend(context, receiptBase, receiptPaper, 0.96, qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
+  fillRectBlend(context, receiptBase, receiptPaper, 0.98, qrX - 30, qrY - 30, qrSize + 60, qrSize + 60);
   context.lineWidth = 2;
   strokeBlend(context, borderColor, receiptPaper, 1, () => {
-    context.strokeRect(qrX - 24, qrY - 24, qrSize + 48, qrSize + 48);
+    context.strokeRect(qrX - 30, qrY - 30, qrSize + 60, qrSize + 60);
   });
 
   context.imageSmoothingEnabled = false;
@@ -192,11 +279,16 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   context.lineWidth = 3;
   strokeBlend(context, ruleColor, receiptPaper, 1, () => {
     context.beginPath();
-    context.moveTo(92, qrY + qrSize + 104 * scaleY);
-    context.lineTo(width - 92, qrY + qrSize + 104 * scaleY);
+    context.moveTo(92, qrY + qrSize + 88);
+    context.lineTo(width - 92, qrY + qrSize + 88);
     context.stroke();
   });
   context.setLineDash([]);
+
+  context.textAlign = 'center';
+  context.font = `400 22px ${RECEIPT_PRINT_FONT}`;
+  context.fillStyle = blendHexColor(meta.accentColor, receiptPaper, 0.58);
+  context.fillText('SCAN · ATTEND · COMPLETE', width / 2, 1260);
 
   const bumpCanvas = document.createElement('canvas');
   bumpCanvas.width = 256;
@@ -234,7 +326,7 @@ const buildReceiptTexture = (THREE, renderer, qrImage, meta) => {
   return { map, bumpMap };
 };
 
-const createPushPin = (THREE) => {
+const createPushPin = (THREE: ThreeApi, theme: ReceiptStageTheme) => {
   const pin = new THREE.Group();
 
   const headMaterial = new THREE.MeshPhysicalMaterial({
@@ -305,9 +397,9 @@ const createPushPin = (THREE) => {
   const highlight = new THREE.Mesh(
     new THREE.SphereGeometry(0.018, 14, 12),
     new THREE.MeshBasicMaterial({
-      color: 0xfaf9f5,
+      color: new Color(theme.accentColor).lerp(new Color(0xfaf9f5), 0.58),
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.28,
       depthWrite: false
     })
   );
@@ -321,7 +413,11 @@ const createPushPin = (THREE) => {
 };
 
 class ReceiptStage {
-  constructor(container, options, THREE) {
+  // The Verlet state is intentionally dynamic, while its public configuration is strictly typed.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+
+  constructor(container: HTMLElement, options: ReceiptStageOptions, THREE: ThreeApi) {
     this.container = container;
     this.options = options;
     this.THREE = THREE;
@@ -374,6 +470,11 @@ class ReceiptStage {
   async init() {
     this.buildDom();
     this.setupRenderer();
+    try {
+      await document.fonts?.load('400 25px "Courier Prime"');
+    } catch {
+      // Keep the receipt usable with the bundled monospace fallback if font loading fails.
+    }
     await this.createReceipt();
     this.bindEvents();
     this.resetPose();
@@ -395,31 +496,35 @@ class ReceiptStage {
       alpha: true,
       antialias: true,
       canvas: this.canvas,
-      powerPreference: 'high-performance'
+      powerPreference: 'low-power'
     });
     if ('outputColorSpace' in this.renderer) {
       this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     }
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(34, 1, 0.1, 20);
-    this.camera.position.set(0, 0.02, 4.7);
-    this.camera.lookAt(0, 0.08, 0);
+    this.camera = new THREE.PerspectiveCamera(RECEIPT_VERTICAL_FOV, 1, 0.1, 20);
+    this.camera.position.set(0, 0.04, 3.5);
+    this.camera.lookAt(0, 0.04, 0);
 
-    const ambient = new THREE.HemisphereLight(0xfaf9f5, 0xf5f4ed, 1.32);
+    const ambient = new THREE.HemisphereLight(0xfaf9f5, 0xf5f4ed, 1.24);
     this.scene.add(ambient);
 
-    const keyLight = new THREE.DirectionalLight(0xfaf9f5, 1.54);
+    const keyLight = new THREE.DirectionalLight(0xfaf9f5, 1.36);
     keyLight.position.set(1.8, 2.6, 2.5);
     this.scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xe8e6dc, 0.3);
-    fillLight.position.set(-2.4, -0.4, 2.1);
+    const warmRim = new THREE.DirectionalLight(new Color(this.options.accentColor), 0.72);
+    warmRim.position.set(-2.6, 1.7, -1.35);
+    this.scene.add(warmRim);
+
+    const fillLight = new THREE.DirectionalLight(new Color(this.options.ambientColor), 0.24);
+    fillLight.position.set(-2.3, -0.4, 2.1);
     this.scene.add(fillLight);
 
     this.presentationGroup = new THREE.Group();
     this.presentationGroup.rotation.x = -0.08;
-    this.presentationGroup.position.y = 0.35;
+    this.presentationGroup.position.y = 0.12;
     this.scene.add(this.presentationGroup);
   }
 
@@ -452,7 +557,7 @@ class ReceiptStage {
     this.presentationGroup.add(this.receiptMesh);
 
     this.pushPins = PIN_LAYOUT.map((pinLayout) => {
-      const pin = createPushPin(THREE);
+      const pin = createPushPin(THREE, this.options);
       pin.position.set(pinLayout.x, pinLayout.y, pinLayout.z);
       pin.rotation.y = pinLayout.rotationY;
       return pin;
@@ -500,8 +605,8 @@ class ReceiptStage {
       }
     }
 
-    const indexOf = (column, row) => row * (this.xSegments + 1) + column;
-    const addConstraint = (indexA, indexB, stiffness) => {
+    const indexOf = (column: number, row: number) => row * (this.xSegments + 1) + column;
+    const addConstraint = (indexA: number, indexB: number, stiffness: number) => {
       this.constraints.push({
         indexA,
         indexB,
@@ -645,26 +750,26 @@ class ReceiptStage {
 
     const width = Math.max(1, this.view.clientWidth);
     const height = Math.max(1, this.view.clientHeight);
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, width >= 900 ? 1.85 : 1.55);
     const aspect = width / height;
+    const fit = fitReceiptCamera(width, height, window.devicePixelRatio || 1);
 
     this.camera.aspect = aspect;
-    this.camera.position.z = aspect < 0.72 ? 5.15 : (aspect < 1 ? 4.95 : 4.7);
-    this.camera.position.y = aspect < 0.72 ? 0.08 : 0.02;
-    this.camera.lookAt(0, aspect < 0.72 ? 0.14 : 0.08, 0);
+    this.camera.position.z = fit.distance;
+    this.camera.position.y = fit.lookAtY;
+    this.camera.lookAt(0, fit.lookAtY, 0);
     this.camera.updateProjectionMatrix();
-    this.renderer.setPixelRatio(pixelRatio);
+    this.renderer.setPixelRatio(fit.pixelRatio);
     this.renderer.setSize(width, height, false);
     this.render();
   }
 
-  updatePointer(event) {
+  updatePointer(event: PointerEvent) {
     const bounds = this.view.getBoundingClientRect();
     this.pointer.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
     this.pointer.y = -(((event.clientY - bounds.top) / bounds.height) * 2 - 1);
   }
 
-  createDragInfluences(centerParticle) {
+  createDragInfluences(centerParticle: { column: number; row: number; home: Vector3 }) {
     const influences = [];
     const radius = 2.15;
 
@@ -691,7 +796,7 @@ class ReceiptStage {
     return influences;
   }
 
-  onPointerDown(event) {
+  onPointerDown(event: PointerEvent) {
     if (event.button !== 0 || !this.receiptMesh) {
       return;
     }
@@ -732,7 +837,7 @@ class ReceiptStage {
     this.wake();
   }
 
-  onPointerMove(event) {
+  onPointerMove(event: PointerEvent) {
     if (!this.dragState || event.pointerId !== this.dragState.pointerId) {
       return;
     }
@@ -761,7 +866,7 @@ class ReceiptStage {
     this.wake();
   }
 
-  onPointerUp(event) {
+  onPointerUp(event: PointerEvent) {
     if (!this.dragState || event.pointerId !== this.dragState.pointerId) {
       return;
     }
@@ -865,7 +970,7 @@ class ReceiptStage {
     this.startPinAnimation();
   }
 
-  updatePinAnimation(timestamp) {
+  updatePinAnimation(timestamp: number) {
     if (!this.pinAnimation) {
       return;
     }
@@ -881,11 +986,10 @@ class ReceiptStage {
       const localElapsed = timestamp - this.pinAnimation.startTime - index * PIN_ANIMATION_STAGGER_MS;
       const progress = clamp(localElapsed / PIN_ANIMATION_DURATION_MS, 0, 1);
       const eased = easeOutCubic(progress);
-      const bounce = Math.sin(progress * Math.PI * 3.4) * Math.pow(1 - progress, 1.8);
 
       pin.position.copy(pin.userData.restPosition);
-      pin.position.z += (1 - eased) * PIN_INSERT_DISTANCE + bounce * 0.045;
-      pin.rotation.x = pin.userData.restRotationX + (1 - eased) * 0.06 - bounce * 0.02;
+      pin.position.z += (1 - eased) * PIN_INSERT_DISTANCE;
+      pin.rotation.x = pin.userData.restRotationX + (1 - eased) * 0.06;
 
       if (progress >= 1) {
         finishedPins += 1;
@@ -897,7 +1001,7 @@ class ReceiptStage {
     }
   }
 
-  updateIntroAnimation(timestamp) {
+  updateIntroAnimation(timestamp: number) {
     if (!this.introAnimation || !this.receiptMesh) {
       return;
     }
@@ -909,19 +1013,18 @@ class ReceiptStage {
     const elapsed = timestamp - this.introAnimation.startTime;
     const progress = clamp(elapsed / this.introAnimation.duration, 0, 1);
     const eased = easeOutCubic(progress);
-    const bounce = Math.sin(progress * Math.PI * 3.2) * Math.pow(1 - progress, 1.65);
 
-    this.receiptMesh.position.y = this.baseReceiptPositionY + (1 - eased) * INTRO_DROP_DISTANCE - bounce * 0.11;
-    this.receiptMesh.position.x = (1 - eased) * -0.1 + bounce * 0.024;
-    this.receiptMesh.rotation.x = this.baseReceiptRotationX - (1 - eased) * 0.2 + bounce * 0.028;
-    this.receiptMesh.rotation.z = (1 - eased) * -0.16 + bounce * 0.085;
+    this.receiptMesh.position.y = this.baseReceiptPositionY + (1 - eased) * INTRO_DROP_DISTANCE;
+    this.receiptMesh.position.x = (1 - eased) * -0.08;
+    this.receiptMesh.rotation.x = this.baseReceiptRotationX - (1 - eased) * 0.14;
+    this.receiptMesh.rotation.z = (1 - eased) * -0.1;
 
     if (progress >= 1) {
       this.finishIntroAnimation();
     }
   }
 
-  applyVerletStep(step) {
+  applyVerletStep(step: number) {
     for (const particle of this.particles) {
       if (particle.pinned) {
         particle.position.copy(particle.anchor);
@@ -1037,13 +1140,13 @@ class ReceiptStage {
     this.receiptGeometry.computeVertexNormals();
   }
 
-  simulate(step) {
+  simulate(step: number) {
     this.applyVerletStep(step);
     this.solveConstraints();
     this.updateGeometry();
   }
 
-  frame(timestamp) {
+  frame(timestamp: number) {
     if (!this.isRunning) {
       return;
     }
@@ -1132,8 +1235,7 @@ class ReceiptStage {
   }
 }
 
-export const createReceiptStage = async (container, options) => {
-  const THREE = await loadThreeModule();
+export const createReceiptStage = async (container: HTMLElement, options: ReceiptStageOptions) => {
   const stage = new ReceiptStage(container, options, THREE);
   try {
     await stage.init();
