@@ -11,14 +11,16 @@ describe('asset directory boundaries', () => {
     expect(readdirSync(PUBLIC_FONT_DIR).filter(file => file.endsWith('.ttf'))).toEqual([]);
   });
 
-  it('keeps the 404 stylesheet colocated with the 404 assets', () => {
-    const notFoundPage = readFileSync('public/404.html', 'utf8');
+  it('builds the 404 page as an isolated application entry', () => {
+    const notFoundPage = readFileSync('404.html', 'utf8');
     const headers = readFileSync('public/_headers', 'utf8');
 
-    expect(existsSync('public/404/styles.css')).toBe(true);
-    expect(notFoundPage).toContain('href="/404/styles.css"');
+    expect(existsSync('src/404.css')).toBe(true);
+    expect(existsSync('src/404.tsx')).toBe(true);
+    expect(existsSync('public/404.html')).toBe(false);
+    expect(notFoundPage).toContain('id="not-found-root"');
+    expect(notFoundPage).toContain('src="/src/404.tsx"');
+    expect(notFoundPage).toContain('href="#main-content"');
     expect(headers).toContain('/*\n  Cache-Control: public, max-age=0, must-revalidate');
-    expect(headers).not.toContain('\n/404/styles.css\n');
-    expect(headers).not.toContain('\n/styles.css\n');
   });
 });

@@ -11,7 +11,11 @@ const { stop, animateGlassValue } = vi.hoisted(() => {
 });
 
 vi.mock('@samasante/liquid-glass', () => ({
-  Glass: ({ children }: { children: React.ReactNode }) => <div data-testid="live-segment-lens">{children}</div>,
+  Glass: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div data-testid={className?.includes('rail-surface') ? 'live-control-rail' : 'live-segment-lens'} className={className}>
+      {children}
+    </div>
+  ),
   GlassDiv: ({ children, x: _x, ...props }: { children: React.ReactNode; x: unknown }) => <div {...props}>{children}</div>,
   glassValue: (initial: number) => {
     let value = initial;
@@ -58,7 +62,7 @@ describe('SegmentedGlassControl', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders one shared live lens and animates it between segments', async () => {
+  it('renders a native glass rail and one shared live lens, then animates between segments', async () => {
     mockEnvironment();
     const { rerender } = render(
       <SegmentedGlassControl selectedIndex={0} count={2} ariaLabel="身份选择">
@@ -69,6 +73,7 @@ describe('SegmentedGlassControl', () => {
 
     expect(await screen.findByTestId('live-segment-lens')).toBeInTheDocument();
     expect(screen.getAllByTestId('live-segment-lens')).toHaveLength(1);
+    expect(document.querySelector('[data-glass-engine="native"].segmented-glass__rail-surface')).toBeInTheDocument();
     rerender(
       <SegmentedGlassControl selectedIndex={1} count={2} ariaLabel="身份选择">
         <button>人类</button>
@@ -87,6 +92,7 @@ describe('SegmentedGlassControl', () => {
       </SegmentedGlassControl>
     );
     expect(container.querySelector('.segmented-glass__lens--pearl')).toBeInTheDocument();
+    expect(container.querySelector('.segmented-glass__rail-surface.is-pearl')).toBeInTheDocument();
     rerender(
       <SegmentedGlassControl selectedIndex={1} count={2}>
         <button>自动</button>
@@ -108,6 +114,7 @@ describe('SegmentedGlassControl', () => {
     expect(container.querySelector('.segmented-glass')).toHaveClass('reduces-motion');
     expect(animateGlassValue).not.toHaveBeenCalled();
     expect(screen.queryByTestId('live-segment-lens')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('live-control-rail')).not.toBeInTheDocument();
   });
 
   it('does not render a selected lens before a choice is made', () => {

@@ -16,7 +16,11 @@ import {
   useRef,
   useState
 } from 'react';
-import { LIVE_GLASS_OPTICS, useGlassCapabilities } from './GlassIsland';
+import {
+  GlassSurfaceLayer,
+  SELECTION_LENS_GLASS_OPTICS,
+  useGlassCapabilities
+} from './GlassIsland';
 
 interface SegmentMetrics {
   width: number;
@@ -108,6 +112,11 @@ export function SegmentedGlassControl({
       aria-label={ariaLabel}
       style={{ '--segment-count': count } as CSSProperties}
     >
+      <GlassSurfaceLayer
+        material={lensMaterial}
+        opticsPreset="controlRail"
+        className="segmented-glass__rail-surface"
+      />
       {metrics && selectedIndex >= 0 && (
         <GlassDiv
           aria-hidden="true"
@@ -121,7 +130,10 @@ export function SegmentedGlassControl({
           }}
         >
           {canRefract ? (
-            <Glass className="segmented-glass__lens" optics={LIVE_GLASS_OPTICS}>
+            <Glass
+              className="segmented-glass__lens"
+              optics={SELECTION_LENS_GLASS_OPTICS}
+            >
               <span className="segmented-glass__lens-fill" />
             </Glass>
           ) : (

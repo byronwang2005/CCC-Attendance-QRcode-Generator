@@ -15,7 +15,12 @@ import { flushSync } from 'react-dom';
 import { AGENT_PROMPT, APP_PATHS, TEXT, TIME_LIMITS } from './config';
 import { InkFlowBackground } from './features/background/InkFlowBackground';
 import { INK_PALETTES, type InkStep } from './features/background/ink-flow-config';
-import { GlassIsland } from './features/glass/GlassIsland';
+import {
+  GlassIsland,
+  GlassSurfaceLayer,
+  LayeredGlassIsland,
+  useGlassCapabilities
+} from './features/glass/GlassIsland';
 import { SegmentedGlassControl } from './features/glass/SegmentedGlassControl';
 import { useExpandableSections } from './lib/use-expandable-sections';
 import {
@@ -266,6 +271,7 @@ const preloadApplication = () => {
 };
 
 function Stepper({ currentStep, onLocked }: StepperProps) {
+  const capabilities = useGlassCapabilities();
   const activate = (target: number) => {
     if (target === currentStep) return;
     if (target < currentStep) navigate(APP_PATHS.step(target));
@@ -279,9 +285,15 @@ function Stepper({ currentStep, onLocked }: StepperProps) {
   };
 
   return (
-    <GlassIsland variant="static" shape="panel" className="stepper-island">
+    <LayeredGlassIsland shape="panel" opticsPreset="controlRail" className="stepper-island">
       <section className="stepper" aria-label="步骤进度" data-current-step={currentStep}>
-        <div className="stepper-active-indicator" aria-hidden="true" />
+        <div className="stepper-active-indicator" aria-hidden="true">
+          <GlassSurfaceLayer
+            material={capabilities.material}
+            opticsPreset="selectionLens"
+            className="stepper-active-indicator__surface"
+          />
+        </div>
         {STEP_DATA.map((step) => {
           const state = step.number === currentStep ? 'active' : (step.number < currentStep ? 'done' : 'idle');
           const description = step.number < currentStep ? '已完成' : step.description;
@@ -306,7 +318,7 @@ function Stepper({ currentStep, onLocked }: StepperProps) {
           return <div key={step.number} className="step-card-slot">{card}</div>;
         })}
       </section>
-    </GlassIsland>
+    </LayeredGlassIsland>
   );
 }
 
@@ -354,9 +366,16 @@ function Toast({ toast, onClose }: { toast: ToastState | null; onClose: () => vo
         <div className="toast__window">
           <div className="toast__header">
             <div className="toast__label">提示</div>
-            <button ref={closeRef} type="button" className="toast__close" aria-label="关闭提示" onClick={requestClose}>
-              <Icon name="x" />
-            </button>
+            <GlassIsland
+              variant="interactive"
+              shape="capsule"
+              opticsPreset="close"
+              className="micro-action-island toast-close-island"
+            >
+              <button ref={closeRef} type="button" className="toast__close" aria-label="关闭提示" onClick={requestClose}>
+                <Icon name="x" />
+              </button>
+            </GlassIsland>
           </div>
           <div className="toast__message">{toast.message}</div>
         </div>
@@ -534,10 +553,18 @@ function IdentityStep({
         >
           <div className="agent-command">
             <span className="agent-text">{AGENT_PROMPT}</span>
-            <button type="button" className="copy-btn" disabled={copied} onClick={copyAgentPrompt}>
-              <Icon name={copied ? 'check' : 'copy'} />
-              <span>{copied ? '已复制!' : '复制'}</span>
-            </button>
+            <GlassIsland
+              variant="interactive"
+              shape="capsule"
+              disabled={copied}
+              opticsPreset="micro"
+              className="micro-action-island copy-action-island"
+            >
+              <button type="button" className="copy-btn" disabled={copied} onClick={copyAgentPrompt}>
+                <Icon name={copied ? 'check' : 'copy'} />
+                <span>{copied ? '已复制!' : '复制'}</span>
+              </button>
+            </GlassIsland>
           </div>
           <p className="agent-hint">把这句话交给智能体，它会引导您在本地完成后续步骤。</p>
         </div>
@@ -548,6 +575,7 @@ function IdentityStep({
           variant="interactive"
           shape="capsule"
           disabled={state.identity !== 'human' || !state.url.trim()}
+          opticsPreset="action"
           className="action-island"
         >
         <button
@@ -754,7 +782,7 @@ function TimeStep({
       </section>
       </GlassIsland>
       <div className="actions">
-        <GlassIsland variant="interactive" shape="capsule" className="action-island">
+        <GlassIsland variant="interactive" shape="capsule" opticsPreset="action" className="action-island">
         <button type="button" className="button-secondary" onClick={() => {
           persistState(state);
           navigate(APP_PATHS.index);
@@ -763,7 +791,7 @@ function TimeStep({
           <span>返回上一步</span>
         </button>
         </GlassIsland>
-        <GlassIsland variant="interactive" shape="capsule" className="action-island">
+        <GlassIsland variant="interactive" shape="capsule" opticsPreset="action" className="action-island">
         <button
           type="button"
           className="button-primary"
@@ -909,13 +937,13 @@ function QrcodeStep({
       </section>
       </GlassIsland>
       <div className="actions">
-        <GlassIsland variant="interactive" shape="capsule" className="action-island">
+        <GlassIsland variant="interactive" shape="capsule" opticsPreset="action" className="action-island">
         <button type="button" className="button-secondary" onClick={() => navigate(APP_PATHS.time)}>
           <Icon name="arrow-left" />
           <span>返回上一步</span>
         </button>
         </GlassIsland>
-        <GlassIsland variant="interactive" shape="capsule" className="action-island">
+        <GlassIsland variant="interactive" shape="capsule" opticsPreset="action" className="action-island">
         <button type="button" className="button-secondary" onClick={startOver}>
           <Icon name="rotate-ccw" />
           <span>生成更多</span>

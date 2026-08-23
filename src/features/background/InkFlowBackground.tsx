@@ -11,6 +11,7 @@ import {
   resolveInkMotionPolicy,
   type InkMacroDrift,
   type InkMotionPolicy,
+  type InkPalette,
   type InkStep
 } from './ink-flow-config';
 
@@ -177,7 +178,7 @@ function createProgram(gl: WebGL2RenderingContext, fragmentSource: string) {
 class InkFlowRenderer {
   private canvas: HTMLCanvasElement;
   private gl: WebGL2RenderingContext;
-  private step: InkStep;
+  private targetPalette: InkPalette;
   private motion: InkMotionPolicy;
   private flowProgram: WebGLProgram;
   private inkProgram: WebGLProgram;
@@ -203,7 +204,7 @@ class InkFlowRenderer {
   private resizeObserver: ResizeObserver;
   private intersectionObserver: IntersectionObserver;
 
-  constructor(canvas: HTMLCanvasElement, step: InkStep, motion: InkMotionPolicy) {
+  constructor(canvas: HTMLCanvasElement, targetPalette: InkPalette, motion: InkMotionPolicy) {
     const gl = canvas.getContext('webgl2', {
       alpha: true,
       antialias: false,
@@ -222,8 +223,8 @@ class InkFlowRenderer {
 
     this.canvas = canvas;
     this.gl = gl;
-    this.step = step;
-    const initialPalette = INK_PALETTES[step];
+    this.targetPalette = targetPalette;
+    const initialPalette = targetPalette;
     this.palette = {
       accent: [...initialPalette.accent],
       accentOpacity: initialPalette.accentOpacity,
@@ -256,15 +257,14 @@ class InkFlowRenderer {
     this.resize();
   }
 
-  setStep(step: InkStep) {
-    this.step = step;
+  setPalette(targetPalette: InkPalette) {
+    this.targetPalette = targetPalette;
     if (!this.motion.animate) {
-      const palette = INK_PALETTES[step];
       this.palette = {
-        accent: [...palette.accent],
-        accentOpacity: palette.accentOpacity,
-        ink: [...palette.ink],
-        inkOpacity: palette.inkOpacity
+        accent: [...targetPalette.accent],
+        accentOpacity: targetPalette.accentOpacity,
+        ink: [...targetPalette.ink],
+        inkOpacity: targetPalette.inkOpacity
       };
       this.render(performance.now(), 1 / 120);
       return;
@@ -400,7 +400,7 @@ class InkFlowRenderer {
       gl.getUniformLocation(this.inkProgram, 'u_flow_strength'),
       Math.max(0, 1 - Math.max(0, now - this.lastPointerTime - 550) / 1850)
     );
-    const target = INK_PALETTES[this.step];
+    const target = this.targetPalette;
     const blend = 1 - Math.exp(-deltaSeconds * 6.2);
     for (let channel = 0; channel < 3; channel += 1) {
       this.palette.ink[channel] += (target.ink[channel] - this.palette.ink[channel]) * blend;
@@ -475,11 +475,18 @@ class InkFlowRenderer {
   }
 }
 
-export function InkFlowBackground({ step }: { step: InkStep }) {
+export function InkFlowBackground({
+  step,
+  palette: paletteOverride
+}: {
+  step: InkStep;
+  palette?: InkPalette;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<InkFlowRenderer | null>(null);
-  const stepRef = useRef(step);
-  stepRef.current = step;
+  const palette = paletteOverride ?? INK_PALETTES[step];
+  const paletteRef = useRef(palette);
+  paletteRef.current = palette;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -494,7 +501,7 @@ export function InkFlowBackground({ step }: { step: InkStep }) {
     const start = () => {
       rendererRef.current?.destroy();
       try {
-        rendererRef.current = new InkFlowRenderer(canvas, stepRef.current, motion);
+        rendererRef.current = new InkFlowRenderer(canvas, paletteRef.current, motion);
         rendererRef.current.resume();
       } catch {
         rendererRef.current = null;
@@ -528,8 +535,8 @@ export function InkFlowBackground({ step }: { step: InkStep }) {
   }, []);
 
   useEffect(() => {
-    rendererRef.current?.setStep(step);
-  }, [step]);
+    rendererRef.current?.setPalette(palette);
+  }, [palette]);
 
   return (
     <div className="cursor-layer ink-flow-layer" aria-hidden="true">

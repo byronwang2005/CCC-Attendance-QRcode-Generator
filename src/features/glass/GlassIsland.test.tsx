@@ -77,7 +77,7 @@ describe('GlassIsland', () => {
   it('uses the stronger action preset for action islands', async () => {
     mockEnvironment();
     render(
-      <GlassIsland variant="interactive" shape="capsule" className="action-island">
+      <GlassIsland variant="interactive" shape="capsule" opticsPreset="action" className="action-island">
         <button>下一步</button>
       </GlassIsland>
     );
@@ -115,15 +115,21 @@ describe('GlassIsland', () => {
     expect(container.querySelector('[data-glass-material="solid"]')).toBeInTheDocument();
   });
 
-  it('keeps disabled and content islands on the pearl surface in desktop Chromium', () => {
+  it('keeps disabled controls refractive while layering content surfaces separately', async () => {
     mockEnvironment();
-    const { container } = render(
+    render(
       <>
         <GlassIsland variant="interactive" shape="capsule" disabled><button>停用</button></GlassIsland>
         <GlassIsland variant="content" shape="panel"><section>正文</section></GlassIsland>
       </>
     );
-    expect(container.querySelectorAll('[data-glass-material="pearl"]')).toHaveLength(2);
-    expect(screen.queryByTestId('liquid-glass')).not.toBeInTheDocument();
+    const disabledIsland = screen.getByText('停用').closest('[data-glass-material]');
+    expect(disabledIsland).toHaveAttribute('data-glass-material', 'refractive');
+    expect(disabledIsland).toHaveClass('is-disabled');
+    const contentIsland = screen.getByText('正文').closest('[data-glass-material]');
+    expect(contentIsland).toHaveAttribute('data-glass-material', 'refractive');
+    expect(contentIsland?.querySelector('[data-glass-surface="refractive"]')).toBeInTheDocument();
+    expect(contentIsland?.querySelector('.glass-island__content')?.previousElementSibling).toHaveAttribute('data-glass-surface', 'refractive');
+    expect(screen.getAllByTestId('liquid-glass')).toHaveLength(1);
   });
 });
