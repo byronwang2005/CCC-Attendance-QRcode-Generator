@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
-import { STORAGE_KEY } from './config';
+import { STORAGE_KEY, TEXT } from './config';
 import { EXPAND_DURATION } from './lib/expandable-section';
 
 const originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
@@ -212,6 +212,116 @@ describe('CCC Attendance first step', () => {
     expect(startViewTransition).toHaveBeenCalledOnce();
     expect(document.documentElement).toHaveAttribute('data-step-direction', 'backward');
     await act(async () => transitions[0].resolve());
+  });
+
+  it('allows the stepper to revisit later steps when the current form state is valid', async () => {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(validWizardState));
+    window.history.replaceState({}, '', '/index.html?step=2');
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    }));
+    const { startViewTransition } = installViewTransitionMock();
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '返回上一步' }));
+    expect(await screen.findByRole('heading', { name: '先告诉我，您是' })).toBeVisible();
+    expect(startViewTransition).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('button', { name: '跳转到第 2 步' }));
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' })).toBeVisible();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(startViewTransition).toHaveBeenCalledTimes(2);
+
+    await user.click(screen.getByRole('button', { name: '返回上一步' }));
+    expect(startViewTransition).toHaveBeenCalledTimes(3);
+    await user.click(screen.getByRole('button', { name: '跳转到第 3 步' }));
+    expect(await screen.findByRole('button', { name: '生成更多' })).toBeVisible();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(startViewTransition).toHaveBeenCalledTimes(4);
+  });
+
+  it('allows history navigation to a later step when the current form state is valid', async () => {
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(new Promise(() => {}));
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '人类' }));
+    await user.type(
+      screen.getByRole('textbox', { name: '课程详情链接输入框' }),
+      validWizardState.url
+    );
+
+    window.history.pushState({}, '', '/index.html?step=3');
+    fireEvent(window, new PopStateEvent('popstate'));
+
+    expect(await screen.findByRole('button', { name: '生成更多' })).toBeVisible();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    {
+      name: 'a missing identity',
+      step: 2,
+      storedState: undefined,
+      fallbackHeading: '先告诉我，您是',
+      message: TEXT.errors.chooseIdentityFirst
+    },
+    {
+      name: 'the agent identity',
+      step: 2,
+      storedState: { identity: 'agent', url: '', timeMode: 'auto' },
+      fallbackHeading: '先告诉我，您是',
+      message: TEXT.errors.agentContinuesLocally
+    },
+    {
+      name: 'an invalid course URL',
+      step: 3,
+      storedState: { identity: 'human', url: 'https://example.com/study?id=1234', timeMode: 'auto' },
+      fallbackHeading: '先告诉我，您是',
+      message: TEXT.errors.invalidCourseUrlDomain
+    },
+    {
+      name: 'an expired manual time',
+      step: 3,
+      storedState: {
+        ...validWizardState,
+        timeMode: 'manual',
+        manualTime: { date: '2000-01-01', hour: '0', minute: '0' }
+      },
+      fallbackHeading: '再选择时间模式',
+      message: TEXT.errors.manualTimeOutOfRange
+    }
+  ])('redirects direct navigation with $name to the failing prerequisite', async ({ step, storedState, fallbackHeading, message }) => {
+    if (storedState) window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(storedState));
+    window.history.replaceState({}, '', `/index.html?step=${step}`);
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: fallbackHeading }, { timeout: 2000 })).toBeVisible();
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(message);
+    expect(window.location.search).toBe(step === 3 && fallbackHeading === '再选择时间模式' ? '?step=2' : '?step=1');
+  });
+
+  it('rejects invalid browser history navigation once without looping', async () => {
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+
+    window.history.pushState({}, '', '/index.html?step=2');
+    fireEvent(window, new PopStateEvent('popstate'));
+
+    expect(await screen.findByRole('alertdialog')).toHaveTextContent(TEXT.errors.chooseIdentityFirst);
+    await waitFor(() => expect(window.location.search).toBe('?step=1'));
+    expect(screen.getAllByRole('alertdialog')).toHaveLength(1);
   });
 
   it('changes steps immediately when reduced motion is enabled', async () => {

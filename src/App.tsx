@@ -65,6 +65,10 @@ const TOAST_EXIT_DURATION = 220;
 
 type StepDirection = 'forward' | 'backward';
 
+type StepAccess =
+  | { allowed: true }
+  | { allowed: false; fallbackStep: InkStep; message: string };
+
 type StateAction =
   | { type: 'patch'; patch: StatePatch }
   | { type: 'reset' };
@@ -103,6 +107,33 @@ const stateReducer = (state: WizardState, action: StateAction): WizardState => {
 const readCurrentStep = (): InkStep => {
   const value = Number.parseInt(new URL(window.location.href).searchParams.get('step') ?? '1', 10);
   return value === 2 || value === 3 ? value : 1;
+};
+
+const getStepAccess = (state: WizardState, target: InkStep): StepAccess => {
+  if (target === 1) return { allowed: true };
+  if (!state.identity) {
+    return { allowed: false, fallbackStep: 1, message: TEXT.errors.chooseIdentityFirst };
+  }
+  if (state.identity === 'agent') {
+    return { allowed: false, fallbackStep: 1, message: TEXT.errors.agentContinuesLocally };
+  }
+
+  const urlValidation = validateCourseUrl(state.url);
+  if (!urlValidation.valid) {
+    return { allowed: false, fallbackStep: 1, message: urlValidation.message };
+  }
+  if (target === 2) return { allowed: true };
+
+  try {
+    buildTimestamp(state);
+    return { allowed: true };
+  } catch (error) {
+    return {
+      allowed: false,
+      fallbackStep: 2,
+      message: error instanceof Error ? error.message : TEXT.errors.invalidManualTime
+    };
+  }
 };
 
 const navigate = (path: string, message?: string) => {
@@ -245,8 +276,9 @@ function BootLoader() {
 }
 
 interface StepperProps {
-  currentStep: number;
-  onLocked: () => void;
+  currentStep: InkStep;
+  state: WizardState;
+  onLocked: (message: string) => void;
 }
 
 const STEP_DATA = [
@@ -270,15 +302,16 @@ const preloadApplication = () => {
   return Promise.allSettled([fonts, ...images]);
 };
 
-function Stepper({ currentStep, onLocked }: StepperProps) {
+function Stepper({ currentStep, state: wizardState, onLocked }: StepperProps) {
   const capabilities = useGlassCapabilities();
-  const activate = (target: number) => {
+  const activate = (target: InkStep) => {
     if (target === currentStep) return;
-    if (target < currentStep) navigate(APP_PATHS.step(target));
-    else onLocked();
+    const access = getStepAccess(wizardState, target);
+    if (access.allowed) navigate(APP_PATHS.step(target));
+    else onLocked(access.message);
   };
 
-  const onKeyDown = (event: KeyboardEvent<HTMLElement>, target: number) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>, target: InkStep) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     activate(target);
@@ -296,10 +329,12 @@ function Stepper({ currentStep, onLocked }: StepperProps) {
         </div>
         {STEP_DATA.map((step) => {
           const state = step.number === currentStep ? 'active' : (step.number < currentStep ? 'done' : 'idle');
+          const access = getStepAccess(wizardState, step.number);
+          const isAvailable = step.number !== currentStep && access.allowed;
           const description = step.number < currentStep ? '已完成' : step.description;
           const card = (
             <article
-              className={`step-card is-${state} ${step.number < currentStep ? 'is-clickable-back' : ''} ${step.number > currentStep ? 'is-locked-step' : ''}`}
+              className={`step-card is-${state} ${isAvailable ? 'is-clickable-step' : ''} ${step.number !== currentStep && !access.allowed ? 'is-locked-step' : ''}`}
               data-step={step.number}
               aria-current={state === 'active' ? 'step' : undefined}
               aria-label={`跳转到第 ${step.number} 步`}
@@ -386,11 +421,13 @@ function Toast({ toast, onClose }: { toast: ToastState | null; onClose: () => vo
 
 function PageShell({
   currentStep,
+  state,
   onLocked,
   children
 }: {
   currentStep: InkStep;
-  onLocked: () => void;
+  state: WizardState;
+  onLocked: (message: string) => void;
   children: ReactNode;
 }) {
   const stageStyle = {
@@ -411,7 +448,7 @@ function PageShell({
             </header>
           </GlassIsland>
           <div className="workflow-frame">
-            <Stepper currentStep={currentStep} onLocked={onLocked} />
+            <Stepper currentStep={currentStep} state={state} onLocked={onLocked} />
             <main className="wizard-layout">
               <div key={currentStep} className="step-scene">{children}</div>
             </main>
@@ -987,13 +1024,11 @@ export default function App() {
       return;
     }
     if (isStartingOverRef.current) return;
-    const validation = validateCourseUrl(state.url);
-    if (!state.url) {
-      redirect(APP_PATHS.index, currentStep === 2 ? TEXT.redirects.finishFirstStep : TEXT.redirects.finishPreviousSteps);
-    } else if (!validation.valid) {
-      redirect(APP_PATHS.index, validation.message);
+    const access = getStepAccess(state, currentStep);
+    if (!access.allowed) {
+      redirect(APP_PATHS.step(access.fallbackStep), access.message);
     }
-  }, [currentStep, state.url]);
+  }, [currentStep, state]);
 
   const update = (patch: StatePatch) => dispatch({ type: 'patch', patch });
 
@@ -1001,7 +1036,7 @@ export default function App() {
 
   return (
     <>
-      <PageShell currentStep={currentStep} onLocked={() => showToast(TEXT.errors.completeCurrentStepFirst)}>
+      <PageShell currentStep={currentStep} state={state} onLocked={showToast}>
         {currentStep === 1 && <IdentityStep state={state} update={update} showToast={showToast} />}
         {currentStep === 2 && <TimeStep state={state} update={update} showToast={showToast} />}
         {currentStep === 3 && (

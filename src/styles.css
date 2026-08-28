@@ -451,11 +451,11 @@ select:focus-visible {
   color: var(--stone);
 }
 
-.step-card.is-clickable-back {
+.step-card.is-clickable-step {
   cursor: pointer;
 }
 
-.step-card.is-clickable-back:hover {
+.step-card.is-clickable-step:hover {
   transform: translateY(-1px);
   border-color: var(--ring-deep);
 }
