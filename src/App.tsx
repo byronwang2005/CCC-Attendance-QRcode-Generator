@@ -18,7 +18,7 @@ import { INK_PALETTES, type InkStep } from './features/background/ink-flow-confi
 import {
   GlassIsland,
   GlassSurfaceLayer,
-  LayeredGlassIsland,
+  StaticGlassIsland,
   useGlassCapabilities
 } from './features/glass/GlassIsland';
 import { SegmentedGlassControl } from './features/glass/SegmentedGlassControl';
@@ -302,6 +302,18 @@ const preloadApplication = () => {
   return Promise.allSettled([fonts, ...images]);
 };
 
+function StepNumber({ value }: { value: number | string }) {
+  const label = typeof value === 'number' ? String(value).padStart(2, '0') : value;
+  return (
+    <StaticGlassIsland
+      shape="panel"
+      className="embedded-static-glass step-number"
+    >
+      <span className="step-number__label">{label}</span>
+    </StaticGlassIsland>
+  );
+}
+
 function Stepper({ currentStep, state: wizardState, onLocked }: StepperProps) {
   const capabilities = useGlassCapabilities();
   const activate = (target: InkStep) => {
@@ -318,7 +330,7 @@ function Stepper({ currentStep, state: wizardState, onLocked }: StepperProps) {
   };
 
   return (
-    <LayeredGlassIsland shape="panel" opticsPreset="controlRail" className="stepper-island">
+    <StaticGlassIsland shape="panel" className="stepper-island">
       <section className="stepper" aria-label="步骤进度" data-current-step={currentStep}>
         <div className="stepper-active-indicator" aria-hidden="true">
           <GlassSurfaceLayer
@@ -343,7 +355,7 @@ function Stepper({ currentStep, state: wizardState, onLocked }: StepperProps) {
               onClick={() => activate(step.number)}
               onKeyDown={(event) => onKeyDown(event, step.number)}
             >
-              <span className="step-number">{String(step.number).padStart(2, '0')}</span>
+              <StepNumber value={step.number} />
               <span className="step-copy">
                 <strong>{step.title}</strong>
                 <small>{description}</small>
@@ -353,7 +365,7 @@ function Stepper({ currentStep, state: wizardState, onLocked }: StepperProps) {
           return <div key={step.number} className="step-card-slot">{card}</div>;
         })}
       </section>
-    </LayeredGlassIsland>
+    </StaticGlassIsland>
   );
 }
 
@@ -397,7 +409,7 @@ function Toast({ toast, onClose }: { toast: ToastState | null; onClose: () => vo
     <div className={`toast ${toast.type} show${isClosing ? ' is-exiting' : ''}`} role="alertdialog" aria-live="assertive" aria-modal="true" onMouseDown={(event) => {
       if (event.target === event.currentTarget) requestClose();
     }}>
-      <GlassIsland variant="static" shape="panel" className="toast-island">
+      <StaticGlassIsland shape="panel" className="toast-island">
         <div className="toast__window">
           <div className="toast__header">
             <div className="toast__label">提示</div>
@@ -414,7 +426,7 @@ function Toast({ toast, onClose }: { toast: ToastState | null; onClose: () => vo
           </div>
           <div className="toast__message">{toast.message}</div>
         </div>
-      </GlassIsland>
+      </StaticGlassIsland>
     </div>
   );
 }
@@ -438,7 +450,7 @@ function PageShell({
     <div className="app-stage" data-step={currentStep} style={stageStyle}>
       <InkFlowBackground step={currentStep} />
       <div className="page-shell">
-          <GlassIsland variant="static" shape="capsule" className="masthead-island">
+          <StaticGlassIsland shape="capsule" className="masthead-island">
             <header className="masthead" aria-label="站点抬头">
               <img src="/assets/images/ccc-small.webp" className="masthead__logo" alt="CCC" />
               <div className="masthead__copy">
@@ -446,7 +458,7 @@ function PageShell({
                 <p className="masthead__summary">一个签到码，三步搞定</p>
               </div>
             </header>
-          </GlassIsland>
+          </StaticGlassIsland>
           <div className="workflow-frame">
             <Stepper currentStep={currentStep} state={state} onLocked={onLocked} />
             <main className="wizard-layout">
@@ -509,7 +521,7 @@ function IdentityStep({
 
   return (
     <>
-      <GlassIsland variant="content" shape="panel" className="task-glass">
+      <StaticGlassIsland shape="panel" className="task-glass">
       <section className="panel identity-panel">
         <div className="identity-header">
           <h3>先告诉我，您是</h3>
@@ -551,7 +563,7 @@ function IdentityStep({
               最佳签到时间窗口是课程结束前10分钟到课程结束时刻，例如20:00下课时，可优先考虑19:50到20:00。
             </Guide>
             <Guide index="02" title="连接网络">
-              网络环境需处于<code>eduroam</code>、<code>UNNC-Living</code>或<code>UNNC_IPSec VPN</code>等校园网络之一。
+              网络环境需处于<InlineGlassCode>eduroam</InlineGlassCode>、<InlineGlassCode>UNNC-Living</InlineGlassCode>或<InlineGlassCode>UNNC_IPSec VPN</InlineGlassCode>等校园网络之一。
             </Guide>
             <Guide index="03" title="复制链接">
               用手机浏览器（如Safari）打开
@@ -562,24 +574,29 @@ function IdentityStep({
               index="04"
               title="粘贴链接"
               extra={(
-                <div className="course-link-input-wrap">
-                  <input
-                    ref={inputRef}
-                    id="urlInput"
-                    type="text"
-                    inputMode="url"
-                    autoComplete="off"
-                    autoCapitalize="off"
-                    spellCheck={false}
-                    placeholder="https://ccc.nottingham.edu.cn/study/home/details?id="
-                    aria-label="课程详情链接输入框"
-                    value={state.url}
-                    onChange={(event) => update({ url: event.target.value.trim() })}
-                  />
-                </div>
+                <StaticGlassIsland
+                  shape="panel"
+                  className="embedded-static-glass course-link-input-island"
+                >
+                  <div className="course-link-input-wrap">
+                    <input
+                      ref={inputRef}
+                      id="urlInput"
+                      type="text"
+                      inputMode="url"
+                      autoComplete="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
+                      placeholder="https://ccc.nottingham.edu.cn/study/home/details?id="
+                      aria-label="课程详情链接输入框"
+                      value={state.url}
+                      onChange={(event) => update({ url: event.target.value.trim() })}
+                    />
+                  </div>
+                </StaticGlassIsland>
               )}
             >
-              链接格式类似 <code>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</code>。把完整链接粘贴到下方输入框。
+              链接格式类似 <InlineGlassCode>https://ccc.nottingham.edu.cn/study/home/details?id=xxxx</InlineGlassCode>。把完整链接粘贴到下方输入框。
             </Guide>
           </div>
         </div>
@@ -589,24 +606,29 @@ function IdentityStep({
           hidden={initialIdentity !== 'agent'}
         >
           <p className="agent-hint">把这句话交给智能体，它会引导您在本地完成后续步骤。</p>
-          <div className="agent-command">
-            <span className="agent-text">{AGENT_PROMPT}</span>
-            <GlassIsland
-              variant="interactive"
-              shape="capsule"
-              disabled={copied}
-              opticsPreset="micro"
-              className="micro-action-island copy-action-island"
-            >
-              <button type="button" className="copy-btn" disabled={copied} onClick={copyAgentPrompt}>
-                <Icon name={copied ? 'check' : 'copy'} />
-                <span>{copied ? '已复制!' : '复制'}</span>
-              </button>
-            </GlassIsland>
-          </div>
+          <StaticGlassIsland
+            shape="panel"
+            className="embedded-static-glass agent-command-island"
+          >
+            <div className="agent-command">
+              <span className="agent-text">{AGENT_PROMPT}</span>
+              <GlassIsland
+                variant="interactive"
+                shape="capsule"
+                disabled={copied}
+                opticsPreset="action"
+                className="action-island compact-action-island copy-action-island"
+              >
+                <button type="button" className="copy-btn" disabled={copied} onClick={copyAgentPrompt}>
+                  <Icon name={copied ? 'check' : 'copy'} />
+                  <span>{copied ? '已复制!' : '复制'}</span>
+                </button>
+              </GlassIsland>
+            </div>
+          </StaticGlassIsland>
         </div>
       </section>
-      </GlassIsland>
+      </StaticGlassIsland>
       <div className="actions actions-major">
         <GlassIsland
           variant="interactive"
@@ -644,13 +666,24 @@ function Guide({
 }) {
   return (
     <article className="guide-card" role="listitem">
-      <div className="guide-card-index">{index}</div>
+      <StepNumber value={index} />
       <div className="guide-card-body">
         <h3>{title}</h3>
-        <p>{children}</p>
+        <div className="guide-card-description">{children}</div>
         {extra}
       </div>
     </article>
+  );
+}
+
+function InlineGlassCode({ children }: { children: ReactNode }) {
+  return (
+    <StaticGlassIsland
+      shape="capsule"
+      className="embedded-static-glass inline-code-island"
+    >
+      <code>{children}</code>
+    </StaticGlassIsland>
   );
 }
 
@@ -767,7 +800,7 @@ function TimeStep({
 
   return (
     <>
-      <GlassIsland variant="content" shape="panel" className="task-glass">
+      <StaticGlassIsland shape="panel" className="task-glass">
       <section className="panel time-panel">
         <div className="panel-header">
           <h3>再选择时间模式</h3>
@@ -817,7 +850,7 @@ function TimeStep({
           </div>
         </div>
       </section>
-      </GlassIsland>
+      </StaticGlassIsland>
       <div className="actions">
         <GlassIsland variant="interactive" shape="capsule" opticsPreset="action" className="action-island">
         <button type="button" className="button-secondary" onClick={() => {
@@ -931,7 +964,7 @@ function QrcodeStep({
 
   return (
     <>
-      <GlassIsland variant="content" shape="panel" className="task-glass receipt-glass">
+      <StaticGlassIsland shape="panel" className="task-glass receipt-glass">
       <section className="receipt-panel panel">
         <div className={`receipt-result-layout${result.imageUrl ? ' is-ready' : ' is-pending'}`}>
           <div id="qrcode" className="qrcode-stage" aria-label="二维码，就位">
@@ -955,7 +988,7 @@ function QrcodeStep({
             )}
           </div>
           {result.imageUrl && validation.valid && (
-            <GlassIsland variant="static" shape="panel" className="receipt-summary-island">
+            <StaticGlassIsland shape="panel" className="receipt-summary-island">
               <aside className="receipt-result-summary" aria-live="polite">
                 <div className="receipt-result-summary__copy">
                   <h3>{TEXT.status.qrCodeReady}</h3>
@@ -968,11 +1001,11 @@ function QrcodeStep({
                   <div><dt>有效时间</dt><dd>{result.validTime}</dd></div>
                 </dl>
               </aside>
-            </GlassIsland>
+            </StaticGlassIsland>
           )}
         </div>
       </section>
-      </GlassIsland>
+      </StaticGlassIsland>
       <div className="actions">
         <GlassIsland variant="interactive" shape="capsule" opticsPreset="action" className="action-island">
         <button type="button" className="button-secondary" onClick={() => navigate(APP_PATHS.time)}>

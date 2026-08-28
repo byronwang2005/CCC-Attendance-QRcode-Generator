@@ -1,22 +1,10 @@
-import type { GlassOptics } from '@samasante/liquid-glass';
 import type { CSSProperties } from 'react';
 import { InkFlowBackground } from '../background/InkFlowBackground';
 import {
   GlassIsland,
-  LayeredGlassIsland,
-  LIVE_GLASS_OPTICS,
+  StaticGlassIsland,
 } from '../glass/GlassIsland';
 import { NOT_FOUND_INK_PALETTE } from './not-found-config';
-
-const NOT_FOUND_GLASS_OPTICS: Partial<GlassOptics> = {
-  ...LIVE_GLASS_OPTICS,
-  strength: 0.06,
-  depth: 0.56,
-  curvature: 0.34,
-  bend: 0.5,
-  frost: 4,
-  specular: 1
-};
 
 function MessageContent() {
   return (
@@ -44,13 +32,12 @@ function MessageContent() {
 
 function MessageIsland() {
   return (
-    <LayeredGlassIsland
+    <StaticGlassIsland
       shape="panel"
       className="message-island"
-      optics={NOT_FOUND_GLASS_OPTICS}
     >
       <MessageContent />
-    </LayeredGlassIsland>
+    </StaticGlassIsland>
   );
 }
 

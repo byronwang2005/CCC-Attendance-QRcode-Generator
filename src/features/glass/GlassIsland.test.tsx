@@ -4,7 +4,8 @@ import {
   ACTION_GLASS_OPTICS,
   detectGlassCapabilities,
   GlassIsland,
-  LIVE_GLASS_OPTICS
+  LIVE_GLASS_OPTICS,
+  StaticGlassIsland
 } from './GlassIsland';
 
 vi.mock('@samasante/liquid-glass', () => ({
@@ -131,5 +132,15 @@ describe('GlassIsland', () => {
     expect(contentIsland?.querySelector('[data-glass-surface="refractive"]')).toBeInTheDocument();
     expect(contentIsland?.querySelector('.glass-island__content')?.previousElementSibling).toHaveAttribute('data-glass-surface', 'refractive');
     expect(screen.getAllByTestId('liquid-glass')).toHaveLength(1);
+  });
+
+  it('uses the shared content surface for static glass', () => {
+    mockEnvironment({ userAgent: SAFARI_DESKTOP });
+    render(<StaticGlassIsland shape="panel">静态内容</StaticGlassIsland>);
+
+    const island = screen.getByText('静态内容').closest('[data-glass-material]');
+    expect(island).toHaveClass('static-glass-island', 'glass-island--content');
+    expect(island).not.toHaveClass('glass-island--interactive');
+    expect(island?.querySelector(':scope > .glass-island__surface')).toHaveAttribute('data-glass-surface', 'pearl');
   });
 });

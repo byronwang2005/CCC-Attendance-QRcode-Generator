@@ -62,6 +62,7 @@ describe('NotFoundPage', () => {
     const panelSurface = panel?.querySelector<HTMLElement>('[data-glass-surface="refractive"]');
     expect(action).toHaveAttribute('data-glass-material', 'refractive');
     expect(panel).toHaveAttribute('data-glass-material', 'refractive');
+    expect(panel).toHaveClass('static-glass-island', 'glass-island--content');
     expect(panelSurface).toBeInTheDocument();
     expect(panelSurface).toHaveAttribute('data-glass-engine', 'native');
     expect(panelSurface).not.toContainElement(action);

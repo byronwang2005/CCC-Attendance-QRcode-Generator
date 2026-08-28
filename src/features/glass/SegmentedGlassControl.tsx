@@ -114,8 +114,8 @@ export function SegmentedGlassControl({
     >
       <GlassSurfaceLayer
         material={lensMaterial}
-        opticsPreset="controlRail"
-        className="segmented-glass__rail-surface"
+        opticsPreset="surface"
+        className="static-glass-surface segmented-glass__rail-surface"
       />
       {metrics && selectedIndex >= 0 && (
         <GlassDiv

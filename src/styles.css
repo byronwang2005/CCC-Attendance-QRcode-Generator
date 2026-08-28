@@ -469,8 +469,10 @@ select:focus-visible {
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--border-warm);
-  background: var(--parchment);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--brand);
   font-family: var(--mono);
   font-size: 13px;
@@ -480,9 +482,8 @@ select:focus-visible {
 
 .step-card.is-active .step-number,
 .step-card.is-done .step-number {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: var(--ivory);
+  background: transparent;
+  color: var(--brand);
 }
 
 .panel {
@@ -666,7 +667,7 @@ select:focus-visible {
 
 .guide-card {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
   gap: 12px;
   align-items: start;
   padding: 17px 0;
@@ -678,19 +679,6 @@ select:focus-visible {
   padding-top: 0;
 }
 
-.guide-card-index {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--border-warm);
-  background: var(--parchment);
-  color: var(--brand);
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 500;
-}
-
 .guide-card-body h3 {
   margin: 0 0 5px;
   color: var(--near-black);
@@ -699,13 +687,13 @@ select:focus-visible {
   line-height: 1.35;
 }
 
-.guide-card-body p {
+.guide-card-description {
   margin: 0;
   color: var(--olive);
   font-size: 15px;
 }
 
-.guide-card-body p + p {
+.guide-card-description > p + p {
   margin-top: 8px;
 }
 
@@ -1461,15 +1449,9 @@ input[type="number"] {
   }
 
   .guide-card {
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: 26px minmax(0, 1fr);
     gap: 12px;
     padding: 12px 0;
-  }
-
-  .guide-card-index {
-    width: 40px;
-    height: 40px;
-    font-size: 13px;
   }
 
   .guide-card-body h3 {
@@ -1477,12 +1459,12 @@ input[type="number"] {
     font-size: 16px;
   }
 
-  .guide-card-body p {
+  .guide-card-description {
     font-size: 14px;
     line-height: 1.45;
   }
 
-  .guide-card-body p + p {
+  .guide-card-description > p + p {
     margin-top: 5px;
   }
 
@@ -1696,6 +1678,45 @@ input[type="number"] {
   isolation: isolate;
 }
 
+.static-glass-island {
+  --pearl-fill: rgb(250 248 241 / 39%);
+  --pearl-blur: 22px;
+  --pearl-inner: inset 0 1px 0 rgb(255 255 255 / 48%), inset 0 -1px 0 rgb(70 83 96 / 6%);
+  --pearl-shadow: 0 18px 44px rgb(36 44 51 / 7%), 0 2px 9px rgb(36 44 51 / 3%);
+  --pearl-rim-light: rgb(255 255 255 / 64%);
+  --pearl-rim-cool: rgb(171 193 213 / 20%);
+  --static-glass-shadow: 0 18px 44px rgb(36 44 51 / 7%), 0 2px 9px rgb(36 44 51 / 3%);
+  border: 0;
+  background: transparent;
+}
+
+.static-glass-island.is-refractive,
+.static-glass-island.is-solid {
+  box-shadow: var(--static-glass-shadow);
+}
+
+.static-glass-island.is-pearl {
+  box-shadow: var(--pearl-shadow);
+}
+
+.static-glass-island > .glass-island__surface.is-refractive {
+  border: 1px solid rgb(255 255 255 / 32%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 48%);
+}
+
+.static-glass-island > .glass-island__surface.is-pearl {
+  box-shadow: var(--pearl-inner);
+}
+
+.static-glass-island > .glass-island__surface.is-solid {
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgb(27 54 93 / 8%);
+}
+
+.static-glass-island > .glass-island__surface.is-pearl::before {
+  opacity: .72;
+}
+
 .layered-glass-island__surface,
 .glass-island__surface,
 .glass-surface-layer {
@@ -1795,7 +1816,7 @@ input[type="number"] {
   min-width: 0;
 }
 
-.glass-island.is-refractive {
+.glass-island--interactive.is-refractive {
   border: 1px solid rgb(255 255 255 / 54%);
   background: rgb(250 248 241 / 8%);
   box-shadow: 0 12px 28px rgb(36 44 51 / 9%);
@@ -1803,12 +1824,12 @@ input[type="number"] {
   transition: box-shadow 220ms ease;
 }
 
-.glass-island.is-refractive:active {
+.glass-island--interactive.is-refractive:active {
   box-shadow: 0 7px 18px rgb(36 44 51 / 8%);
 }
 
-.glass-island.is-refractive.is-disabled:active,
-.glass-island.is-refractive:has(:disabled):active {
+.glass-island--interactive.is-refractive.is-disabled:active,
+.glass-island--interactive.is-refractive:has(:disabled):active {
   transform: none;
   box-shadow: 0 8px 20px rgb(36 44 51 / 7%);
 }
@@ -1885,8 +1906,7 @@ input[type="number"] {
   overflow: visible;
 }
 
-.stepper-island > .glass-island__content,
-.stepper-island > .layered-glass-island__content {
+.stepper-island > .glass-island__content {
   width: 100%;
 }
 
@@ -1921,7 +1941,7 @@ input[type="number"] {
 }
 
 .step-card.is-active {
-  background: rgb(255 255 255 / 26%);
+  background: transparent;
 }
 
 .step-card.is-active::before,
@@ -1932,18 +1952,29 @@ input[type="number"] {
 .step-number {
   width: 52px;
   height: 52px;
-  border-color: rgb(255 255 255 / 76%);
   border-radius: var(--radius-sm);
-  background: rgb(250 249 245 / 72%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 94%);
+  background: transparent;
+  box-shadow: none;
   font-size: 14px;
 }
 
 .step-card.is-active .step-number,
 .step-card.is-done .step-number {
-  background: var(--brand);
-  border-color: var(--brand);
+  background: transparent;
+  color: var(--brand);
   box-shadow: none;
+}
+
+.step-number > .glass-island__content {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.step-number__label {
+  position: relative;
+  z-index: 1;
 }
 
 .step-card strong {
@@ -1972,9 +2003,6 @@ input[type="number"] {
 }
 
 .task-glass {
-  --pearl-fill: rgb(250 248 241 / 39%);
-  --pearl-blur: 22px;
-  --pearl-shadow: 0 22px 52px rgb(36 44 51 / 9%), 0 3px 12px rgb(36 44 51 / 4%);
   min-height: 0;
   height: 100%;
   overflow: hidden;
@@ -2043,11 +2071,6 @@ input[type="number"] {
 .segmented-glass__rail-surface {
   z-index: 0;
   border-radius: inherit;
-}
-
-.segmented-glass__rail-surface.is-refractive {
-  background: rgb(250 248 241 / 6%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 48%), 0 10px 26px rgb(36 44 51 / 7%);
 }
 
 .segmented-glass__options {
@@ -2175,13 +2198,61 @@ input[type="number"] {
 }
 
 .guide-card {
+  grid-template-columns: 52px minmax(0, 1fr);
   padding: 16px 0;
 }
 
-.guide-card-index {
-  border-color: rgb(27 54 93 / 10%);
-  border-radius: var(--radius-sm);
-  background: rgb(250 249 245 / 78%);
+.embedded-static-glass {
+  --pearl-shadow: none;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.static-glass-island.embedded-static-glass {
+  box-shadow: none;
+}
+
+.embedded-static-glass {
+  --pearl-fill: rgb(255 255 255 / 66%);
+}
+
+.embedded-static-glass > .glass-island__surface.is-refractive {
+  border-color: rgb(255 255 255 / 48%);
+  background: rgb(255 255 255 / 64%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 78%), inset 0 -1px 0 rgb(27 54 93 / 6%);
+}
+
+.embedded-static-glass > .glass-island__surface.is-solid {
+  background: rgb(255 255 255 / 96%);
+}
+
+.inline-code-island {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin-inline: 2px;
+  vertical-align: middle;
+}
+
+.inline-code-island > .glass-island__content {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.inline-code-island code {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .agent-command,
@@ -2199,6 +2270,65 @@ input[type="number"] {
 .course-link-input-wrap,
 .agent-command {
   border-left-color: var(--brand);
+}
+
+.course-link-input-island,
+.agent-command-island {
+  width: 100%;
+  border-radius: var(--radius-lg);
+}
+
+.course-link-input-island {
+  margin-top: 16px;
+}
+
+.course-link-input-island > .glass-island__content,
+.agent-command-island > .glass-island__content {
+  width: 100%;
+}
+
+.course-link-input-island .course-link-input-wrap {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.agent-command-island .agent-command {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.course-link-input-wrap:focus-within {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.course-link-input-island:focus-within {
+  outline: none;
+}
+
+.course-link-input-island::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 70%),
+    inset 0 0 12px rgb(27 54 93 / 14%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease-in;
+}
+
+.course-link-input-island:focus-within::after {
+  opacity: 1;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(.2, .7, .2, 1);
 }
 
 .radio-grid {
@@ -2271,6 +2401,11 @@ input[type="number"] {
 
 .action-island .glass-island__content {
   width: 100%;
+}
+
+.compact-action-island {
+  min-width: 42px;
+  min-height: 42px;
 }
 
 .micro-action-island {
@@ -2365,6 +2500,39 @@ input[type="number"] {
   box-shadow: 0 7px 18px rgb(36 44 51 / 6%);
 }
 
+.copy-action-island,
+.copy-action-island.is-disabled {
+  --pearl-fill: rgb(255 255 255 / 78%);
+  --pearl-rim-light: rgb(255 255 255 / 82%);
+  --pearl-rim-cool: rgb(171 193 213 / 14%);
+}
+
+.copy-action-island.is-refractive,
+.copy-action-island.is-refractive.is-disabled {
+  border-color: rgb(255 255 255 / 72%);
+  background: rgb(255 255 255 / 78%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 88%), 0 6px 16px rgb(36 44 51 / 5%);
+}
+
+.copy-action-island > .glass-island__surface.is-solid {
+  background: rgb(255 255 255 / 96%);
+}
+
+.copy-action-island .copy-btn:disabled {
+  color: var(--brand);
+  opacity: .82;
+}
+
+.copy-action-island .copy-btn,
+.copy-action-island .copy-btn:disabled {
+  background: radial-gradient(
+    circle at 34% 28%,
+    rgb(255 255 255 / 96%),
+    rgb(255 255 255 / 88%) 62%,
+    rgb(255 255 255 / 78%) 100%
+  );
+}
+
 .site-footer {
   grid-area: footer;
   display: block;
@@ -2446,6 +2614,12 @@ input[type="number"] {
   .glass-surface-layer {
     background: Canvas;
     box-shadow: none;
+  }
+
+  .course-link-input-island:focus-within::after {
+    border: 2px solid Highlight;
+    box-shadow: none;
+    forced-color-adjust: none;
   }
 }
 
@@ -2562,10 +2736,30 @@ input[type="number"] {
 }
 
 @media (max-width: 720px) {
+  html,
+  body,
+  #app {
+    height: auto;
+    min-height: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .app-stage {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
   .page-shell {
     width: 100%;
+    height: auto;
     margin: 0;
     padding: 12px 10px 8px;
+    overflow: visible;
   }
 
   .masthead-island {
@@ -2595,12 +2789,14 @@ input[type="number"] {
 
   .workflow-frame {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
     grid-template-areas:
       "steps"
       "main"
       "footer";
     gap: 8px;
+    height: auto;
+    overflow: visible;
   }
 
   .stepper-island {
@@ -2637,10 +2833,23 @@ input[type="number"] {
 
   .wizard-layout {
     gap: 8px;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .step-scene {
+    height: auto;
+    grid-template-rows: auto auto;
   }
 
   .task-glass {
+    height: auto;
     border-radius: calc(var(--radius-xl) - 6px);
+  }
+
+  .task-glass > .glass-island__content {
+    height: auto;
   }
 
   .panel {
@@ -2670,6 +2879,14 @@ input[type="number"] {
 
   .identity-btn {
     font-size: 18px;
+  }
+
+  .guide-card {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .inline-code-island code {
+    padding: 1px 6px;
   }
 
   .actions,
@@ -2891,7 +3108,8 @@ input[type="number"] {
 
 @media (prefers-reduced-motion: reduce) {
   .stepper-active-indicator,
-  .app-stage {
+  .app-stage,
+  .course-link-input-island::after {
     transition: none;
   }
 
@@ -2990,9 +3208,6 @@ input[type="number"] {
 }
 
 .receipt-summary-island {
-  --pearl-fill: rgb(250 248 241 / 44%);
-  --pearl-blur: 21px;
-  --pearl-shadow: 0 18px 44px rgb(36 44 51 / 10%), 0 3px 10px rgb(36 44 51 / 5%);
   height: 100%;
   min-height: 0;
   overflow: hidden;

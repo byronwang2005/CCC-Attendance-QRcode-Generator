@@ -295,3 +295,23 @@ export function GlassIsland({
     </Glass>
   );
 }
+
+export function StaticGlassIsland({
+  shape,
+  className = '',
+  children
+}: {
+  shape: GlassShape;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <GlassIsland
+      variant="content"
+      shape={shape}
+      className={`static-glass-island ${className}`.trim()}
+    >
+      {children}
+    </GlassIsland>
+  );
+}

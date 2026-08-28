@@ -415,8 +415,51 @@ describe('CCC Attendance first step', () => {
     const prompt = await screen.findByText(/Please read the instruction/);
     const hint = screen.getByText('把这句话交给智能体，它会引导您在本地完成后续步骤。');
     expect(prompt).toBeVisible();
-    expect(hint.nextElementSibling).toHaveClass('agent-command');
+    expect(hint.nextElementSibling).toHaveClass('agent-command-island');
+    expect(prompt.closest('.agent-command-island')).toHaveAttribute('data-glass-material');
+    const copyIsland = screen.getByRole('button', { name: '复制' }).closest('.copy-action-island');
+    expect(copyIsland).toHaveAttribute('data-glass-material');
+    expect(copyIsland).toHaveClass('action-island', 'compact-action-island');
+    expect(copyIsland).not.toHaveClass('micro-action-island');
     expect(screen.getByRole('button', { name: '下一步' })).toBeDisabled();
+  });
+
+  it('uses glass material for guide indexes, inline emphasis, and the course link input', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '人类' }));
+
+    const guideNumbers = document.querySelectorAll('.guide-card > .step-number');
+    const stepperNumbers = document.querySelectorAll('.step-card > .step-number');
+    const inlineCodeIslands = document.querySelectorAll('.inline-code-island[data-glass-material]');
+    expect(guideNumbers).toHaveLength(4);
+    expect(stepperNumbers).toHaveLength(3);
+    expect(document.querySelector('.guide-index-island')).not.toBeInTheDocument();
+    expect(inlineCodeIslands).toHaveLength(4);
+    expect(screen.getByText('eduroam').closest('.inline-code-island')).toHaveAttribute('data-glass-material');
+    expect(screen.getByText('https://ccc.nottingham.edu.cn/study/home/details?id=xxxx').closest('.inline-code-island')).toHaveAttribute('data-glass-material');
+    expect(screen.getByRole('textbox', { name: '课程详情链接输入框' }).closest('.course-link-input-island')).toHaveAttribute('data-glass-material');
+
+    for (const island of [
+      ...guideNumbers,
+      ...stepperNumbers,
+      ...inlineCodeIslands,
+      document.querySelector('.course-link-input-island'),
+      document.querySelector('.agent-command-island')
+    ]) {
+      expect(island).not.toBeNull();
+      expect(island).toHaveClass('glass-island', 'glass-island--content', 'static-glass-island');
+      expect(island).not.toHaveClass('layered-glass-island');
+      expect(island?.querySelectorAll(':scope > .glass-surface-layer')).toHaveLength(1);
+    }
+
+    for (const selector of ['.masthead-island', '.stepper-island', '.task-glass']) {
+      expect(document.querySelector(selector)).toHaveClass('static-glass-island', 'glass-island--content');
+    }
+    expect(document.querySelectorAll('.segmented-glass__rail-surface.static-glass-surface')).toHaveLength(1);
+    expect(document.querySelectorAll('.stepper-active-indicator__surface')).toHaveLength(1);
   });
 
   it('keeps an error toast mounted until its exit animation completes', async () => {
