@@ -674,7 +674,8 @@ select:focus-visible {
 }
 
 .guide-card:first-child {
-  border-top: 1px solid var(--border-warm);
+  border-top: 0;
+  padding-top: 0;
 }
 
 .guide-card-index {
@@ -734,7 +735,7 @@ select:focus-visible {
 }
 
 .agent-hint {
-  margin: 14px 0 0;
+  margin: 0 0 14px;
   color: var(--olive);
   font-size: 14px;
 }
@@ -2002,12 +2003,30 @@ input[type="number"] {
 .identity-header {
   grid-template-columns: max-content minmax(330px, 1fr);
   gap: 36px;
+  min-height: 70px;
 }
 
-.identity-header h3 {
+.time-panel .panel-header {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 36px;
+  align-items: center;
+  min-height: 70px;
+}
+
+.time-panel .panel-current-time {
+  justify-self: end;
   margin: 0;
+}
+
+.identity-header h3,
+.time-panel .panel-header h3 {
+  margin: 0;
+  color: var(--near-black);
+  font-family: var(--serif);
   font-size: 27px;
   font-weight: 500;
+  line-height: 1.18;
 }
 
 .segmented-glass {
@@ -2515,9 +2534,21 @@ input[type="number"] {
     height: 3px;
   }
 
-  .identity-header {
+  .identity-header,
+  .time-panel .panel-header {
     grid-template-columns: 1fr;
     gap: 18px;
+    min-height: 120px;
+  }
+
+  .time-panel .panel-header {
+    grid-template-rows: auto 1fr;
+    align-items: start;
+  }
+
+  .time-panel .panel-current-time {
+    align-self: end;
+    justify-self: start;
   }
 
   .identity-header .identity-buttons {
@@ -2616,8 +2647,14 @@ input[type="number"] {
     padding: 20px;
   }
 
-  .identity-header h3 {
+  .identity-header h3,
+  .time-panel .panel-header h3 {
     font-size: 23px;
+  }
+
+  .identity-header,
+  .time-panel .panel-header {
+    min-height: 102px;
   }
 
   .identity-buttons {

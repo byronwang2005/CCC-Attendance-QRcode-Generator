@@ -119,7 +119,7 @@ describe('CCC Attendance first step', () => {
     );
     await user.click(screen.getByRole('button', { name: '下一步' }));
 
-    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' })).toBeVisible();
     expect(window.location.search).toBe('?step=2');
     expect(screen.queryByLabelText('正在加载')).not.toBeInTheDocument();
   });
@@ -139,7 +139,7 @@ describe('CCC Attendance first step', () => {
       'https://ccc.nottingham.edu.cn/study/home/details?id=1234'
     );
     await user.click(screen.getByRole('button', { name: '下一步' }));
-    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' })).toBeVisible();
     expect(stage?.style.getPropertyValue('--ink-stage-background')).toBe('#f1f4f1');
 
     await user.click(screen.getByRole('button', { name: '下一步' }));
@@ -168,14 +168,14 @@ describe('CCC Attendance first step', () => {
     expect(document.querySelectorAll('.stepper-active-indicator')).toHaveLength(1);
 
     await user.click(screen.getByRole('button', { name: '下一步' }));
-    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' })).toBeVisible();
     expect(startViewTransition).toHaveBeenCalledTimes(1);
     expect(document.documentElement).toHaveAttribute('data-step-direction', 'forward');
     expect(document.documentElement).toHaveAttribute('data-step-transition', 'native');
     expect(document.querySelector('.stepper')).toHaveAttribute('data-current-step', '2');
 
     await user.click(screen.getByRole('button', { name: '返回上一步' }));
-    expect(await screen.findByRole('heading', { name: '先告诉我，您是？' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '先告诉我，您是' })).toBeVisible();
     expect(startViewTransition).toHaveBeenCalledTimes(2);
     expect(transitions[0].skipTransition).toHaveBeenCalledOnce();
     expect(document.documentElement).toHaveAttribute('data-step-direction', 'backward');
@@ -204,11 +204,11 @@ describe('CCC Attendance first step', () => {
     const { startViewTransition, transitions } = installViewTransitionMock();
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' }, { timeout: 2000 })).toBeVisible();
     window.history.pushState({}, '', '/index.html?step=1');
     fireEvent(window, new PopStateEvent('popstate'));
 
-    expect(await screen.findByRole('heading', { name: '先告诉我，您是？' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '先告诉我，您是' })).toBeVisible();
     expect(startViewTransition).toHaveBeenCalledOnce();
     expect(document.documentElement).toHaveAttribute('data-step-direction', 'backward');
     await act(async () => transitions[0].resolve());
@@ -232,7 +232,7 @@ describe('CCC Attendance first step', () => {
 
     expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
     await user.click(screen.getByRole('button', { name: '下一步' }));
-    expect(await screen.findByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' })).toBeVisible();
     expect(startViewTransition).not.toHaveBeenCalled();
     expect(document.documentElement).not.toHaveAttribute('data-step-direction');
     expect(document.documentElement).not.toHaveAttribute('data-step-transition');
@@ -256,7 +256,7 @@ describe('CCC Attendance first step', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' }, { timeout: 2000 })).toBeVisible();
     await user.click(screen.getByRole('button', { name: '下一步' }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
     await act(async () => transitions[0].resolve());
@@ -289,7 +289,7 @@ describe('CCC Attendance first step', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     await act(async () => commitTransition());
 
-    expect(await screen.findByRole('heading', { name: '先告诉我，您是？' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '先告诉我，您是' })).toBeVisible();
     expect(window.location.search).toBe('?step=1');
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '下一步' })).toBeDisabled();
@@ -302,7 +302,10 @@ describe('CCC Attendance first step', () => {
     expect(await screen.findByRole('heading', { name: 'CCC Attendance' }, { timeout: 2000 })).toBeVisible();
     await user.click(screen.getByRole('button', { name: '智能体' }));
 
-    expect(await screen.findByText(/Please read the instruction/)).toBeVisible();
+    const prompt = await screen.findByText(/Please read the instruction/);
+    const hint = screen.getByText('把这句话交给智能体，它会引导您在本地完成后续步骤。');
+    expect(prompt).toBeVisible();
+    expect(hint.nextElementSibling).toHaveClass('agent-command');
     expect(screen.getByRole('button', { name: '下一步' })).toBeDisabled();
   });
 
@@ -419,7 +422,7 @@ describe('CCC Attendance first step', () => {
     window.history.replaceState({}, '', '/index.html?step=2');
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' }, { timeout: 2000 })).toBeVisible();
     const dateSelect = document.getElementById('date');
     expect(dateSelect).toBeInstanceOf(HTMLSelectElement);
     expect(dateSelect).not.toBeVisible();
@@ -467,7 +470,7 @@ describe('CCC Attendance first step', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' }, { timeout: 2000 })).toBeVisible();
     const manualTime = document.getElementById('manualTime');
     expect(manualTime).not.toBeNull();
     if (!manualTime) return;
@@ -519,7 +522,7 @@ describe('CCC Attendance first step', () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(520);
     });
-    expect(screen.getByRole('heading', { name: '选择时间模式' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: '再选择时间模式' })).toBeVisible();
 
     const panel = document.querySelector<HTMLElement>('.time-panel');
     const manualTime = document.getElementById('manualTime');
@@ -564,7 +567,7 @@ describe('CCC Attendance first step', () => {
     window.history.replaceState({}, '', '/index.html?step=2');
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: '选择时间模式' }, { timeout: 2000 })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: '再选择时间模式' }, { timeout: 2000 })).toBeVisible();
     const panel = document.querySelector<HTMLElement>('.time-panel');
     const manualTime = document.getElementById('manualTime');
     expect(panel).not.toBeNull();

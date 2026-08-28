@@ -475,7 +475,7 @@ function IdentityStep({
       <GlassIsland variant="content" shape="panel" className="task-glass">
       <section className="panel identity-panel">
         <div className="identity-header">
-          <h3>先告诉我，您是？</h3>
+          <h3>先告诉我，您是</h3>
           <SegmentedGlassControl
             selectedIndex={state.identity === 'human' ? 0 : state.identity === 'agent' ? 1 : -1}
             count={2}
@@ -551,6 +551,7 @@ function IdentityStep({
           className={`identity-content agent-content expandable-section${initialIdentity === 'agent' ? ' is-expanded' : ''}`}
           hidden={initialIdentity !== 'agent'}
         >
+          <p className="agent-hint">把这句话交给智能体，它会引导您在本地完成后续步骤。</p>
           <div className="agent-command">
             <span className="agent-text">{AGENT_PROMPT}</span>
             <GlassIsland
@@ -566,7 +567,6 @@ function IdentityStep({
               </button>
             </GlassIsland>
           </div>
-          <p className="agent-hint">把这句话交给智能体，它会引导您在本地完成后续步骤。</p>
         </div>
       </section>
       </GlassIsland>
@@ -733,7 +733,7 @@ function TimeStep({
       <GlassIsland variant="content" shape="panel" className="task-glass">
       <section className="panel time-panel">
         <div className="panel-header">
-          <h3>选择时间模式</h3>
+          <h3>再选择时间模式</h3>
           <p className="panel-current-time">当前时间 {formatCurrentTime(now)}</p>
         </div>
         <SegmentedGlassControl
