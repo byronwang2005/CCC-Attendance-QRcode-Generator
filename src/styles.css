@@ -2739,27 +2739,28 @@ input[type="number"] {
   html,
   body,
   #app {
-    height: auto;
-    min-height: 100%;
+    height: 100%;
+    min-height: 0;
   }
 
   body {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .app-stage {
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .page-shell {
     width: 100%;
-    height: auto;
+    height: 100%;
+    min-height: 0;
     margin: 0;
     padding: 12px 10px 8px;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .masthead-island {
@@ -2789,14 +2790,15 @@ input[type="number"] {
 
   .workflow-frame {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas:
       "steps"
       "main"
       "footer";
     gap: 8px;
-    height: auto;
-    overflow: visible;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .stepper-island {
@@ -2833,23 +2835,29 @@ input[type="number"] {
 
   .wizard-layout {
     gap: 8px;
-    height: auto;
-    max-height: none;
-    overflow: visible;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .step-scene {
-    height: auto;
-    grid-template-rows: auto auto;
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
   .task-glass {
-    height: auto;
+    --static-glass-shadow: none;
+    --pearl-shadow: none;
+    height: 100%;
+    min-height: 0;
     border-radius: calc(var(--radius-xl) - 6px);
   }
 
   .task-glass > .glass-island__content {
-    height: auto;
+    height: 100%;
+    min-height: 0;
   }
 
   .panel {
@@ -2864,6 +2872,18 @@ input[type="number"] {
   .identity-header,
   .time-panel .panel-header {
     min-height: 102px;
+  }
+
+  .time-panel .panel-header {
+    grid-template-rows: auto auto;
+    gap: 8px;
+    min-height: 0;
+    align-content: start;
+  }
+
+  .time-panel .panel-current-time {
+    align-self: start;
+    justify-self: start;
   }
 
   .identity-buttons {
@@ -2891,8 +2911,14 @@ input[type="number"] {
 
   .actions,
   .actions-major {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: stretch;
+    gap: 8px;
+  }
+
+  .actions-major {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .action-island,
@@ -2901,6 +2927,32 @@ input[type="number"] {
   .copy-btn {
     width: 100%;
     min-height: 48px;
+  }
+
+  .actions:not(.actions-major) .action-island,
+  .actions:not(.actions-major) .button-primary,
+  .actions:not(.actions-major) .button-secondary {
+    min-width: 0;
+  }
+
+  .actions .action-island {
+    --pearl-shadow: none;
+    box-shadow: none;
+  }
+
+  .actions:not(.actions-major) .button-primary,
+  .actions:not(.actions-major) .button-secondary {
+    padding-inline: 12px;
+  }
+
+  .copy-action-island {
+    justify-self: stretch;
+  }
+
+  .copy-action-island,
+  .copy-action-island .glass-island__content,
+  .copy-action-island .copy-btn {
+    width: 100%;
   }
 
   .site-footer {

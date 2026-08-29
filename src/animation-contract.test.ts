@@ -47,7 +47,8 @@ describe('identity layout contract', () => {
     const desktopTimeRule = readRule('.time-panel .panel-current-time {', floatingGlassStart);
     const tabletRule = readRule('.time-panel .panel-header {', tabletBreakpoint);
     const tabletTimeRule = readRule('.time-panel .panel-current-time {', tabletBreakpoint);
-    const mobileRule = readRule('.time-panel .panel-header {', mobileBreakpoint);
+    const mobileSharedHeader = styles.indexOf('.time-panel .panel-header {', mobileBreakpoint);
+    const mobileRule = readRule('.time-panel .panel-header {', mobileSharedHeader + 1);
 
     expect(desktopRule).toContain('grid-template-columns: max-content minmax(0, 1fr)');
     expect(desktopRule).toContain('min-height: 70px');
@@ -58,7 +59,53 @@ describe('identity layout contract', () => {
     expect(tabletRule).toContain('min-height: 120px');
     expect(tabletTimeRule).toContain('align-self: end');
     expect(tabletTimeRule).toContain('justify-self: start');
-    expect(mobileRule).toContain('min-height: 102px');
+    expect(mobileRule).toContain('grid-template-rows: auto auto');
+    expect(mobileRule).toContain('gap: 8px');
+    expect(mobileRule).toContain('min-height: 0');
+    expect(mobileRule).toContain('align-content: start');
+  });
+
+  it('keeps mobile scrolling inside the task panel and aligns action hit areas', () => {
+    const floatingGlassStart = styles.indexOf('/* Floating glass material system */');
+    const mobileBreakpoint = styles.indexOf('@media (max-width: 720px)', floatingGlassStart);
+    const mobileRootRule = readRule('html,', mobileBreakpoint);
+    const mobileBodyRule = readRule('body {', mobileBreakpoint);
+    const mobileStageRule = readRule('.app-stage {', mobileBreakpoint);
+    const mobileShellRule = readRule('.page-shell {', mobileBreakpoint);
+    const mobileWorkflowRule = readRule('.workflow-frame {', mobileBreakpoint);
+    const mobileWizardRule = readRule('.wizard-layout {', mobileBreakpoint);
+    const mobileSceneRule = readRule('.step-scene {', mobileBreakpoint);
+    const mobileTaskRule = readRule('.task-glass {', mobileBreakpoint);
+    const mobileActionsRule = readRule('.actions,', mobileBreakpoint);
+    const mobileSharedActions = styles.indexOf('.actions-major {', mobileBreakpoint);
+    const mobileMajorActionsRule = readRule('.actions-major {', mobileSharedActions + 1);
+    const mobileActionIslandRule = readRule('.actions .action-island {', mobileBreakpoint);
+    const mobileCopyRule = readRule('.copy-action-island,', mobileBreakpoint);
+    const mobileCopyAlignmentRule = readRule('.copy-action-island {', mobileBreakpoint);
+
+    expect(mobileRootRule).toContain('height: 100%');
+    expect(mobileRootRule).toContain('min-height: 0');
+    expect(mobileBodyRule).toContain('overflow: hidden');
+    expect(mobileStageRule).toContain('height: 100dvh');
+    expect(mobileStageRule).toContain('overflow: hidden');
+    expect(mobileShellRule).toContain('height: 100%');
+    expect(mobileShellRule).toContain('overflow: hidden');
+    expect(mobileWorkflowRule).toContain('grid-template-rows: auto minmax(0, 1fr) auto');
+    expect(mobileWorkflowRule).toContain('min-height: 0');
+    expect(mobileWorkflowRule).toContain('overflow: hidden');
+    expect(mobileWizardRule).toContain('height: 100%');
+    expect(mobileWizardRule).toContain('min-height: 0');
+    expect(mobileWizardRule).toContain('overflow: hidden');
+    expect(mobileSceneRule).toContain('grid-template-rows: minmax(0, 1fr) auto');
+    expect(mobileTaskRule).toContain('height: 100%');
+    expect(mobileTaskRule).toContain('--static-glass-shadow: none');
+    expect(mobileTaskRule).toContain('--pearl-shadow: none');
+    expect(mobileActionsRule).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
+    expect(mobileMajorActionsRule).toContain('grid-template-columns: minmax(0, 1fr)');
+    expect(mobileActionIslandRule).toContain('--pearl-shadow: none');
+    expect(mobileActionIslandRule).toContain('box-shadow: none');
+    expect(mobileCopyAlignmentRule).toContain('justify-self: stretch');
+    expect(mobileCopyRule).toContain('width: 100%');
   });
 
   it('uses the main static surface for fixed glass contents', () => {
@@ -145,13 +192,13 @@ describe('identity layout contract', () => {
     expect(mobileNumberRule).toContain('width: 28px');
     expect(mobileNumberRule).toContain('height: 28px');
     expect(mobileInlineRule).toContain('padding: 1px 6px');
-    expect(mobileWizardRule).toContain('height: auto');
-    expect(mobileWizardRule).toContain('overflow: visible');
-    expect(mobileTaskRule).toContain('height: auto');
-    expect(mobileStageRule).toContain('min-height: 100dvh');
-    expect(mobileStageRule).toContain('overflow: visible');
-    expect(mobileWorkflowRule).toContain('grid-template-rows: auto auto auto');
-    expect(mobileWorkflowRule).toContain('height: auto');
+    expect(mobileWizardRule).toContain('height: 100%');
+    expect(mobileWizardRule).toContain('overflow: hidden');
+    expect(mobileTaskRule).toContain('height: 100%');
+    expect(mobileStageRule).toContain('height: 100dvh');
+    expect(mobileStageRule).toContain('overflow: hidden');
+    expect(mobileWorkflowRule).toContain('grid-template-rows: auto minmax(0, 1fr) auto');
+    expect(mobileWorkflowRule).toContain('height: 100%');
   });
 });
 
