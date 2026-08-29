@@ -73,6 +73,7 @@ describe('identity layout contract', () => {
     const mobileStageRule = readRule('.app-stage {', mobileBreakpoint);
     const mobileShellRule = readRule('.page-shell {', mobileBreakpoint);
     const mobileWorkflowRule = readRule('.workflow-frame {', mobileBreakpoint);
+    const mobileStepperRule = readRule('.stepper-island {', mobileBreakpoint);
     const mobileWizardRule = readRule('.wizard-layout {', mobileBreakpoint);
     const mobileSceneRule = readRule('.step-scene {', mobileBreakpoint);
     const mobileTaskRule = readRule('.task-glass {', mobileBreakpoint);
@@ -93,13 +94,14 @@ describe('identity layout contract', () => {
     expect(mobileWorkflowRule).toContain('grid-template-rows: auto minmax(0, 1fr) auto');
     expect(mobileWorkflowRule).toContain('min-height: 0');
     expect(mobileWorkflowRule).toContain('overflow: hidden');
+    expect(mobileStepperRule).toContain('--static-glass-shadow: 0 2px 8px rgb(36 44 51 / 4%)');
     expect(mobileWizardRule).toContain('height: 100%');
     expect(mobileWizardRule).toContain('min-height: 0');
     expect(mobileWizardRule).toContain('overflow: hidden');
     expect(mobileSceneRule).toContain('grid-template-rows: minmax(0, 1fr) auto');
     expect(mobileTaskRule).toContain('height: 100%');
     expect(mobileTaskRule).toContain('--static-glass-shadow: none');
-    expect(mobileTaskRule).toContain('--pearl-shadow: none');
+    expect(mobileTaskRule).not.toContain('--pearl-shadow');
     expect(mobileActionsRule).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
     expect(mobileMajorActionsRule).toContain('grid-template-columns: minmax(0, 1fr)');
     expect(mobileActionIslandRule).toContain('--pearl-shadow: none');
@@ -115,6 +117,8 @@ describe('identity layout contract', () => {
     const inlineIslandRule = readRule('.inline-code-island {', floatingGlassStart);
     const inlineContentRule = readRule('.inline-code-island > .glass-island__content', floatingGlassStart);
     const inlineRule = readRule('.inline-code-island code', floatingGlassStart);
+    const sharedUrlInputRule = styles.indexOf('#urlInput {');
+    const urlInputRule = readRule('#urlInput {', sharedUrlInputRule + 1);
     const inputRule = readRule('.course-link-input-island .course-link-input-wrap', floatingGlassStart);
     const commandRule = readRule('.agent-command-island .agent-command', floatingGlassStart);
     const focusRule = readRule('.course-link-input-island:focus-within', floatingGlassStart);
@@ -153,6 +157,11 @@ describe('identity layout contract', () => {
     expect(inlineRule).toContain('line-height: 1.35');
     expect(inlineRule).toContain('white-space: normal');
     expect(inlineRule).toContain('overflow-wrap: anywhere');
+    expect(urlInputRule).toContain('-webkit-appearance: none');
+    expect(urlInputRule).toContain('appearance: none');
+    expect(urlInputRule).toContain('background: transparent');
+    expect(urlInputRule).toContain('border: none');
+    expect(urlInputRule).toContain('box-shadow: none');
     expect(inputRule).toContain('background: transparent');
     expect(commandRule).toContain('background: transparent');
     expect(focusRule).toContain('outline: none');
@@ -176,7 +185,8 @@ describe('identity layout contract', () => {
     expect(staticRule).toContain('--pearl-fill: rgb(250 248 241 / 39%)');
     expect(staticRule).toContain('--pearl-blur: 22px');
     expect(staticRule).toContain('--pearl-inner: inset');
-    expect(staticRule).toContain('--pearl-shadow: 0 18px 44px');
+    expect(staticRule).not.toContain('--pearl-shadow');
+    expect(staticRule).toContain('--static-glass-shadow: 0 18px 44px');
     expect(embeddedRule).toContain('overflow: hidden');
     expect(embeddedRule).not.toContain('background:');
     expect(embeddedDepthRule).toContain('box-shadow: none');
@@ -222,6 +232,9 @@ describe('glass animation contract', () => {
 
   it('gives static glass one optical edge and one depth layer', () => {
     const floatingGlassStart = styles.indexOf('/* Floating glass material system */');
+    const outerSelectorStart = styles.indexOf('.static-glass-island.is-refractive,', floatingGlassStart);
+    const outerSelectorEnd = styles.indexOf('{', outerSelectorStart);
+    const outerSelector = styles.slice(outerSelectorStart, outerSelectorEnd);
     const outerRule = readRule('.static-glass-island.is-refractive,', floatingGlassStart);
     const surfaceRule = readRule('.static-glass-island > .glass-island__surface.is-refractive {', floatingGlassStart);
     const pearlRimRule = readRule('.static-glass-island > .glass-island__surface.is-pearl::before', floatingGlassStart);
@@ -232,6 +245,7 @@ describe('glass animation contract', () => {
     const interactiveRule = readRule('.glass-island--interactive.is-refractive {', floatingGlassStart);
 
     expect(outerRule).toContain('box-shadow: var(--static-glass-shadow)');
+    expect(outerSelector).toContain('.static-glass-island.is-pearl');
     expect(surfaceRule).toContain('border: 1px solid rgb(255 255 255 / 32%)');
     expect(surfaceRule).toContain('box-shadow: inset');
     expect(surfaceRule).not.toContain('0 18px 44px');

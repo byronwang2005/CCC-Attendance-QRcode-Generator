@@ -857,12 +857,15 @@ input[type="number"] {
 }
 
 #urlInput {
+  -webkit-appearance: none;
+  appearance: none;
   min-height: 0;
   height: 28px;
   padding: 0;
   border: none;
   border-radius: 0;
   background: transparent;
+  box-shadow: none;
   color: var(--near-black);
   line-height: 28px;
   white-space: nowrap;
@@ -1682,7 +1685,6 @@ input[type="number"] {
   --pearl-fill: rgb(250 248 241 / 39%);
   --pearl-blur: 22px;
   --pearl-inner: inset 0 1px 0 rgb(255 255 255 / 48%), inset 0 -1px 0 rgb(70 83 96 / 6%);
-  --pearl-shadow: 0 18px 44px rgb(36 44 51 / 7%), 0 2px 9px rgb(36 44 51 / 3%);
   --pearl-rim-light: rgb(255 255 255 / 64%);
   --pearl-rim-cool: rgb(171 193 213 / 20%);
   --static-glass-shadow: 0 18px 44px rgb(36 44 51 / 7%), 0 2px 9px rgb(36 44 51 / 3%);
@@ -1691,12 +1693,9 @@ input[type="number"] {
 }
 
 .static-glass-island.is-refractive,
-.static-glass-island.is-solid {
-  box-shadow: var(--static-glass-shadow);
-}
-
+.static-glass-island.is-solid,
 .static-glass-island.is-pearl {
-  box-shadow: var(--pearl-shadow);
+  box-shadow: var(--static-glass-shadow);
 }
 
 .static-glass-island > .glass-island__surface.is-refractive {
@@ -2203,7 +2202,6 @@ input[type="number"] {
 }
 
 .embedded-static-glass {
-  --pearl-shadow: none;
   isolation: isolate;
   overflow: hidden;
 }
@@ -2802,6 +2800,7 @@ input[type="number"] {
   }
 
   .stepper-island {
+    --static-glass-shadow: 0 2px 8px rgb(36 44 51 / 4%);
     padding: 5px;
     border-radius: var(--radius-lg);
   }
@@ -2849,7 +2848,6 @@ input[type="number"] {
 
   .task-glass {
     --static-glass-shadow: none;
-    --pearl-shadow: none;
     height: 100%;
     min-height: 0;
     border-radius: calc(var(--radius-xl) - 6px);
