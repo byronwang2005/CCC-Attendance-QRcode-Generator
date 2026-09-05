@@ -30,8 +30,6 @@ import {
   formatDateTime,
   formatDateValue,
   getIdentityLabel,
-  getReceiptIdentityLabel,
-  getReceiptTimeModeLabel,
   getTimeModeLabel,
   loadState,
   parseErrorMessage,
@@ -41,21 +39,21 @@ import {
 } from './lib/wizard';
 import type { Identity, ManualTime, QrResult, TimeMode, ToastState, WizardState } from './types';
 
-let receiptStagePromise: Promise<typeof import('./features/qrcode/ReceiptStage')> | null = null;
-const preloadReceiptStage = () => {
-  receiptStagePromise ??= import('./features/qrcode/ReceiptStage');
-  return receiptStagePromise;
+let magicTreeStagePromise: Promise<typeof import('./features/qrcode/MagicTreeStage')> | null = null;
+const preloadMagicTreeStage = () => {
+  magicTreeStagePromise ??= import('./features/qrcode/MagicTreeStage');
+  return magicTreeStagePromise;
 };
-const ReceiptStage = lazy(() => preloadReceiptStage().then((module) => ({
-  default: module.ReceiptStage
+const MagicTreeStage = lazy(() => preloadMagicTreeStage().then((module) => ({
+  default: module.MagicTreeStage
 })));
 
-const scheduleReceiptStagePreload = () => {
+const scheduleMagicTreeStagePreload = () => {
   if (typeof window.requestIdleCallback === 'function') {
-    const requestId = window.requestIdleCallback(() => void preloadReceiptStage(), { timeout: 1200 });
+    const requestId = window.requestIdleCallback(() => void preloadMagicTreeStage(), { timeout: 1200 });
     return () => window.cancelIdleCallback(requestId);
   }
-  const timerId = window.setTimeout(() => void preloadReceiptStage(), 280);
+  const timerId = window.setTimeout(() => void preloadMagicTreeStage(), 280);
   return () => window.clearTimeout(timerId);
 };
 
@@ -720,7 +718,7 @@ function TimeStep({
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => scheduleReceiptStagePreload(), []);
+  useEffect(() => scheduleMagicTreeStagePreload(), []);
 
   const dateOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
@@ -865,8 +863,8 @@ function TimeStep({
         <button
           type="button"
           className="button-primary"
-          onPointerEnter={() => void preloadReceiptStage()}
-          onFocus={() => void preloadReceiptStage()}
+          onPointerEnter={() => void preloadMagicTreeStage()}
+          onFocus={() => void preloadMagicTreeStage()}
           onClick={goNext}
         >
           <span>下一步</span>
@@ -912,8 +910,6 @@ function QrcodeStep({
   const validation = useMemo(() => validateCourseUrl(state.url), [state.url]);
   const identityLabel = getIdentityLabel(state.identity);
   const modeLabel = getTimeModeLabel(state);
-  const receiptIdentityLabel = getReceiptIdentityLabel(state.identity);
-  const receiptModeLabel = getReceiptTimeModeLabel(state);
 
   useEffect(() => {
     if (!validation.valid) return;
@@ -970,16 +966,7 @@ function QrcodeStep({
           <div id="qrcode" className="qrcode-stage" aria-label="二维码，就位">
             {result.imageUrl && validation.valid ? (
               <Suspense fallback={<div className="qrcode-placeholder">{TEXT.placeholders.receiptLoading}</div>}>
-                <ReceiptStage
-                  imageUrl={result.imageUrl}
-                  generatedTime={result.generatedTime ?? ''}
-                  validTime={result.validTime ?? ''}
-                  identityLabel={receiptIdentityLabel}
-                  modeLabel={receiptModeLabel}
-                  scheduleId={validation.scheduleId}
-                  accentColor={INK_PALETTES[3].accentHex}
-                  ambientColor={INK_PALETTES[3].inkHex}
-                />
+                <MagicTreeStage imageUrl={result.imageUrl} />
               </Suspense>
             ) : (
               <div className="qrcode-placeholder">
@@ -988,10 +975,11 @@ function QrcodeStep({
             )}
           </div>
           {result.imageUrl && validation.valid && (
-            <StaticGlassIsland shape="panel" className="receipt-summary-island">
+            <div className="receipt-summary-island">
               <aside className="receipt-result-summary" aria-live="polite">
                 <div className="receipt-result-summary__copy">
                   <h3>{TEXT.status.qrCodeReady}</h3>
+                  <p>{TEXT.status.qrCodeHint}</p>
                 </div>
                 <dl className="receipt-result-summary__details">
                   <div><dt>生成时间</dt><dd>{result.generatedTime}</dd></div>
@@ -1001,7 +989,7 @@ function QrcodeStep({
                   <div><dt>有效时间</dt><dd>{result.validTime}</dd></div>
                 </dl>
               </aside>
-            </StaticGlassIsland>
+            </div>
           )}
         </div>
       </section>

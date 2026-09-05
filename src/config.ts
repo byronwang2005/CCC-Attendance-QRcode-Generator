@@ -39,14 +39,15 @@ export const TEXT = {
     copySuccess: '已复制',
     copied: '已复制!',
     qrCodeGenerated: '二维码已生成。如有“答题”选项，请继续完成。',
-    qrCodeReady: '二维码已生成',
+    qrCodeReady: '云天收夏色，木叶动秋声。',
+    qrCodeHint: '轻点大树，获取二维码。',
     regenerate: '重新生成二维码',
     generate: '生成签到二维码'
   },
   placeholders: {
     qrCode: '二维码将在这里生成',
     qrCodeLoading: '正在生成二维码...',
-    receiptLoading: '正在准备动态回执...'
+    receiptLoading: '正在准备'
   },
   redirects: {
     finishFirstStep: '请先完成第一步并粘贴课程链接',
@@ -96,8 +97,9 @@ export const COPY_LOCK = [
   '（今天）',
   '（明天）',
   '生成更多',
-  '二维码已生成',
-  '正在准备动态回执...',
+  '云天收夏色，木叶动秋声。',
+  '轻点大树，获取二维码。',
+  '正在准备',
   '生成时间',
   '模式',
   '身份',
