@@ -2915,8 +2915,8 @@ input[type="number"] {
     gap: 8px;
   }
 
-  .actions-major {
-    grid-template-columns: minmax(0, 1fr);
+  .actions-major > .action-island {
+    grid-column: 2;
   }
 
   .action-island,
@@ -2927,10 +2927,11 @@ input[type="number"] {
     min-height: 48px;
   }
 
-  .actions:not(.actions-major) .action-island,
-  .actions:not(.actions-major) .button-primary,
-  .actions:not(.actions-major) .button-secondary {
+  .actions .action-island,
+  .actions .button-primary,
+  .actions .button-secondary {
     min-width: 0;
+    height: 48px;
   }
 
   .actions .action-island {
@@ -2938,9 +2939,9 @@ input[type="number"] {
     box-shadow: none;
   }
 
-  .actions:not(.actions-major) .button-primary,
-  .actions:not(.actions-major) .button-secondary {
-    padding-inline: 12px;
+  .actions .button-primary,
+  .actions .button-secondary {
+    padding: 0 12px;
   }
 
   .copy-action-island {

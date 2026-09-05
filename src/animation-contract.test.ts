@@ -78,8 +78,7 @@ describe('identity layout contract', () => {
     const mobileSceneRule = readRule('.step-scene {', mobileBreakpoint);
     const mobileTaskRule = readRule('.task-glass {', mobileBreakpoint);
     const mobileActionsRule = readRule('.actions,', mobileBreakpoint);
-    const mobileSharedActions = styles.indexOf('.actions-major {', mobileBreakpoint);
-    const mobileMajorActionsRule = readRule('.actions-major {', mobileSharedActions + 1);
+    const mobileMajorActionsRule = readRule('.actions-major > .action-island {', mobileBreakpoint);
     const mobileActionIslandRule = readRule('.actions .action-island {', mobileBreakpoint);
     const mobileCopyRule = readRule('.copy-action-island,', mobileBreakpoint);
     const mobileCopyAlignmentRule = readRule('.copy-action-island {', mobileBreakpoint);
@@ -103,7 +102,7 @@ describe('identity layout contract', () => {
     expect(mobileTaskRule).toContain('--static-glass-shadow: none');
     expect(mobileTaskRule).not.toContain('--pearl-shadow');
     expect(mobileActionsRule).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
-    expect(mobileMajorActionsRule).toContain('grid-template-columns: minmax(0, 1fr)');
+    expect(mobileMajorActionsRule).toContain('grid-column: 2');
     expect(mobileActionIslandRule).toContain('--pearl-shadow: none');
     expect(mobileActionIslandRule).toContain('box-shadow: none');
     expect(mobileCopyAlignmentRule).toContain('justify-self: stretch');
