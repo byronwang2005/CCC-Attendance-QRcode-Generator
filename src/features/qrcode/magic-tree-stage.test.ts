@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { InstancedMesh, OrthographicCamera, Scene } from 'three';
+import { InstancedMesh, OrthographicCamera, Scene, Matrix4, Vector3 } from 'three';
 import { createMagicTreeStage } from './magic-tree-stage';
 
 const rendererState = vi.hoisted(() => ({ render: vi.fn(), clear: vi.fn(), dispose: vi.fn() }));
@@ -39,9 +39,9 @@ beforeEach(() => {
 });
 afterEach(() => { clean?.(); clean = undefined; vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
-async function mount() {
+async function mount(width = 550) {
   const host = document.createElement('div');
-  Object.defineProperties(host, { clientWidth: { value: 550 }, clientHeight: { value: 480 } });
+  Object.defineProperties(host, { clientWidth: { value: width }, clientHeight: { value: 480 } });
   const fail = vi.fn();
   const stage = await createMagicTreeStage(host, 'blob:qr', new AbortController().signal, fail);
   clean = stage.destroy;
@@ -67,7 +67,8 @@ describe('tree rendering lifecycle', () => {
     const cameraBefore = objects().camera.matrixWorld.elements.slice();
     tick(10);
     const scanAfter = objects().canopy.instanceMatrix.array;
-    expect(scanAfter).not.toEqual(scanBefore);
+    expect(objects().canopy.visible).toBe(true);
+    expect(scanAfter).toEqual(scanBefore);
     for (let i = 0; i < scanAfter.length; i += 16) {
       expect(Math.abs(scanAfter[i + 12] - scanBefore[i + 12])).toBeLessThan(3.65 / 21 * .121);
       expect(Math.abs(scanAfter[i + 14] - scanBefore[i + 14])).toBeLessThan(3.65 / 21 * .121);
@@ -75,27 +76,74 @@ describe('tree rendering lifecycle', () => {
     expect(objects().camera.matrixWorld.elements).toEqual(cameraBefore);
     stage.setQr(false); tick(55); expect(callbacks.size).toBe(1);
   });
-  it('forms every dark module with eight grass blades and no ground-code layer', async () => {
+  it('keeps all foliage present in aligned squares covering every dark module, without intruding into light cells', async () => {
     const { stage } = await mount();
-    const [scene] = rendererState.render.mock.calls.at(-1) as [Scene];
-    const grass = objects().meadow;
-    expect(scene.getObjectByName('ground-pattern')).toBeUndefined();
     expect(rendererState.clear).toHaveBeenLastCalledWith(expect.any(String), 0);
-    scene.traverse(object => {
-      if ('geometry' in object) expect(['BoxGeometry', 'PlaneGeometry'].includes((object.geometry as {type:string}).type) && !('isInstancedMesh' in object)).toBe(false);
-    });
-    expect(grass.count).toBeGreaterThanOrEqual(294 * 8);
-    const protectedFlags = grass.geometry.getAttribute('protectedBlade');
-    expect(protectedFlags.count).toBe(grass.count);
+    const grass = objects().meadow;
     stage.setQr(true); tick(55);
+    const occupied = new Set<string>();
+    const cell = 3.65 / 21;
+    const matrix = new Matrix4();
+    const [scene] = rendererState.render.mock.calls.at(-1) as [Scene];
+    const meshes = [grass, objects().canopy, scene.getObjectByName('fallen-leaves') as InstancedMesh];
+    for (const mesh of meshes) for (let i = 0; i < mesh.count; i++) {
+      mesh.getMatrixAt(i, matrix);
+      const scale = new Vector3().setFromMatrixScale(matrix);
+      expect(scale.x).toBeGreaterThan(0);
+      const center = new Vector3().setFromMatrixPosition(matrix);
+      const x = Math.round(center.x / cell + 10), y = Math.round(center.z / cell + 10);
+      expect((x + y) % 3).not.toBe(0);
+      occupied.add(`${x},${y}`);
+      expect(scale.x).toBeCloseTo(cell, 6); expect(scale.y).toBeCloseTo(cell, 6);
+      expect(mesh.geometry.getAttribute('reveal').getX(i)).toBe(1);
+      // Shader's final local geometry is exactly uv - .5, irrespective of the organic mesh.
+      for (const dx of [-.5, .5]) for (const dy of [-.5, .5]) {
+        const corner = new Vector3(dx, dy, 0).applyMatrix4(matrix);
+        expect(Math.abs(corner.x - center.x)).toBeCloseTo(cell / 2, 6);
+        expect(Math.abs(corner.z - center.z)).toBeCloseTo(cell / 2, 6);
+        expect(corner.y).toBeCloseTo(center.y, 6);
+        expect(Math.abs(corner.x)).toBeLessThanOrEqual(3.65 / 2 + 1e-6);
+        expect(Math.abs(corner.z)).toBeLessThanOrEqual(3.65 / 2 + 1e-6);
+      }
+    }
+    expect(occupied.size).toBe(294);
     const before = grass.instanceMatrix.array.slice();
     tick(100);
-    const after = grass.instanceMatrix.array;
-    for (let i = 0; i < grass.count; i++) {
-      expect(after[i * 16 + 12]).toBe(before[i * 16 + 12]);
-      expect(after[i * 16 + 14]).toBe(before[i * 16 + 14]);
-      if (protectedFlags.getX(i)) expect(after.slice(i * 16, i * 16 + 16)).toEqual(before.slice(i * 16, i * 16 + 16));
+    expect(grass.instanceMatrix.array).toEqual(before);
+  });
+  it.each([[550, 24], [900, 40]])('keeps %i px ground leaves stationary and restores them on reversal', async (width, count) => {
+    reduced = true;
+    const { stage } = await mount(width);
+    const [scene] = rendererState.render.mock.calls.at(-1) as [Scene];
+    const litter = scene.getObjectByName('fallen-leaves') as InstancedMesh;
+    expect(litter.count).toBe(count);
+    expect(litter.visible).toBe(true);
+    const before = litter.instanceMatrix.array.slice();
+    for (let i = 0; i < litter.count; i++) {
+      const y = before[i * 16 + 13];
+      expect(y).toBeGreaterThan(.02); expect(y).toBeLessThan(.04);
+      expect(Math.abs(before[i * 16 + 12])).toBeLessThan(1.56);
+      expect(Math.abs(before[i * 16 + 14])).toBeLessThan(1.56);
     }
+    tick(10); expect(litter.instanceMatrix.array).toEqual(before);
+    stage.setQr(true); tick(); expect(litter.visible).toBe(true);
+    stage.setQr(false); tick(); expect(litter.visible).toBe(true);
+    expect(litter.instanceMatrix.array).toEqual(before);
+  });
+  it('uses nearby, fixed destinations and keeps canopy height instead of rebuilding the code at the end', async () => {
+    const { stage } = await mount();
+    const canopy = objects().canopy;
+    const before = canopy.instanceMatrix.array.slice();
+    stage.setQr(true); tick(55);
+    let travel = 0;
+    for (let i = 0; i < canopy.count; i++) {
+      const offset = i * 16;
+      const after = canopy.instanceMatrix.array;
+      travel += Math.hypot(after[offset + 12] - before[offset + 12], after[offset + 14] - before[offset + 14]);
+      expect(Math.abs(after[offset + 13] - before[offset + 13])).toBeLessThan(.06);
+    }
+    expect(travel / canopy.count).toBeLessThan(.25);
+    expect(canopy.visible).toBe(true);
   });
   it('renders once per state when reduced motion is enabled', async () => {
     reduced = true;

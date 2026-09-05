@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraEase, TREE_TRANSITION_SECONDS, advanceTreeTransition, nearestDarkCell, treeRandom, treeTransition, treeWind, qrProtectedCells } from './magic-tree-config';
+import { cameraEase, TREE_TRANSITION_SECONDS, advanceTreeTransition, nearestDarkCell, treeRandom, treeTransition, treeWind, qrProtectedCells, qrModuleColors, canopyCoverage, meadowDensity, TREE_PALETTE } from './magic-tree-config';
 
 describe('autumn reveal choreography', () => {
   it('uses a two-second Core Animation ease-in-out camera path', () => {
@@ -50,5 +50,32 @@ describe('autumn reveal choreography', () => {
     expect(Array.from({ length: 10 }, a)).toEqual(Array.from({ length: 10 }, b));
     expect(treeWind(0, 1, 2)).not.toBe(treeWind(1, 1, 2));
     expect(treeWind(1, 1, 2)).not.toBe(treeWind(1, 3, 2));
+  });
+});
+
+
+describe('autumn distribution and scan colors', () => {
+  it('reduces grass to 6% under the canopy and blends into the open meadow', () => {
+    const centers = [{ x: 0, z: 0 }];
+    expect(canopyCoverage(0, 0, centers)).toBe(1);
+    expect(meadowDensity(0, 0, centers)).toBeCloseTo(.06);
+    expect(meadowDensity(1.2, 0, centers)).toBe(1);
+    expect(meadowDensity(.7, 0, centers)).toBeGreaterThan(.06);
+    expect(meadowDensity(.7, 0, centers)).toBeLessThan(1);
+    expect(meadowDensity(.701, 0, centers) - meadowDensity(.7, 0, centers)).toBeLessThan(.005);
+    expect(meadowDensity(0, 0, [...centers, ...centers])).toBeCloseTo(.06);
+  });
+  it.each([21, 37, 41, 45, 177])('uses deterministic, contrasting neighbors with leaf centers and grass edges at size %i', size => {
+    const colors = qrModuleColors(size);
+    expect(colors).toEqual(qrModuleColors(size));
+    expect(TREE_PALETTE.scanLeaf).toContain(colors[(size - 1) / 2][(size - 1) / 2]);
+    colors.forEach((row, y) => row.forEach((color, x) => {
+      const rgb = [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16));
+      const luminance = rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722;
+      expect(luminance).toBeGreaterThan(111); expect(luminance).toBeLessThan(115);
+      if (x) expect(color).not.toBe(row[x - 1]);
+      if (y) expect(color).not.toBe(colors[y - 1][x]);
+      if (!x || !y || x === size - 1 || y === size - 1) expect(TREE_PALETTE.scanGrass).toContain(color);
+    }));
   });
 });

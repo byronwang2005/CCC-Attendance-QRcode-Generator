@@ -1,12 +1,55 @@
 /** Pantone Golden Apricot / Autumn Maple inspired screen colors, not official conversions. */
 export const TREE_PALETTE = {
   background: '#F6F1E7',
-  leaf: ['#E8BC68', '#DFA06B', '#B87545'],
-  grass: ['#E8D8AA', '#F0E3BE', '#D4BD87'],
-  scan: ['#946631', '#986333', '#9B6137'],
+  leaf: ['#E6B65B', '#D99350', '#BC713C', '#ECCB75', '#C98347'],
+  grass: ['#CBB666', '#DDC681', '#A69A5D', '#D2B259', '#E2D49C'],
+  // Near-equal luminance keeps large colored finder patterns below decoder local-contrast thresholds.
+  scanLeaf: ['#C26031', '#C66025', '#B36431', '#B96418', '#B86330'],
+  scanGrass: ['#827331', '#966E1B', '#936E2B', '#927116', '#787439'],
   stone: ['#E2DAC6', '#DED5BD', '#E8DFCC'],
   bark: '#78543D'
 } as const;
+
+/** Soft canopy coverage in ground coordinates, independent of the encoded QR. */
+export function canopyCoverage(x: number, z: number, centers: ReadonlyArray<{ x: number; z: number }>) {
+  let open = 1;
+  for (const center of centers) {
+    const distance = Math.hypot(x - center.x, z - center.z);
+    const t = Math.max(0, Math.min(1, (1.02 - distance) / .64));
+    open *= 1 - t * t * (3 - 2 * t);
+  }
+  return 1 - open;
+}
+
+export function meadowDensity(x: number, z: number, centers: ReadonlyArray<{ x: number; z: number }>) {
+  return 1 - .94 * canopyCoverage(x, z, centers);
+}
+
+/** Adjacent modules have different variants; the square-radius blend never changes QR bits. */
+export function qrModuleColors(size: number) {
+  const random = treeRandom();
+  const variants: number[][] = [];
+  const colors: string[][] = [];
+  for (let y = 0; y < size; y++) {
+    variants[y] = []; colors[y] = [];
+    for (let x = 0; x < size; x++) {
+      const radius = Math.max(Math.abs(x - (size - 1) / 2), Math.abs(y - (size - 1) / 2)) / ((size - 1) / 2);
+      const t = Math.max(0, Math.min(1, (radius - .45) / .4));
+      const mix = t * t * (3 - 2 * t);
+      const candidates = TREE_PALETTE.scanLeaf.map((inner, variant) => {
+        const outer = TREE_PALETTE.scanGrass[variant];
+        const color = '#' + [1, 3, 5].map(offset => Math.round(
+          parseInt(inner.slice(offset, offset + 2), 16) * (1 - mix) + parseInt(outer.slice(offset, offset + 2), 16) * mix
+        ).toString(16).padStart(2, '0')).join('').toUpperCase();
+        return { variant, color };
+      }).filter(({ variant, color }) => variant !== variants[y][x - 1] && variant !== variants[y - 1]?.[x]
+        && color !== colors[y][x - 1] && color !== colors[y - 1]?.[x]);
+      const chosen = candidates[Math.floor(random() * candidates.length)];
+      variants[y][x] = chosen.variant; colors[y][x] = chosen.color;
+    }
+  }
+  return colors;
+}
 
 export const TREE_TRANSITION_SECONDS = 2;
 export const TREE_SETTLE_START = .25;
@@ -84,4 +127,37 @@ export function qrProtectedCells(size: number) {
     }));
   }
   return protectedCells;
+}
+
+
+/** Fix targets once at construction: nearest cells first, then fill holes from locally redundant particles. */
+export function naturalQrTargets(points: ReadonlyArray<{ x: number; z: number }>, modules: boolean[][], side: number) {
+  const size = modules.length, cell = side / size;
+  const cells: Array<{ x: number; z: number }> = [];
+  modules.forEach((row, z) => row.forEach((dark, x) => {
+    if (dark) cells.push({ x: (x - (size - 1) / 2) * cell, z: (z - (size - 1) / 2) * cell });
+  }));
+  if (points.length < cells.length) throw new Error('Not enough foliage to cover the QR');
+  const counts = new Int32Array(cells.length);
+  const assignment = points.map(point => {
+    let best = 0, distance = Infinity;
+    cells.forEach((target, index) => {
+      const d = (point.x - target.x) ** 2 + (point.z - target.z) ** 2;
+      if (d < distance) { best = index; distance = d; }
+    });
+    counts[best]++;
+    return best;
+  });
+  cells.forEach((target, index) => {
+    if (counts[index]) return;
+    let best = -1, distance = Infinity;
+    points.forEach((point, i) => {
+      if (counts[assignment[i]] < 2) return;
+      const d = (point.x - target.x) ** 2 + (point.z - target.z) ** 2;
+      if (d < distance) { best = i; distance = d; }
+    });
+    if (best < 0) throw new Error('QR foliage assignment failed');
+    counts[assignment[best]]--; counts[index]++; assignment[best] = index;
+  });
+  return assignment.map(index => cells[index]);
 }

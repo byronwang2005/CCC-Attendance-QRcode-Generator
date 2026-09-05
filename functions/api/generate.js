@@ -29,7 +29,7 @@ export async function onRequestPost(context) {
 
     const attendanceUrl = buildAttendanceUrl({ scheduleId: sid, timestamp });
 
-    const qrBuffer = qr.imageSync(attendanceUrl, { type: 'png', margin: 2, size: 10 });
+    const qrBuffer = qr.imageSync(attendanceUrl, { type: 'png', margin: 2, size: 10, ec_level: 'L' });
 
     const statsWrite = recordQrGeneration({ env, scheduleId: sid, timestamp }).catch(() => {});
     if (context.waitUntil) {
