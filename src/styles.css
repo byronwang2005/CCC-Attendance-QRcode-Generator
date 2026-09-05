@@ -3384,15 +3384,12 @@ input[type="number"] {
   }
 
   .receipt-result-summary__copy h3 {
+    font-family: var(--serif);
+    font-size: 23px;
+    font-weight: 500;
     line-height: 1.18;
   }
 
-}
-
-@media (max-width: 430px) {
-  .receipt-result-summary__copy h3 {
-    font-size: 19px;
-  }
 }
 
 /* Transparent autumn grove; the scene itself remains the interactive surface. */

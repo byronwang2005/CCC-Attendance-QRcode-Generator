@@ -40,7 +40,7 @@ export const TEXT = {
     copied: '已复制!',
     qrCodeGenerated: '二维码已生成。如有“答题”选项，请继续完成。',
     qrCodeReady: '云天收夏色，木叶动秋声。',
-    qrCodeHint: '轻点大树，获取二维码。',
+    qrCodeHint: '轻点大树获取二维码',
     regenerate: '重新生成二维码',
     generate: '生成签到二维码'
   },
@@ -98,7 +98,7 @@ export const COPY_LOCK = [
   '（明天）',
   '生成更多',
   '云天收夏色，木叶动秋声。',
-  '轻点大树，获取二维码。',
+  '轻点大树获取二维码',
   '正在准备',
   '生成时间',
   '模式',
