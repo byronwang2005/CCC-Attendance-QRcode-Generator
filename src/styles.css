@@ -3371,11 +3371,20 @@ input[type="number"] {
 
 @media (max-width: 720px) {
   .receipt-panel {
-    padding: 10px;
+    padding: 20px;
   }
 
   .receipt-result-summary {
-    padding: 11px 12px;
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .receipt-result-summary__copy {
+    align-self: stretch;
+  }
+
+  .receipt-result-summary__copy h3 {
+    line-height: 1.18;
   }
 
 }
