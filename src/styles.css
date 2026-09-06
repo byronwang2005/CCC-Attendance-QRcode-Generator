@@ -3417,3 +3417,28 @@ input[type="number"] {
 .magic-tree-stage__error { padding: 24px; font-size: 13px; text-align: center; z-index: 1; }
 
 .magic-tree-stage__error button { padding: 9px 16px; border: 1px solid #dfd3bc; border-radius: 20px; background: transparent; color: inherit; cursor: pointer; }
+
+/* Three monochrome landscapes: the same composition in WebGL and static mode. */
+.ink-flow-layer__fallback,
+.ink-flow-layer__still,
+.ink-flow-layer__canvas {
+  position: absolute;
+  inset: 0;
+}
+.ink-flow-layer__fallback { opacity: 1; transition: opacity 240ms ease; }
+.ink-flow-layer__canvas { opacity: 0; transition: opacity 240ms ease; }
+.ink-flow-layer[data-ready="true"] .ink-flow-layer__fallback { opacity: 0; }
+.ink-flow-layer[data-ready="true"] .ink-flow-layer__canvas { opacity: 1; }
+.ink-flow-layer__still {
+  mask-image: var(--ink-mask);
+  mask-size: contain;
+  mask-position: center bottom;
+  mask-repeat: no-repeat;
+  transition: opacity 800ms cubic-bezier(.4, 0, .2, 1), background-color 800ms ease;
+}
+@media (max-aspect-ratio: 1/1) {
+  .ink-flow-layer__still { mask-size: cover; mask-position: var(--ink-anchor) bottom; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ink-flow-layer__still, .ink-flow-layer__canvas, .ink-flow-layer__fallback { transition: none; }
+}

@@ -1,5 +1,4 @@
 export type InkStep = 1 | 2 | 3;
-
 export type InkPalette = {
   accent: readonly [number, number, number];
   accentHex: string;
@@ -11,109 +10,64 @@ export type InkPalette = {
 };
 
 export const INK_PALETTES: Record<InkStep, InkPalette> = {
-  1: {
-    accent: [0.192, 0.361, 0.451],
-    accentHex: '#315c73',
-    accentOpacity: 0.105,
-    backgroundHex: '#f0f3f4',
-    ink: [0.353, 0.455, 0.533],
-    inkHex: '#5a7488',
-    inkOpacity: 0.155
-  },
-  2: {
-    accent: [0.208, 0.404, 0.365],
-    accentHex: '#35675d',
-    accentOpacity: 0.095,
-    backgroundHex: '#f1f4f1',
-    ink: [0.353, 0.482, 0.451],
-    inkHex: '#5a7b73',
-    inkOpacity: 0.15
-  },
-  3: {
-    accent: [0.431, 0.376, 0.259],
-    accentHex: '#6e6042',
-    accentOpacity: 0.1,
-    backgroundHex: '#f4f2ec',
-    ink: [0.537, 0.482, 0.376],
-    inkHex: '#897b60',
-    inkOpacity: 0.155
-  }
+  1: { accent: [0.192, 0.361, 0.451], accentHex: '#315c73', accentOpacity: 0,
+    backgroundHex: '#f0f3f4', ink: [0.192, 0.361, 0.451], inkHex: '#315c73', inkOpacity: 0.43 },
+  2: { accent: [0.208, 0.404, 0.365], accentHex: '#35675d', accentOpacity: 0,
+    backgroundHex: '#f1f4f1', ink: [0.208, 0.404, 0.365], inkHex: '#35675d', inkOpacity: 0.40 },
+  3: { accent: [0.431, 0.376, 0.259], accentHex: '#6e6042', accentOpacity: 0,
+    backgroundHex: '#f4f2ec', ink: [0.431, 0.376, 0.259], inkHex: '#6e6042', inkOpacity: 0.42 }
 };
 
-export const INK_RENDER_SCALES = [0.7, 0.8, 0.9] as const;
-export const DEFAULT_QUALITY_TIER = 1;
-export const QUALITY_SAMPLE_SIZE = 120;
-export const INK_AUTONOMOUS_MOTION = {
-  timeScale: 0.1,
-  warpStrength: 0.92
+export const INK_SCENES = {
+  1: { id: 'rongxi', title: '容膝斋图', artist: '倪瓒', mobileAnchor: 0.12, period: 32 },
+  2: { id: 'qingyuan', title: '溪山清远', artist: '夏珪', mobileAnchor: 0.88, period: 36 },
+  3: { id: 'fuchun', title: '富春山居图', artist: '黄公望', mobileAnchor: 0.36, period: 40 }
 } as const;
+export const INK_STEPS: readonly InkStep[] = [1, 2, 3];
+export const INK_TRANSITION_MS = 800;
+export const INK_RENDER_SCALES = [0.55, 0.7, 0.85] as const;
+export const DEFAULT_QUALITY_TIER = 2;
+export const QUALITY_SAMPLE_SIZE = 120;
+export const inkAsset = (step: InkStep, kind: 'packed' | 'static') =>
+  `/assets/ink/${INK_SCENES[step].id}-${kind}.webp`;
 
-export type InkMacroDrift = {
-  xAmplitude: number;
-  xPeriodSeconds: number;
-  xPhase: number;
-  yAmplitude: number;
-  yPeriodSeconds: number;
-  yPhase: number;
-};
+export type SceneWeights = [number, number, number];
+export const sceneWeights = (step: InkStep): SceneWeights =>
+  [step === 1 ? 1 : 0, step === 2 ? 1 : 0, step === 3 ? 1 : 0];
 
-export const INK_MACRO_DRIFT = {
-  left: {
-    xAmplitude: 0.07,
-    xPeriodSeconds: 18,
-    xPhase: 0,
-    yAmplitude: 0.045,
-    yPeriodSeconds: 24,
-    yPhase: 1.15
-  },
-  upper: {
-    xAmplitude: 0.055,
-    xPeriodSeconds: 23,
-    xPhase: 2.1,
-    yAmplitude: 0.035,
-    yPeriodSeconds: 17,
-    yPhase: 0.35
-  },
-  right: {
-    xAmplitude: 0.065,
-    xPeriodSeconds: 20,
-    xPhase: 4.2,
-    yAmplitude: 0.05,
-    yPeriodSeconds: 27,
-    yPhase: 2.75
-  }
-} as const satisfies Record<'left' | 'upper' | 'right', InkMacroDrift>;
-export const INK_MACRO_DRIFT_SPEED = 1.6;
-
-export function chooseQualityTier(
-  currentTier: number,
-  averageFrameMs: number,
-  fastestFrameMs: number
-) {
-  const safeTier = Math.min(INK_RENDER_SCALES.length - 1, Math.max(0, currentTier));
-
-  // A display whose fastest samples are slower than ~90Hz is refresh-rate bound,
-  // not renderer bound. Keep the balanced tier instead of degrading a stable 60Hz UI.
-  if (fastestFrameMs > 11.5) return Math.max(DEFAULT_QUALITY_TIER, safeTier);
-  if (averageFrameMs > 9.2) return Math.max(0, safeTier - 1);
-  if (averageFrameMs < 7.4) return Math.min(INK_RENDER_SCALES.length - 1, safeTier + 1);
-  return safeTier;
+export function blendSceneWeights(from: SceneWeights, step: InkStep, progress: number): SceneWeights {
+  const t = Math.min(1, Math.max(0, progress));
+  const eased = t * t * (3 - 2 * t);
+  const target = sceneWeights(step);
+  return from.map((value, i) => value + (target[i] - value) * eased) as SceneWeights;
 }
 
-export type InkMotionPolicy = {
-  animate: boolean;
-  pointerReactive: boolean;
-};
+export type InkQuality = { tier: number; fps: 30 | 60; slowWindows: number; fastWindows: number };
+export const initialInkQuality = (): InkQuality =>
+  ({ tier: DEFAULT_QUALITY_TIER, fps: 60, slowWindows: 0, fastWindows: 0 });
 
-export function resolveInkMotionPolicy({
-  coarsePointer,
-  reducedMotion
-}: {
-  coarsePointer: boolean;
-  reducedMotion: boolean;
+// 2 slow windows to degrade; 5 healthy windows to recover. Do not mistake a
+// stable 60 Hz display for a slow GPU, but do include genuinely missed frames.
+export function adaptInkQuality(state: InkQuality, p95FrameMs: number): InkQuality {
+  const slow = p95FrameMs > (state.fps === 60 ? 23 : 43);
+  const fast = p95FrameMs < (state.fps === 60 ? 19 : 36);
+  const next = { ...state, slowWindows: slow ? state.slowWindows + 1 : 0,
+    fastWindows: fast ? state.fastWindows + 1 : 0 };
+  if (next.slowWindows >= 2) {
+    if (next.tier > 0) next.tier--;
+    else next.fps = 30;
+    next.slowWindows = next.fastWindows = 0;
+  } else if (next.fastWindows >= 5) {
+    if (next.fps === 30) next.fps = 60;
+    else next.tier = Math.min(INK_RENDER_SCALES.length - 1, next.tier + 1);
+    next.slowWindows = next.fastWindows = 0;
+  }
+  return next;
+}
+
+export type InkMotionPolicy = { animate: boolean; pointerReactive: boolean };
+export function resolveInkMotionPolicy({ coarsePointer, reducedMotion }: {
+  coarsePointer: boolean; reducedMotion: boolean;
 }): InkMotionPolicy {
-  return {
-    animate: !reducedMotion,
-    pointerReactive: !coarsePointer && !reducedMotion
-  };
+  return { animate: !reducedMotion, pointerReactive: !coarsePointer && !reducedMotion };
 }

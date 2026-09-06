@@ -1,0 +1,26 @@
+{
+  "totalBytes": 1390084,
+  "assets": [
+    {
+      "name": "rongxi",
+      "width": 1536,
+      "height": 1024,
+      "packedBytes": 154628,
+      "staticBytes": 142246
+    },
+    {
+      "name": "qingyuan",
+      "width": 1536,
+      "height": 1024,
+      "packedBytes": 211160,
+      "staticBytes": 193546
+    },
+    {
+      "name": "fuchun",
+      "width": 1536,
+      "height": 1024,
+      "packedBytes": 357774,
+      "staticBytes": 330730
+    }
+  ]
+}
